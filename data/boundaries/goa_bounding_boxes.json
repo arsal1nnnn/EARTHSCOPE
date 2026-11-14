@@ -1,0 +1,262 @@
+{
+  "coordinate_system": "EPSG:4326 (WGS84)",
+  "bbox_format": "[min_lon, min_lat, max_lon, max_lat] -> [West, South, East, North]",
+  "note": "Buffered boxes add 0.05 deg (~5 km) margin for NASA SMAP L4 (9 km) and GPM IMERG (10 km) raster grid edge coverage.",
+  "districts": {
+    "north_goa": {
+      "name": "North Goa",
+      "talukas": [
+        "Pernem",
+        "Bardez",
+        "Tiswadi",
+        "Bicholim",
+        "Sattari"
+      ],
+      "bbox_exact": [
+        73.675601,
+        15.408092,
+        74.282362,
+        15.800763
+      ],
+      "bbox_buffered_0_05deg": [
+        73.625601,
+        15.358092,
+        74.332362,
+        15.850763
+      ]
+    },
+    "south_goa": {
+      "name": "South Goa",
+      "talukas": [
+        "Ponda",
+        "Mormugao",
+        "Salcete",
+        "Quepem",
+        "Sanguem",
+        "Dharbandora",
+        "Canacona"
+      ],
+      "bbox_exact": [
+        73.783207,
+        14.752932,
+        74.336114,
+        15.538996
+      ],
+      "bbox_buffered_0_05deg": [
+        73.733207,
+        14.702932,
+        74.386114,
+        15.588996
+      ]
+    },
+    "entire_goa": {
+      "name": "State of Goa",
+      "bbox_exact": [
+        73.675601,
+        14.752932,
+        74.336114,
+        15.800763
+      ],
+      "bbox_buffered_0_05deg": [
+        73.625601,
+        14.702932,
+        74.386114,
+        15.850763
+      ]
+    }
+  },
+  "talukas": {
+    "GOA-N-PERNEM": {
+      "name": "Pernem",
+      "district": "North Goa",
+      "bbox_exact": [
+        73.675601,
+        15.614791,
+        73.952091,
+        15.800763
+      ],
+      "bbox_buffered_0_05deg": [
+        73.625601,
+        15.564791,
+        74.002091,
+        15.850763
+      ]
+    },
+    "GOA-N-BARDEZ": {
+      "name": "Bardez",
+      "district": "North Goa",
+      "bbox_exact": [
+        73.731783,
+        15.490101,
+        73.910737,
+        15.685353
+      ],
+      "bbox_buffered_0_05deg": [
+        73.681783,
+        15.440101,
+        73.960737,
+        15.735353
+      ]
+    },
+    "GOA-N-TISWADI": {
+      "name": "Tiswadi",
+      "district": "North Goa",
+      "bbox_exact": [
+        73.78743,
+        15.412297,
+        73.96172,
+        15.568774
+      ],
+      "bbox_buffered_0_05deg": [
+        73.73743,
+        15.362297,
+        74.01172,
+        15.618774
+      ]
+    },
+    "GOA-N-BICHOLIM": {
+      "name": "Bicholim",
+      "district": "North Goa",
+      "bbox_exact": [
+        73.880696,
+        15.408092,
+        74.11716,
+        15.70316
+      ],
+      "bbox_buffered_0_05deg": [
+        73.830696,
+        15.358092,
+        74.16716,
+        15.75316
+      ]
+    },
+    "GOA-N-SATTARI": {
+      "name": "Sattari",
+      "district": "North Goa",
+      "bbox_exact": [
+        73.94537,
+        15.430639,
+        74.282362,
+        15.682156
+      ],
+      "bbox_buffered_0_05deg": [
+        73.89537,
+        15.380639,
+        74.332362,
+        15.732156
+      ]
+    },
+    "GOA-S-PONDA": {
+      "name": "Ponda",
+      "district": "South Goa",
+      "bbox_exact": [
+        73.915566,
+        15.268468,
+        74.105315,
+        15.538996
+      ],
+      "bbox_buffered_0_05deg": [
+        73.865566,
+        15.218468,
+        74.155315,
+        15.588996
+      ]
+    },
+    "GOA-S-MORMUGAO": {
+      "name": "Mormugao",
+      "district": "South Goa",
+      "bbox_exact": [
+        73.783207,
+        15.323679,
+        73.957386,
+        15.418909
+      ],
+      "bbox_buffered_0_05deg": [
+        73.733207,
+        15.273679,
+        74.007386,
+        15.468909
+      ]
+    },
+    "GOA-S-SALCETE": {
+      "name": "Salcete",
+      "district": "South Goa",
+      "bbox_exact": [
+        73.897017,
+        15.136448,
+        74.074159,
+        15.375322
+      ],
+      "bbox_buffered_0_05deg": [
+        73.847017,
+        15.086448,
+        74.124159,
+        15.425322
+      ]
+    },
+    "GOA-S-QUEPEM": {
+      "name": "Quepem",
+      "district": "South Goa",
+      "bbox_exact": [
+        73.935485,
+        15.040555,
+        74.199836,
+        15.27781
+      ],
+      "bbox_buffered_0_05deg": [
+        73.885485,
+        14.990555,
+        74.249836,
+        15.32781
+      ]
+    },
+    "GOA-S-SANGUEM": {
+      "name": "Sanguem",
+      "district": "South Goa",
+      "bbox_exact": [
+        74.063988,
+        14.998183,
+        74.318163,
+        15.344658
+      ],
+      "bbox_buffered_0_05deg": [
+        74.013988,
+        14.948183,
+        74.368163,
+        15.394658
+      ]
+    },
+    "GOA-S-DHARBANDORA": {
+      "name": "Dharbandora",
+      "district": "South Goa",
+      "bbox_exact": [
+        74.070511,
+        15.284061,
+        74.336114,
+        15.491525
+      ],
+      "bbox_buffered_0_05deg": [
+        74.020511,
+        15.234061,
+        74.386114,
+        15.541525
+      ]
+    },
+    "GOA-S-CANACONA": {
+      "name": "Canacona",
+      "district": "South Goa",
+      "bbox_exact": [
+        73.911984,
+        14.752932,
+        74.264261,
+        15.117217
+      ],
+      "bbox_buffered_0_05deg": [
+        73.861984,
+        14.702932,
+        74.314261,
+        15.167217
+      ]
+    }
+  }
+}
