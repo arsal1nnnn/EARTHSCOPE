@@ -26,8 +26,12 @@ def calculate_suitability(db: Session, request):
     except SystemExit as e:
         raise HTTPException(status_code=500, detail=f"Science Engine Error: {str(e)}")
 
-    # 4. Filter the matrix for our specific region and variety
-    match = matrix_df[(matrix_df["zone"] == region.name) & (matrix_df["variety"] == variety.name)]
+    # 4. Filter the matrix for our specific region, variety, AND ecology
+    match = matrix_df[
+        (matrix_df["zone"] == region.name) & 
+        (matrix_df["variety"] == variety.name) & 
+        (matrix_df["ecology"].str.lower() == request.ecology.lower())
+    ]
     
     if match.empty:
         raise HTTPException(status_code=404, detail="No suitability data found for this combination")
@@ -42,5 +46,6 @@ def calculate_suitability(db: Session, request):
         suitability_class=str(row["suitability_class"]),
         supporting_factors=[f.strip() for f in str(row["supporting_factors"]).split(";") if f.strip()],
         limiting_factors=[f.strip() for f in str(row["limiting_factors"]).split(";") if f.strip()],
-        notes=f"Factors assessed: {row['factors_assessed']}. References: {row['source_references']}"
+        # Added M5's required gap and context fields
+        notes=f"Missing Info: {row.get('missing_information', 'None')}. Context: {row.get('seasonal_water_context', 'N/A')}."
     )
