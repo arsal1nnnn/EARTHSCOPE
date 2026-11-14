@@ -1,0 +1,73 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "zone": "north_goa",
+    "geometry_type": "bounding box from M5, not the district boundary"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.6756,
+       15.4081
+      ],
+      [
+       74.2824,
+       15.4081
+      ],
+      [
+       74.2824,
+       15.8008
+      ],
+      [
+       73.6756,
+       15.8008
+      ],
+      [
+       73.6756,
+       15.4081
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "zone": "south_goa",
+    "geometry_type": "bounding box from M5, not the district boundary"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       73.7832,
+       14.7529
+      ],
+      [
+       74.3361,
+       14.7529
+      ],
+      [
+       74.3361,
+       15.539
+      ],
+      [
+       73.7832,
+       15.539
+      ],
+      [
+       73.7832,
+       14.7529
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}
