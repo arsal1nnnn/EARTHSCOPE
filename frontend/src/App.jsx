@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import "./App.css";
+import GoaMap from "./maps/GoaMap";
 
 function App() {
   const [variable, setVariable] = useState("Surface Temperature");
@@ -8,6 +9,7 @@ function App() {
   const [startYear, setStartYear] = useState("2000");
   const [endYear, setEndYear] = useState("2025");
   const [message, setMessage] = useState("");
+  const [selectedTaluka, setSelectedTaluka] = useState(null);
 
   function handleInvestigation(e) {
     e.preventDefault();
@@ -67,6 +69,26 @@ function App() {
             <span>DATA CONNECTION</span>
             <strong className="pending">Pending</strong>
             <small>Integration coming next</small>
+          </div>
+        </section>
+
+        <section className="map-section" style={{ margin: "45px 0" }}>
+          <div className="section-title">
+            <div>
+              <p className="eyebrow">GEOSPATIAL INTELLIGENCE / 2D MAP</p>
+              <h2>Goa Agricultural Water Stress Explorer</h2>
+              <p>
+                Interactive 12-taluka choropleth powered by NASA SMAP L4, GPM IMERG & MODIS Earth-observation data.
+              </p>
+            </div>
+            <span className="step-count">12 TALUKAS</span>
+          </div>
+
+          <div style={{ marginTop: "20px" }}>
+            <GoaMap
+              height="650px"
+              onSelectTaluka={(feat) => setSelectedTaluka(feat)}
+            />
           </div>
         </section>
 
