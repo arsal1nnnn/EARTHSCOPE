@@ -1,0 +1,9 @@
+zone,season_year,month,rainfall_mm,rainfall_month_anomaly_pct,rainfall_signal,sm_gldas_value,sm_gldas_month_percentile,sm_gldas_signal,indicator_agreement,indicators_with_data,indicators_expected
+north_goa,2025,6,565.50252888,-2.81332910022218,near normal,366.2436901208333,95.0,wet,"mixed: near normal, wet",2,2
+north_goa,2025,7,829.3890957599999,9.571789034534481,near normal,411.9951030483871,95.0,wet,"mixed: near normal, wet",2,2
+north_goa,2025,8,643.257435288,20.693015197033063,wet,406.99031975,75.0,wet,concurrent wet signals,2,2
+north_goa,2025,9,236.06776008000003,-23.61921033420655,dry,385.9562595208333,55.00000000000001,near normal,"mixed: dry, near normal",2,2
+south_goa,2025,6,547.8187464,-8.579925656257094,near normal,417.01862330000006,95.0,wet,"mixed: near normal, wet",2,2
+south_goa,2025,7,893.7786576,19.13075019404082,near normal,478.5071210604839,95.0,wet,"mixed: near normal, wet",2,2
+south_goa,2025,8,646.214150808,24.384667122026954,wet,472.1154355524194,75.0,wet,concurrent wet signals,2,2
+south_goa,2025,9,239.8440744,-21.857139590166963,dry,446.1821616958334,50.0,near normal,"mixed: dry, near normal",2,2
