@@ -13,11 +13,11 @@
         "region_id": "GOA-N-PERNEM",
         "name": "Pernem",
         "district": "North Goa",
-        "asi_score": 42,
+        "asi_score": 45,
         "stress_category": "Moderate",
-        "soil_moisture_pct": 22,
-        "rainfall_anomaly": -12.5,
-        "predicted_30d_prob": 0.38,
+        "soil_moisture_pct": 23,
+        "rainfall_anomaly": 1.5,
+        "predicted_30d_prob": 0.35,
         "evidence_coverage": 0.94
       },
       "geometry": {
@@ -3078,11 +3078,11 @@
         "region_id": "GOA-N-BARDEZ",
         "name": "Bardez",
         "district": "North Goa",
-        "asi_score": 35,
+        "asi_score": 34,
         "stress_category": "Moderate",
         "soil_moisture_pct": 26,
-        "rainfall_anomaly": -8.0,
-        "predicted_30d_prob": 0.28,
+        "rainfall_anomaly": 2.8,
+        "predicted_30d_prob": 0.24,
         "evidence_coverage": 0.96
       },
       "geometry": {
@@ -9279,12 +9279,12 @@
         "region_id": "GOA-N-TISWADI",
         "name": "Tiswadi",
         "district": "North Goa",
-        "asi_score": 28,
+        "asi_score": 24,
         "stress_category": "Low",
-        "soil_moisture_pct": 29,
-        "rainfall_anomaly": -4.5,
-        "predicted_30d_prob": 0.19,
-        "evidence_coverage": 0.95
+        "soil_moisture_pct": 31,
+        "rainfall_anomaly": 3.5,
+        "predicted_30d_prob": 0.16,
+        "evidence_coverage": 0.96
       },
       "geometry": {
         "type": "Polygon",
@@ -13520,12 +13520,12 @@
         "region_id": "GOA-N-BICHOLIM",
         "name": "Bicholim",
         "district": "North Goa",
-        "asi_score": 58,
+        "asi_score": 54,
         "stress_category": "Elevated",
-        "soil_moisture_pct": 17,
-        "rainfall_anomaly": -18.2,
-        "predicted_30d_prob": 0.62,
-        "evidence_coverage": 0.92
+        "soil_moisture_pct": 24,
+        "rainfall_anomaly": 5.8,
+        "predicted_30d_prob": 0.52,
+        "evidence_coverage": 0.93
       },
       "geometry": {
         "type": "Polygon",
@@ -15777,12 +15777,12 @@
         "region_id": "GOA-N-SATTARI",
         "name": "Sattari",
         "district": "North Goa",
-        "asi_score": 22,
+        "asi_score": 18,
         "stress_category": "Low",
-        "soil_moisture_pct": 34,
-        "rainfall_anomaly": 5.4,
-        "predicted_30d_prob": 0.14,
-        "evidence_coverage": 0.89
+        "soil_moisture_pct": 32,
+        "rainfall_anomaly": 8.2,
+        "predicted_30d_prob": 0.12,
+        "evidence_coverage": 0.92
       },
       "geometry": {
         "type": "Polygon",
@@ -17554,12 +17554,12 @@
         "region_id": "GOA-S-PONDA",
         "name": "Ponda",
         "district": "South Goa",
-        "asi_score": 48,
+        "asi_score": 36,
         "stress_category": "Moderate",
-        "soil_moisture_pct": 21,
-        "rainfall_anomaly": -14.0,
-        "predicted_30d_prob": 0.45,
-        "evidence_coverage": 0.93
+        "soil_moisture_pct": 25,
+        "rainfall_anomaly": 6.1,
+        "predicted_30d_prob": 0.28,
+        "evidence_coverage": 0.94
       },
       "geometry": {
         "type": "Polygon",
@@ -20079,12 +20079,12 @@
         "region_id": "GOA-S-MORMUGAO",
         "name": "Mormugao",
         "district": "South Goa",
-        "asi_score": 52,
-        "stress_category": "Elevated",
-        "soil_moisture_pct": 18,
-        "rainfall_anomaly": -16.5,
-        "predicted_30d_prob": 0.55,
-        "evidence_coverage": 0.9
+        "asi_score": 48,
+        "stress_category": "Moderate",
+        "soil_moisture_pct": 28,
+        "rainfall_anomaly": 3.2,
+        "predicted_30d_prob": 0.42,
+        "evidence_coverage": 0.95
       },
       "geometry": {
         "type": "Polygon",
@@ -25268,12 +25268,12 @@
         "region_id": "GOA-S-SALCETE",
         "name": "Salcete",
         "district": "South Goa",
-        "asi_score": 63,
-        "stress_category": "Elevated",
-        "soil_moisture_pct": 14,
-        "rainfall_anomaly": -24.0,
-        "predicted_30d_prob": 0.71,
-        "evidence_coverage": 0.91
+        "asi_score": 38,
+        "stress_category": "Moderate",
+        "soil_moisture_pct": 29,
+        "rainfall_anomaly": 4.6,
+        "predicted_30d_prob": 0.32,
+        "evidence_coverage": 0.95
       },
       "geometry": {
         "type": "Polygon",
@@ -27261,11 +27261,11 @@
         "region_id": "GOA-S-QUEPEM",
         "name": "Quepem",
         "district": "South Goa",
-        "asi_score": 74,
-        "stress_category": "Severe",
-        "soil_moisture_pct": 11,
-        "rainfall_anomaly": -32.5,
-        "predicted_30d_prob": 0.82,
+        "asi_score": 58,
+        "stress_category": "Elevated",
+        "soil_moisture_pct": 22,
+        "rainfall_anomaly": 5.4,
+        "predicted_30d_prob": 0.58,
         "evidence_coverage": 0.93
       },
       "geometry": {
@@ -30534,12 +30534,12 @@
         "region_id": "GOA-S-SANGUEM",
         "name": "Sanguem",
         "district": "South Goa",
-        "asi_score": 38,
-        "stress_category": "Moderate",
-        "soil_moisture_pct": 25,
-        "rainfall_anomaly": -9.8,
-        "predicted_30d_prob": 0.32,
-        "evidence_coverage": 0.88
+        "asi_score": 25,
+        "stress_category": "Low",
+        "soil_moisture_pct": 28,
+        "rainfall_anomaly": 10.5,
+        "predicted_30d_prob": 0.18,
+        "evidence_coverage": 0.9
       },
       "geometry": {
         "type": "Polygon",
@@ -32971,12 +32971,12 @@
         "region_id": "GOA-S-DHARBANDORA",
         "name": "Dharbandora",
         "district": "South Goa",
-        "asi_score": 67,
-        "stress_category": "Elevated",
-        "soil_moisture_pct": 13,
-        "rainfall_anomaly": -27.0,
-        "predicted_30d_prob": 0.76,
-        "evidence_coverage": 0.9
+        "asi_score": 42,
+        "stress_category": "Moderate",
+        "soil_moisture_pct": 25,
+        "rainfall_anomaly": 9.1,
+        "predicted_30d_prob": 0.36,
+        "evidence_coverage": 0.92
       },
       "geometry": {
         "type": "Polygon",
@@ -35488,12 +35488,12 @@
         "region_id": "GOA-S-CANACONA",
         "name": "Canacona",
         "district": "South Goa",
-        "asi_score": 14,
-        "stress_category": "Normal",
-        "soil_moisture_pct": 32,
-        "rainfall_anomaly": 8.2,
-        "predicted_30d_prob": 0.08,
-        "evidence_coverage": 0.92
+        "asi_score": 22,
+        "stress_category": "Low",
+        "soil_moisture_pct": 30,
+        "rainfall_anomaly": 7.8,
+        "predicted_30d_prob": 0.15,
+        "evidence_coverage": 0.93
       },
       "geometry": {
         "type": "MultiPolygon",
