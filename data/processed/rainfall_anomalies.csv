@@ -1,0 +1,5 @@
+zone,seasonal_accumulation_mm,mean_daily_mm,historical_baseline_mm,rainfall_anomaly_mm,standardized_precipitation_anomaly,rainfall_risk_signal
+North_Goa_Kher,1952.25,16.00204918032787,2850.0,-897.75,-2.80546875,Severe Drought Deficit
+North_Goa_Morod,1674.4,13.724590163934426,2850.0,-1175.6,-3.6737499999999996,Severe Drought Deficit
+South_Goa_Khazan,1732.8799999999999,14.203934426229507,2850.0,-1117.1200000000001,-3.4910000000000005,Severe Drought Deficit
+South_Goa_Kher,1797.39,14.732704918032788,2850.0,-1052.61,-3.28940625,Severe Drought Deficit
