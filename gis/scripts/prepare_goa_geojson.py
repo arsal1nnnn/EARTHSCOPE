@@ -35,6 +35,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 
 CANDIDATE_INPUT_PATHS = [
+    os.path.join(REPO_ROOT, "data", "boundaries", "osm_talukas.json"),
     os.path.join(REPO_ROOT, "data", "gadm41_IND_3.json"),
     os.path.join(REPO_ROOT, "data", "boundaries", "india_taluk.json"),
 ]
@@ -255,9 +256,18 @@ def simplify_ring(ring, tolerance=0.001):
         res = rdp_open(ring, tolerance)
         return [[round(pt[0], 6), round(pt[1], 6)] for pt in res]
 
+def round_coordinates(coords):
+    if not coords:
+        return coords
+    if isinstance(coords[0], (int, float)):
+        return [round(coords[0], 6), round(coords[1], 6)]
+    return [round_coordinates(c) for c in coords]
+
 def simplify_geometry(geom, tolerance=0.001):
     gtype = geom.get("type")
     coords = geom.get("coordinates")
+    if tolerance <= 0:
+        return {"type": gtype, "coordinates": round_coordinates(coords)}
     if gtype == "Polygon":
         new_coords = [simplify_ring(ring, tolerance) for ring in coords]
         return {"type": "Polygon", "coordinates": new_coords}
@@ -313,118 +323,161 @@ def main():
     print("=" * 65)
 
     raw_data = load_source_boundaries()
-    all_features = raw_data.get("features", [])
-
-    # Filter features where state is Goa
-    goa_features = []
-    for f in all_features:
-        p = f.get("properties", {})
-        # Check both GADM v3 and v4 property schemas
-        name_1 = p.get("NAME_1", "")
-        gid_1 = p.get("GID_1", "")
-        if name_1 == "Goa" or gid_1.startswith("IND.10"):
-            goa_features.append(f)
-
-    print(f"Found {len(goa_features)} Goa features in source dataset.")
-
-    # Helper to match feature by names or variant names
-    def find_feature_by_keys(keys):
-        for f in goa_features:
-            p = f.get("properties", {})
-            name_3 = str(p.get("NAME_3", "")).lower()
-            var_3 = str(p.get("VARNAME_3", "")).lower()
-            for k in keys:
-                kl = k.lower()
-                if kl == name_3 or kl == var_3:
-                    return f
-        return None
-
-    # Island feature n.a. (1882) for Tiswadi
-    island_feat = None
-    for f in goa_features:
-        p = f.get("properties", {})
-        name_3 = str(p.get("NAME_3", "")).lower()
-        if "n.a." in name_3 or "1882" in name_3:
-            island_feat = f
-            break
 
     shared_features = []
     mock_features = []
 
-    for region_id, meta in TALUKA_DEFINITIONS.items():
-        matched_feat = find_feature_by_keys(meta["match_keys"])
-        if not matched_feat:
-            print(f"Error: Could not match feature for {region_id} (keys: {meta['match_keys']})")
-            continue
+    # Check if raw_data is the official OpenStreetMap talukas dictionary
+    is_osm_dict = isinstance(raw_data, dict) and "GOA-N-PERNEM" in raw_data
 
-        geom = matched_feat["geometry"]
-
-        # Case 1: Tiswadi - merge mainland Panaji with Mandovi island
-        if region_id == "GOA-N-TISWADI" and island_feat:
-            panaji_type = geom["type"]
-            island_type = island_feat["geometry"]["type"]
-            panaji_coords = geom["coordinates"]
-            island_coords = island_feat["geometry"]["coordinates"]
-
-            polys = []
-            if panaji_type == "MultiPolygon":
-                polys.extend(panaji_coords)
-            else:
-                polys.append(panaji_coords)
-
-            if island_type == "MultiPolygon":
-                polys.extend(island_coords)
-            else:
-                polys.append(island_coords)
-
-            geom = {
-                "type": "MultiPolygon",
-                "coordinates": polys
+    if is_osm_dict:
+        print("Using OpenStreetMap high-precision official boundaries dataset.")
+        for region_id, meta in TALUKA_DEFINITIONS.items():
+            if region_id not in raw_data:
+                print(f"Error: {region_id} not found in OSM boundaries data!")
+                continue
+            
+            entry = raw_data[region_id]
+            geom = entry["geometry"]
+            # Round coordinates to 6 decimal places (approx. 10cm accuracy, 100% OSM alignment)
+            processed_geom = {
+                "type": geom["type"],
+                "coordinates": round_coordinates(geom["coordinates"])
             }
 
-        # Case 2: Sanguem split into Dharbandora (North) and Sanguem (South)
-        elif region_id == "GOA-S-DHARBANDORA":
-            ring = geom["coordinates"][0] if geom["type"] == "Polygon" else geom["coordinates"][0][0]
-            upper_ring, _ = clip_polygon_horizontal(ring, split_lat=15.28)
-            geom = {"type": "Polygon", "coordinates": [upper_ring]}
+            # 1. Base Boundary Properties (Shared with Backend M3 and Science M4)
+            base_props = {
+                "region_id": region_id,
+                "name": meta["name"],
+                "district": meta["district"],
+            }
+            shared_features.append({
+                "type": "Feature",
+                "properties": base_props,
+                "geometry": processed_geom,
+            })
 
-        elif region_id == "GOA-S-SANGUEM":
-            ring = geom["coordinates"][0] if geom["type"] == "Polygon" else geom["coordinates"][0][0]
-            _, lower_ring = clip_polygon_horizontal(ring, split_lat=15.28)
-            geom = {"type": "Polygon", "coordinates": [lower_ring]}
+            # 2. Complete Frontend Mock Properties (Contract Compliant)
+            mock_props = {
+                "region_id": region_id,
+                "name": meta["name"],
+                "district": meta["district"],
+                "asi_score": meta["mock"]["asi_score"],
+                "stress_category": meta["mock"]["stress_category"],
+                "soil_moisture_pct": meta["mock"]["soil_moisture_pct"],
+                "rainfall_anomaly": meta["mock"]["rainfall_anomaly"],
+                "predicted_30d_prob": meta["mock"]["predicted_30d_prob"],
+                "evidence_coverage": meta["mock"]["evidence_coverage"],
+            }
+            mock_features.append({
+                "type": "Feature",
+                "properties": mock_props,
+                "geometry": processed_geom,
+            })
 
-        # Simplify polygon geometries (tolerance=0.001 deg ~100m in EPSG:4326)
-        simplified_geom = simplify_geometry(geom, tolerance=0.001)
+    else:
+        # Fallback to GADM extraction
+        all_features = raw_data.get("features", [])
 
-        # 1. Base Boundary Properties (Shared with Backend M3 and Science M4)
-        base_props = {
-            "region_id": region_id,
-            "name": meta["name"],
-            "district": meta["district"],
-        }
-        shared_features.append({
-            "type": "Feature",
-            "properties": base_props,
-            "geometry": simplified_geom,
-        })
+        # Filter features where state is Goa
+        goa_features = []
+        for f in all_features:
+            p = f.get("properties", {})
+            name_1 = p.get("NAME_1", "")
+            gid_1 = p.get("GID_1", "")
+            if name_1 == "Goa" or gid_1.startswith("IND.10"):
+                goa_features.append(f)
 
-        # 2. Complete Frontend Mock Properties (Contract Compliant)
-        mock_props = {
-            "region_id": region_id,
-            "name": meta["name"],
-            "district": meta["district"],
-            "asi_score": meta["mock"]["asi_score"],
-            "stress_category": meta["mock"]["stress_category"],
-            "soil_moisture_pct": meta["mock"]["soil_moisture_pct"],
-            "rainfall_anomaly": meta["mock"]["rainfall_anomaly"],
-            "predicted_30d_prob": meta["mock"]["predicted_30d_prob"],
-            "evidence_coverage": meta["mock"]["evidence_coverage"],
-        }
-        mock_features.append({
-            "type": "Feature",
-            "properties": mock_props,
-            "geometry": simplified_geom,
-        })
+        print(f"Found {len(goa_features)} Goa features in source dataset.")
+
+        def find_feature_by_keys(keys):
+            for f in goa_features:
+                p = f.get("properties", {})
+                name_3 = str(p.get("NAME_3", "")).lower()
+                var_3 = str(p.get("VARNAME_3", "")).lower()
+                for k in keys:
+                    kl = k.lower()
+                    if kl == name_3 or kl == var_3:
+                        return f
+            return None
+
+        island_feat = None
+        for f in goa_features:
+            p = f.get("properties", {})
+            name_3 = str(p.get("NAME_3", "")).lower()
+            if "n.a." in name_3 or "1882" in name_3:
+                island_feat = f
+                break
+
+        for region_id, meta in TALUKA_DEFINITIONS.items():
+            matched_feat = find_feature_by_keys(meta["match_keys"])
+            if not matched_feat:
+                print(f"Error: Could not match feature for {region_id} (keys: {meta['match_keys']})")
+                continue
+
+            geom = matched_feat["geometry"]
+
+            if region_id == "GOA-N-TISWADI" and island_feat:
+                panaji_type = geom["type"]
+                island_type = island_feat["geometry"]["type"]
+                panaji_coords = geom["coordinates"]
+                island_coords = island_feat["geometry"]["coordinates"]
+
+                polys = []
+                if panaji_type == "MultiPolygon":
+                    polys.extend(panaji_coords)
+                else:
+                    polys.append(panaji_coords)
+
+                if island_type == "MultiPolygon":
+                    polys.extend(island_coords)
+                else:
+                    polys.append(island_coords)
+
+                geom = {
+                    "type": "MultiPolygon",
+                    "coordinates": polys
+                }
+
+            elif region_id == "GOA-S-DHARBANDORA":
+                ring = geom["coordinates"][0] if geom["type"] == "Polygon" else geom["coordinates"][0][0]
+                upper_ring, _ = clip_polygon_horizontal(ring, split_lat=15.28)
+                geom = {"type": "Polygon", "coordinates": [upper_ring]}
+
+            elif region_id == "GOA-S-SANGUEM":
+                ring = geom["coordinates"][0] if geom["type"] == "Polygon" else geom["coordinates"][0][0]
+                _, lower_ring = clip_polygon_horizontal(ring, split_lat=15.28)
+                geom = {"type": "Polygon", "coordinates": [lower_ring]}
+
+            simplified_geom = simplify_geometry(geom, tolerance=0.001)
+
+            base_props = {
+                "region_id": region_id,
+                "name": meta["name"],
+                "district": meta["district"],
+            }
+            shared_features.append({
+                "type": "Feature",
+                "properties": base_props,
+                "geometry": simplified_geom,
+            })
+
+            mock_props = {
+                "region_id": region_id,
+                "name": meta["name"],
+                "district": meta["district"],
+                "asi_score": meta["mock"]["asi_score"],
+                "stress_category": meta["mock"]["stress_category"],
+                "soil_moisture_pct": meta["mock"]["soil_moisture_pct"],
+                "rainfall_anomaly": meta["mock"]["rainfall_anomaly"],
+                "predicted_30d_prob": meta["mock"]["predicted_30d_prob"],
+                "evidence_coverage": meta["mock"]["evidence_coverage"],
+            }
+            mock_features.append({
+                "type": "Feature",
+                "properties": mock_props,
+                "geometry": simplified_geom,
+            })
 
     # Save outputs
     os.makedirs(os.path.dirname(OUTPUT_SHARED), exist_ok=True)

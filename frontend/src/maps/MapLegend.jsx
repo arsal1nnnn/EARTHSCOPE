@@ -15,10 +15,13 @@ export default function MapLegend({ activeMetric = "asi_score", activeMonthId = 
     <div
       style={{
         position: "absolute",
-        bottom: 24,
-        right: 24,
-        zIndex: 1000,
-        width: "280px",
+        bottom: 16,
+        right: 16,
+        zIndex: 999,
+        width: "270px",
+        maxWidth: "min(270px, calc(100% - 32px))",
+        maxHeight: "calc(100% - 135px)",
+        overflowY: "auto",
         backgroundColor: "rgba(15, 23, 42, 0.95)",
         backdropFilter: "blur(16px)",
         border: "1px solid #1e293b",

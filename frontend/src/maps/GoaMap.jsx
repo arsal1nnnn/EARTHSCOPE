@@ -105,6 +105,15 @@ function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
   return null;
 }
 
+// Helper component to capture map instance for external zoom buttons
+function MapInstanceCapture({ setMap }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map) setMap(map);
+  }, [map, setMap]);
+  return null;
+}
+
 const BASE_MAPS = {
   dark: {
     name: "Dark Matter (NASA)",
@@ -152,6 +161,7 @@ export default function GoaMap({
   const [cameraCenter, setCameraCenter] = useState(null);
   const [cameraZoom, setCameraZoom] = useState(11);
   const [resetTrigger, setResetTrigger] = useState(0);
+  const [mapInstance, setMapInstance] = useState(null);
 
   useEffect(() => {
     setClientMounted(true);
@@ -282,304 +292,430 @@ export default function GoaMap({
           backgroundColor: "#090d16",
         }}
       >
-        {/* Top Header Controls Bar */}
+        {/* Unified Top Controls Header - Single Flex Container, Never Overlaps */}
         <div
           style={{
             position: "absolute",
-            top: 14,
-            left: 14,
-            right: 14,
+            top: 12,
+            left: 12,
+            right: 12,
             zIndex: 1000,
             display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
+            flexDirection: "column",
             gap: "8px",
             pointerEvents: "none",
           }}
         >
-          {/* Left Group: Metric Layer Switcher */}
+          {/* Row 1: Layer Switcher (Left) & Map Utilities (Right) */}
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               alignItems: "center",
-              gap: "4px",
-              padding: "4px",
-              backgroundColor: "rgba(15, 23, 42, 0.92)",
-              backdropFilter: "blur(14px)",
-              borderRadius: "12px",
-              border: "1px solid #1e293b",
-              pointerEvents: "auto",
-              boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)",
+              justifyContent: "space-between",
+              gap: "8px",
             }}
           >
-            <button
-              onClick={() => setActiveMetric("asi_score")}
+            {/* Left Group: Metric Layer Switcher */}
+            <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "5px",
-                padding: "6px 11px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                border: "none",
-                backgroundColor: activeMetric === "asi_score" ? "#4f46e5" : "transparent",
-                color: activeMetric === "asi_score" ? "#ffffff" : "#94a3b8",
-                transition: "all 0.2s",
+                gap: "4px",
+                padding: "4px",
+                backgroundColor: "rgba(15, 23, 42, 0.94)",
+                backdropFilter: "blur(14px)",
+                borderRadius: "12px",
+                border: "1px solid #1e293b",
+                pointerEvents: "auto",
+                boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)",
               }}
             >
-              <Activity style={{ width: 14, height: 14 }} />
-              <span>Stress Index (ASI)</span>
-            </button>
+              <button
+                onClick={() => setActiveMetric("asi_score")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 11px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: activeMetric === "asi_score" ? "#4f46e5" : "transparent",
+                  color: activeMetric === "asi_score" ? "#ffffff" : "#94a3b8",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Activity style={{ width: 14, height: 14 }} />
+                <span>Stress Index (ASI)</span>
+              </button>
 
-            <button
-              onClick={() => setActiveMetric("soil_moisture_pct")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "6px 11px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                border: "none",
-                backgroundColor: activeMetric === "soil_moisture_pct" ? "#0284c7" : "transparent",
-                color: activeMetric === "soil_moisture_pct" ? "#ffffff" : "#94a3b8",
-                transition: "all 0.2s",
-              }}
-            >
-              <Droplets style={{ width: 14, height: 14 }} />
-              <span>Soil Moisture</span>
-            </button>
+              <button
+                onClick={() => setActiveMetric("soil_moisture_pct")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 11px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: activeMetric === "soil_moisture_pct" ? "#0284c7" : "transparent",
+                  color: activeMetric === "soil_moisture_pct" ? "#ffffff" : "#94a3b8",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Droplets style={{ width: 14, height: 14 }} />
+                <span>Soil Moisture</span>
+              </button>
 
-            <button
-              onClick={() => setActiveMetric("rainfall_anomaly")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "6px 11px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                border: "none",
-                backgroundColor: activeMetric === "rainfall_anomaly" ? "#d97706" : "transparent",
-                color: activeMetric === "rainfall_anomaly" ? "#ffffff" : "#94a3b8",
-                transition: "all 0.2s",
-              }}
-            >
-              <CloudRain style={{ width: 14, height: 14 }} />
-              <span>Precipitation</span>
-            </button>
+              <button
+                onClick={() => setActiveMetric("rainfall_anomaly")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 11px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: activeMetric === "rainfall_anomaly" ? "#d97706" : "transparent",
+                  color: activeMetric === "rainfall_anomaly" ? "#ffffff" : "#94a3b8",
+                  transition: "all 0.2s",
+                }}
+              >
+                <CloudRain style={{ width: 14, height: 14 }} />
+                <span>Precipitation</span>
+              </button>
 
-            <button
-              onClick={() => setActiveMetric("predicted_30d_prob")}
+              <button
+                onClick={() => setActiveMetric("predicted_30d_prob")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 11px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: activeMetric === "predicted_30d_prob" ? "#e11d48" : "transparent",
+                  color: activeMetric === "predicted_30d_prob" ? "#ffffff" : "#94a3b8",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Sparkles style={{ width: 14, height: 14 }} />
+                <span>30d Prediction</span>
+              </button>
+            </div>
+
+            {/* Right Group: Search, Labels, BaseMap & Camera Reset */}
+            <div
               style={{
                 display: "flex",
+                flexWrap: "wrap",
                 alignItems: "center",
-                gap: "5px",
-                padding: "6px 11px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                border: "none",
-                backgroundColor: activeMetric === "predicted_30d_prob" ? "#e11d48" : "transparent",
-                color: activeMetric === "predicted_30d_prob" ? "#ffffff" : "#94a3b8",
-                transition: "all 0.2s",
+                gap: "6px",
+                pointerEvents: "auto",
               }}
             >
-              <Sparkles style={{ width: 14, height: 14 }} />
-              <span>30d Prediction</span>
-            </button>
+              {/* Quick Taluka Jump Dropdown */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  backgroundColor: "rgba(15, 23, 42, 0.94)",
+                  backdropFilter: "blur(14px)",
+                  border: "1px solid #1e293b",
+                  borderRadius: "10px",
+                  padding: "4px 8px",
+                }}
+              >
+                <Search style={{ width: 13, height: 13, color: "#64748b" }} />
+                <select
+                  value={selectedRegionId || ""}
+                  onChange={(e) => handleSearchSelect(e.target.value)}
+                  style={{
+                    background: "transparent",
+                    color: "#e2e8f0",
+                    border: "none",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="" style={{ background: "#0f172a", color: "#94a3b8" }}>
+                    Jump to Taluka...
+                  </option>
+                  <optgroup label="North Goa" style={{ background: "#0f172a" }}>
+                    {Object.entries(TALUKA_METADATA)
+                      .filter(([_, t]) => t.district === "North Goa")
+                      .map(([rid, t]) => (
+                        <option key={rid} value={rid} style={{ background: "#0f172a" }}>
+                          {t.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                  <optgroup label="South Goa" style={{ background: "#0f172a" }}>
+                    {Object.entries(TALUKA_METADATA)
+                      .filter(([_, t]) => t.district === "South Goa")
+                      .map(([rid, t]) => (
+                        <option key={rid} value={rid} style={{ background: "#0f172a" }}>
+                          {t.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                </select>
+              </div>
+
+              {/* Labels Toggle */}
+              <button
+                onClick={() => setShowLabels(!showLabels)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 10px",
+                  backgroundColor: showLabels ? "rgba(99, 102, 241, 0.2)" : "rgba(15, 23, 42, 0.94)",
+                  border: `1px solid ${showLabels ? "#6366f1" : "#1e293b"}`,
+                  borderRadius: "10px",
+                  color: showLabels ? "#a5b4fc" : "#94a3b8",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  backdropFilter: "blur(14px)",
+                }}
+                title="Toggle Taluka Map Labels"
+              >
+                <Tag style={{ width: 12, height: 12 }} />
+                <span>Labels</span>
+              </button>
+
+              {/* Base Map Switcher */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "3px",
+                  padding: "3px",
+                  backgroundColor: "rgba(15, 23, 42, 0.94)",
+                  backdropFilter: "blur(14px)",
+                  borderRadius: "10px",
+                  border: "1px solid #1e293b",
+                }}
+              >
+                {Object.entries(BASE_MAPS).map(([key, bm]) => (
+                  <button
+                    key={key}
+                    onClick={() => setBaseMap(key)}
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 500,
+                      cursor: "pointer",
+                      border: baseMap === key ? "1px solid #334155" : "none",
+                      backgroundColor: baseMap === key ? "#1e293b" : "transparent",
+                      color: baseMap === key ? "#ffffff" : "#94a3b8",
+                    }}
+                  >
+                    {bm.name.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+
+              {/* Reset View Button */}
+              <button
+                onClick={handleResetCamera}
+                style={{
+                  padding: "6px 9px",
+                  backgroundColor: "rgba(15, 23, 42, 0.94)",
+                  border: "1px solid #1e293b",
+                  borderRadius: "10px",
+                  color: "#94a3b8",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  backdropFilter: "blur(14px)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+                title="Reset Camera to All of Goa"
+              >
+                <Compass style={{ width: 13, height: 13 }} />
+                <span>Reset</span>
+              </button>
+            </div>
           </div>
 
-          {/* Right Group: Search, Labels, BaseMap & Camera Reset */}
+          {/* Row 2: Kharif Monsoon Scrubber (Left) & Map Zoom / Sensor Tools (Right) */}
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               alignItems: "center",
-              gap: "6px",
-              pointerEvents: "auto",
+              justifyContent: "space-between",
+              gap: "8px",
             }}
           >
-            {/* Quick Taluka Jump Dropdown */}
+            {/* Kharif Monsoon Timeline Scrubber */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                backgroundColor: "rgba(15, 23, 42, 0.94)",
+                backdropFilter: "blur(14px)",
+                borderRadius: "10px",
+                border: "1px solid #1e293b",
+                padding: "3px 6px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                pointerEvents: "auto",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingRight: "6px", borderRight: "1px solid #1e293b", fontSize: "10px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
+                <Calendar style={{ width: 12, height: 12, color: "#818cf8" }} />
+                <span>Kharif Cycle</span>
+              </div>
+              {KHARIF_MONTHS.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setActiveMonth(m.id)}
+                  style={{
+                    padding: "3px 8px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    border: activeMonth === m.id ? "1px solid #4f46e5" : "1px solid transparent",
+                    backgroundColor: activeMonth === m.id ? "#312e81" : "transparent",
+                    color: activeMonth === m.id ? "#c7d2fe" : "#94a3b8",
+                    transition: "all 0.15s",
+                  }}
+                  title={m.phase}
+                >
+                  {m.label.split(" ")[0]}
+                </button>
+              ))}
+            </div>
+
+            {/* Right Tools: NASA Sensor Badge & Glassmorphic Zoom Controls */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                backgroundColor: "rgba(15, 23, 42, 0.92)",
-                backdropFilter: "blur(14px)",
-                border: "1px solid #1e293b",
-                borderRadius: "10px",
-                padding: "4px 8px",
+                pointerEvents: "auto",
               }}
             >
-              <Search style={{ width: 13, height: 13, color: "#64748b" }} />
-              <select
-                value={selectedRegionId || ""}
-                onChange={(e) => handleSearchSelect(e.target.value)}
+              {/* NASA Sensor Badge */}
+              <div
                 style={{
-                  background: "transparent",
-                  color: "#e2e8f0",
-                  border: "none",
-                  fontSize: "11px",
-                  fontWeight: 500,
-                  outline: "none",
-                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "4px 8px",
+                  backgroundColor: "rgba(15, 23, 42, 0.94)",
+                  backdropFilter: "blur(14px)",
+                  borderRadius: "8px",
+                  border: "1px solid #1e293b",
+                  fontSize: "10px",
+                  color: "#94a3b8",
+                  fontWeight: 600,
                 }}
               >
-                <option value="" style={{ background: "#0f172a", color: "#94a3b8" }}>
-                  Jump to Taluka...
-                </option>
-                <optgroup label="North Goa" style={{ background: "#0f172a" }}>
-                  {Object.entries(TALUKA_METADATA)
-                    .filter(([_, t]) => t.district === "North Goa")
-                    .map(([rid, t]) => (
-                      <option key={rid} value={rid} style={{ background: "#0f172a" }}>
-                        {t.name}
-                      </option>
-                    ))}
-                </optgroup>
-                <optgroup label="South Goa" style={{ background: "#0f172a" }}>
-                  {Object.entries(TALUKA_METADATA)
-                    .filter(([_, t]) => t.district === "South Goa")
-                    .map(([rid, t]) => (
-                      <option key={rid} value={rid} style={{ background: "#0f172a" }}>
-                        {t.name}
-                      </option>
-                    ))}
-                </optgroup>
-              </select>
+                <Satellite style={{ width: 11, height: 11, color: "#38bdf8" }} />
+                <span>NASA SMAP 9km • IMERG 10km</span>
+              </div>
+
+              {/* Glassmorphic Zoom (+ / -) */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: "rgba(15, 23, 42, 0.94)",
+                  backdropFilter: "blur(14px)",
+                  borderRadius: "8px",
+                  border: "1px solid #1e293b",
+                  overflow: "hidden",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                }}
+              >
+                <button
+                  onClick={() => mapInstance?.zoomIn()}
+                  style={{
+                    padding: "4px 10px",
+                    background: "transparent",
+                    border: "none",
+                    borderRight: "1px solid #1e293b",
+                    color: "#e2e8f0",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    lineHeight: 1,
+                  }}
+                  title="Zoom In"
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => mapInstance?.zoomOut()}
+                  style={{
+                    padding: "4px 10px",
+                    background: "transparent",
+                    border: "none",
+                    color: "#e2e8f0",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    lineHeight: 1,
+                  }}
+                  title="Zoom Out"
+                >
+                  −
+                </button>
+              </div>
             </div>
+          </div>
 
-            {/* Labels Toggle */}
-            <button
-              onClick={() => setShowLabels(!showLabels)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "6px 10px",
-                backgroundColor: showLabels ? "rgba(99, 102, 241, 0.2)" : "rgba(15, 23, 42, 0.92)",
-                border: `1px solid ${showLabels ? "#6366f1" : "#1e293b"}`,
-                borderRadius: "10px",
-                color: showLabels ? "#a5b4fc" : "#94a3b8",
-                fontSize: "11px",
-                fontWeight: 600,
-                cursor: "pointer",
-                backdropFilter: "blur(14px)",
-              }}
-              title="Toggle Taluka Map Labels"
-            >
-              <Tag style={{ width: 12, height: 12 }} />
-              <span>Labels</span>
-            </button>
-
-            {/* Base Map Switcher */}
+          {/* Row 3: Active Comparison Prompt Banner (Centered, Non-colliding) */}
+          {comparisonMode && selectedProps && !compareProps && (
             <div
               style={{
-                display: "flex",
-                gap: "3px",
-                padding: "3px",
-                backgroundColor: "rgba(15, 23, 42, 0.92)",
-                backdropFilter: "blur(14px)",
-                borderRadius: "10px",
-                border: "1px solid #1e293b",
-              }}
-            >
-              {Object.entries(BASE_MAPS).map(([key, bm]) => (
-                <button
-                  key={key}
-                  onClick={() => setBaseMap(key)}
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: "6px",
-                    fontSize: "11px",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    border: baseMap === key ? "1px solid #334155" : "none",
-                    backgroundColor: baseMap === key ? "#1e293b" : "transparent",
-                    color: baseMap === key ? "#ffffff" : "#94a3b8",
-                  }}
-                >
-                  {bm.name.split(" ")[0]}
-                </button>
-              ))}
-            </div>
-
-            {/* Reset View Button */}
-            <button
-              onClick={handleResetCamera}
-              style={{
-                padding: "6px 9px",
-                backgroundColor: "rgba(15, 23, 42, 0.92)",
-                border: "1px solid #1e293b",
-                borderRadius: "10px",
-                color: "#94a3b8",
-                fontSize: "11px",
-                fontWeight: 600,
-                cursor: "pointer",
-                backdropFilter: "blur(14px)",
+                alignSelf: "center",
+                pointerEvents: "auto",
+                backgroundColor: "rgba(245, 158, 11, 0.95)",
+                color: "#0f172a",
+                fontWeight: 700,
+                fontSize: "12px",
+                padding: "6px 16px",
+                borderRadius: "999px",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
                 display: "flex",
                 alignItems: "center",
-                gap: "4px",
+                gap: "8px",
+                marginTop: "2px",
               }}
-              title="Reset Camera to All of Goa"
             >
-              <Compass style={{ width: 13, height: 13 }} />
-              <span>Reset</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Kharif Monsoon Timeline Scrubber */}
-        <div
-          style={{
-            position: "absolute",
-            top: 68,
-            left: 14,
-            zIndex: 999,
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            backgroundColor: "rgba(15, 23, 42, 0.92)",
-            backdropFilter: "blur(14px)",
-            borderRadius: "10px",
-            border: "1px solid #1e293b",
-            padding: "3px 6px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingRight: "6px", borderRight: "1px solid #1e293b", fontSize: "10px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
-            <Calendar style={{ width: 12, height: 12, color: "#818cf8" }} />
-            <span>Kharif Cycle</span>
-          </div>
-          {KHARIF_MONTHS.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setActiveMonth(m.id)}
-              style={{
-                padding: "3px 8px",
-                borderRadius: "6px",
-                fontSize: "11px",
-                fontWeight: 600,
-                cursor: "pointer",
-                border: activeMonth === m.id ? "1px solid #4f46e5" : "1px solid transparent",
-                backgroundColor: activeMonth === m.id ? "#312e81" : "transparent",
-                color: activeMonth === m.id ? "#c7d2fe" : "#94a3b8",
-                transition: "all 0.15s",
-              }}
-              title={m.phase}
-            >
-              {m.label.split(" ")[0]}
-            </button>
-          ))}
+              <span>Click any second taluka on the map to compare with <strong>{selectedProps.name}</strong></span>
+              <button
+                onClick={() => setComparisonMode(false)}
+                style={{ background: "transparent", border: "none", color: "#0f172a", cursor: "pointer", fontWeight: 800, padding: 0 }}
+                title="Cancel comparison"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Main Leaflet Map Container */}
@@ -590,10 +726,12 @@ export default function GoaMap({
             zoom={GOA_MAP_CONFIG.zoom}
             minZoom={GOA_MAP_CONFIG.minZoom}
             maxZoom={GOA_MAP_CONFIG.maxZoom}
+            zoomControl={false}
             scrollWheelZoom={true}
             className="w-full h-full z-0"
             style={{ height: "100%", width: "100%", background: "#0b0f19" }}
           >
+            <MapInstanceCapture setMap={setMapInstance} />
             <MapCameraController
               targetCenter={cameraCenter}
               targetZoom={cameraZoom}
@@ -653,10 +791,13 @@ export default function GoaMap({
           <div
             style={{
               position: "absolute",
-              bottom: 24,
-              left: 24,
+              bottom: 16,
+              left: 16,
               zIndex: 1000,
-              width: "340px",
+              width: "350px",
+              maxWidth: "min(350px, calc(100% - 32px))",
+              maxHeight: "calc(100% - 135px)",
+              overflowY: "auto",
               backgroundColor: "rgba(15, 23, 42, 0.95)",
               backdropFilter: "blur(16px)",
               border: "1px solid #1e293b",
@@ -840,11 +981,13 @@ export default function GoaMap({
           <div
             style={{
               position: "absolute",
-              bottom: 24,
-              left: 24,
+              bottom: 16,
+              left: 16,
               zIndex: 1000,
               width: "520px",
-              maxWidth: "calc(100% - 48px)",
+              maxWidth: "min(520px, calc(100% - 32px))",
+              maxHeight: "calc(100% - 135px)",
+              overflowY: "auto",
               backgroundColor: "rgba(15, 23, 42, 0.96)",
               backdropFilter: "blur(20px)",
               border: "1px solid #334155",
@@ -957,37 +1100,6 @@ export default function GoaMap({
                 </span>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Prompt when in Comparison Mode waiting for Taluka B */}
-        {comparisonMode && selectedProps && !compareProps && (
-          <div
-            style={{
-              position: "absolute",
-              top: 105,
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 1000,
-              backgroundColor: "rgba(245, 158, 11, 0.95)",
-              color: "#0f172a",
-              fontWeight: 700,
-              fontSize: "12px",
-              padding: "6px 16px",
-              borderRadius: "999px",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            <span>Click any second taluka on the map to compare with {selectedProps.name}</span>
-            <button
-              onClick={() => setComparisonMode(false)}
-              style={{ background: "transparent", border: "none", color: "#0f172a", cursor: "pointer", fontWeight: 800 }}
-            >
-              ✕
-            </button>
           </div>
         )}
 
