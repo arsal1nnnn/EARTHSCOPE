@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 from app.api import health, regions, varieties, assessments, water_risk, reports # <-- Added reports
+from app.database import engine, Base
 
 app = FastAPI(
     title="EARTHSCOPE API",
     description="NASA Space Apps Challenge: Goa Rice & Water-Risk Intelligence",
     version="0.1.0"
 )
+
+# Generate database tables on startup
+Base.metadata.create_all(bind=engine)
 
 # Include routers with API prefix
 app.include_router(health.router, prefix="/api")
