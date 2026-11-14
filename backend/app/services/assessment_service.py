@@ -1,47 +1,46 @@
-import uuid
-from app.schemas.assessment import AssessmentRequest, AssessmentResponse, ComparisonRequest, ComparisonResponse
+from sqlalchemy.orm import Session
+from pathlib import Path
+import pandas as pd
+from fastapi import HTTPException
 
-def calculate_suitability(request: AssessmentRequest) -> AssessmentResponse:
-    run_id = f"evt_{uuid.uuid4().hex[:8]}"
+from app.models.core import DBRegion, DBVariety
+from app.schemas.assessment import AssessmentResponse
+from app.science.suitability_engine import build_suitability_matrix
+
+def calculate_suitability(db: Session, request):
+    # 1. Fetch names from SQLite to match against M4's CSV data
+    region = db.query(DBRegion).filter(DBRegion.id == request.region_id).first()
+    variety = db.query(DBVariety).filter(DBVariety.id == request.variety_id).first()
     
-    if request.variety_id == "var_corg" and request.ecology == "Morod":
-        is_suitable = False
-        score = 12.5
-        risk = "High"
-        notes = ["Korgut requires saline lowlands (Khazan). Uplands lack necessary moisture and soil salinity."]
-    else:
-        is_suitable = True
-        score = 87.2
-        risk = "Low"
-        notes = ["Optimal matching of variety duration to ecology water retention.", "Demonstration data only."]
+    if not region or not variety:
+        raise HTTPException(status_code=404, detail="Region or Variety not found in database")
 
+    # 2. Fix the file path. 
+    # __file__ is backend/app/services/assessment_service.py
+    # parents[3] points exactly to the EARTHSCOPE root folder
+    data_dir = Path(__file__).resolve().parents[3] / "data" / "processed"
+
+    try:
+        # 3. Run M4's engine
+        matrix_df = build_suitability_matrix(input_dir=data_dir)
+    except SystemExit as e:
+        raise HTTPException(status_code=500, detail=f"Science Engine Error: {str(e)}")
+
+    # 4. Filter the matrix for our specific region and variety
+    match = matrix_df[(matrix_df["zone"] == region.name) & (matrix_df["variety"] == variety.name)]
+    
+    if match.empty:
+        raise HTTPException(status_code=404, detail="No suitability data found for this combination")
+
+    row = match.iloc[0]
+
+    # 5. Map M4's DataFrame row to your Pydantic response schema
     return AssessmentResponse(
-        assessment_id=run_id,
         region_id=request.region_id,
-        ecology=request.ecology,
         variety_id=request.variety_id,
-        is_suitable=is_suitable,
-        suitability_score=score,
-        water_risk_level=risk,
-        scientific_notes=notes,
-        is_mock_data=True
-    )
-
-def compare_varieties(request: ComparisonRequest) -> ComparisonResponse:
-    comp_id = f"cmp_{uuid.uuid4().hex[:8]}"
-    results = []
-    
-    for var_id in request.variety_ids:
-        single_request = AssessmentRequest(
-            region_id=request.region_id,
-            ecology=request.ecology,
-            variety_id=var_id
-        )
-        # Reuse the existing logic for each variety
-        assessment = calculate_suitability(single_request)
-        results.append(assessment)
-        
-    return ComparisonResponse(
-        comparison_id=comp_id,
-        results=results
+        suitability_score=float(row["suitability_score"]) if pd.notna(row["suitability_score"]) else 0.0,
+        suitability_class=str(row["suitability_class"]),
+        supporting_factors=[f.strip() for f in str(row["supporting_factors"]).split(";") if f.strip()],
+        limiting_factors=[f.strip() for f in str(row["limiting_factors"]).split(";") if f.strip()],
+        notes=f"Factors assessed: {row['factors_assessed']}. References: {row['source_references']}"
     )
