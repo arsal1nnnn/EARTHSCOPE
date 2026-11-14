@@ -7,6 +7,7 @@ import NasaGridLayer from "./NasaGridLayer";
 import MapLegend from "./MapLegend";
 import MapErrorBoundary from "./ErrorBoundary";
 import {
+  GOA_BOUNDS,
   GOA_MAP_CONFIG,
   METRIC_CONFIGS,
   STRESS_CATEGORIES,
@@ -76,9 +77,39 @@ function createTalukaLabelIcon(name, isSelected = false, isCompared = false) {
   });
 }
 
-// Controller for programmatic camera movement & bounds
+// Controller for programmatic camera movement, auto-centering & bounds
 function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
   const map = useMap();
+
+  // On mount: ensure Leaflet correctly calculates container dimensions and fits bounds directly to Goa
+  useEffect(() => {
+    if (!map) return;
+    map.invalidateSize();
+    const goaLatLngBounds = L.latLngBounds(GOA_BOUNDS[0], GOA_BOUNDS[1]);
+
+    const timer1 = setTimeout(() => {
+      map.invalidateSize();
+      map.fitBounds(goaLatLngBounds, {
+        padding: [30, 30],
+        maxZoom: 10,
+        animate: false,
+      });
+    }, 60);
+
+    const timer2 = setTimeout(() => {
+      map.invalidateSize();
+      map.fitBounds(goaLatLngBounds, {
+        padding: [30, 30],
+        maxZoom: 10,
+        animate: false,
+      });
+    }, 280);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [map]);
 
   useEffect(() => {
     if (map && targetCenter) {
@@ -91,7 +122,11 @@ function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
 
   useEffect(() => {
     if (map && resetTrigger > 0) {
-      map.flyTo(GOA_MAP_CONFIG.center, GOA_MAP_CONFIG.zoom, {
+      const goaLatLngBounds = L.latLngBounds(GOA_BOUNDS[0], GOA_BOUNDS[1]);
+      map.fitBounds(goaLatLngBounds, {
+        padding: [30, 30],
+        maxZoom: 10,
+        animate: true,
         duration: 1.2,
       });
     }
@@ -791,6 +826,8 @@ export default function GoaMap({
             key="goa-leaflet-map"
             center={GOA_MAP_CONFIG.center}
             zoom={GOA_MAP_CONFIG.zoom}
+            bounds={GOA_BOUNDS}
+            boundsOptions={{ padding: [30, 30] }}
             minZoom={GOA_MAP_CONFIG.minZoom}
             maxZoom={GOA_MAP_CONFIG.maxZoom}
             zoomControl={false}

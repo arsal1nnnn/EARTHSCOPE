@@ -295,13 +295,19 @@ export function getTalukaStyle(
   };
 }
 
+// Exact Bounding Box of all 12 Goa Talukas (WGS84 EPSG:4326)
+export const GOA_BOUNDS = [
+  [14.7529, 73.6756], // South-West corner (Canacona coastline)
+  [15.8008, 74.3361], // North-East corner (Pernem / Sattari Western Ghats)
+];
+
 export const GOA_MAP_CONFIG = {
-  center: [15.38, 74.02],
+  center: [15.28, 73.98], // True geographic center of Goa
   zoom: 10,
-  minZoom: 9,
-  maxZoom: 14,
+  minZoom: 8,
+  maxZoom: 15,
   maxBounds: [
-    [14.7, 73.5],
-    [16.0, 74.5],
+    [13.8, 72.0], // Generous regional SW bounds
+    [16.8, 76.0], // Generous regional NE bounds
   ],
 };
