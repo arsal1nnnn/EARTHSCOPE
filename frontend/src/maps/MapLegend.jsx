@@ -6,7 +6,11 @@ import { ChevronDown, ChevronUp, Info, Layers, Calendar } from "lucide-react";
  * MapLegend Component
  * Floating legend showing color scales, active metric range, seasonal phase, and NASA spatial resolution disclosures.
  */
-export default function MapLegend({ activeMetric = "asi_score", activeMonthId = "all" }) {
+export default function MapLegend({
+  activeMetric = "asi_score",
+  activeMonthId = "all",
+  nasaGridMode = "none",
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const metric = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.asi_score;
   const currentMonth = KHARIF_MONTHS.find((m) => m.id === activeMonthId) || KHARIF_MONTHS[0];
@@ -111,6 +115,44 @@ export default function MapLegend({ activeMetric = "asi_score", activeMonthId = 
               </div>
             ))}
           </div>
+
+          {/* NASA Satellite Grid Footprint Disclosure */}
+          {nasaGridMode !== "none" && (
+            <div
+              style={{
+                backgroundColor: "rgba(15, 23, 42, 0.9)",
+                border: "1px solid #334155",
+                borderRadius: "8px",
+                padding: "8px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", fontWeight: 700, color: "#e2e8f0", textTransform: "uppercase" }}>
+                <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#38bdf8" }} />
+                <span>Active Satellite Grids</span>
+              </div>
+
+              {(nasaGridMode === "smap" || nasaGridMode === "both") && (
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px" }}>
+                  <span style={{ width: 14, height: 0, borderTop: "2px dashed #06b6d4", display: "inline-block" }} />
+                  <span style={{ color: "#67e8f9" }}><strong>SMAP:</strong> 9 km EASE-Grid 2.0</span>
+                </div>
+              )}
+
+              {(nasaGridMode === "gpm" || nasaGridMode === "both") && (
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px" }}>
+                  <span style={{ width: 14, height: 0, borderTop: "2px dashed #f59e0b", display: "inline-block" }} />
+                  <span style={{ color: "#fcd34d" }}><strong>GPM:</strong> 0.10° (~10 km) IMERG</span>
+                </div>
+              )}
+
+              <div style={{ fontSize: "9px", color: "#64748b", marginTop: "2px", lineHeight: "1.25" }}>
+                Hover any cell to inspect raw satellite footprint resolution, sensor specs & simulated readings.
+              </div>
+            </div>
+          )}
 
           {/* NASA Spatial Resolution Disclosure */}
           <div style={{ borderTop: "1px solid #1e293b", paddingTop: "8px" }}>
