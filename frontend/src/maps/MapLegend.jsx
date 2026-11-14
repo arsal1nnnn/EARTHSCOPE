@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { STRESS_CATEGORIES, METRIC_CONFIGS } from "./mapStyles";
-import { ChevronDown, ChevronUp, Info, Layers } from "lucide-react";
+import { STRESS_CATEGORIES, METRIC_CONFIGS, KHARIF_MONTHS } from "./mapStyles";
+import { ChevronDown, ChevronUp, Info, Layers, Calendar } from "lucide-react";
 
 /**
  * MapLegend Component
- * Floating legend showing color scales, active metric range, and NASA spatial resolution disclosures.
+ * Floating legend showing color scales, active metric range, seasonal phase, and NASA spatial resolution disclosures.
  */
-export default function MapLegend({ activeMetric = "asi_score" }) {
+export default function MapLegend({ activeMetric = "asi_score", activeMonthId = "all" }) {
   const [collapsed, setCollapsed] = useState(false);
   const metric = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.asi_score;
+  const currentMonth = KHARIF_MONTHS.find((m) => m.id === activeMonthId) || KHARIF_MONTHS[0];
 
   return (
     <div
@@ -61,6 +62,29 @@ export default function MapLegend({ activeMetric = "asi_score" }) {
             </div>
           </div>
 
+          {/* Active Seasonal Month Info if selected */}
+          {activeMonthId !== "all" && (
+            <div
+              style={{
+                backgroundColor: "rgba(99, 102, 241, 0.1)",
+                border: "1px solid rgba(99, 102, 241, 0.3)",
+                borderRadius: "8px",
+                padding: "6px 8px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <Calendar style={{ width: 13, height: 13, color: "#818cf8", flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: "11px", fontWeight: 600, color: "#c7d2fe" }}>
+                  {currentMonth.label} Simulation
+                </div>
+                <div style={{ fontSize: "10px", color: "#94a3b8" }}>{currentMonth.phase}</div>
+              </div>
+            </div>
+          )}
+
           {/* Color Scale Swatches */}
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             {Object.entries(STRESS_CATEGORIES).map(([catKey, cat]) => (
@@ -95,7 +119,7 @@ export default function MapLegend({ activeMetric = "asi_score" }) {
               <li><strong style={{ color: "#94a3b8" }}>SMAP L4:</strong> ~9 km root soil moisture</li>
               <li><strong style={{ color: "#94a3b8" }}>GPM IMERG:</strong> 0.1° (~10 km) rain anomaly</li>
               <li><strong style={{ color: "#94a3b8" }}>MODIS V061:</strong> 250m–1km vegetation</li>
-              <li style={{ fontStyle: "italic" }}>Aggregated across 12 Goa talukas</li>
+              <li style={{ fontStyle: "italic" }}>Downscaled to 12 Goa talukas</li>
             </ul>
           </div>
         </div>
