@@ -913,7 +913,7 @@ export default function GoaMap({
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "11px", fontWeight: 700, color: "#38bdf8", display: "flex", alignItems: "center", gap: "4px" }}>
                     <Sprout style={{ width: 13, height: 13 }} />
-                    Rice Suitability ({selectedProps.rice_suitability?.score_pct || 96}%)
+                    Rice Variety Suitability
                   </span>
                   <span
                     style={{
@@ -1120,7 +1120,7 @@ export default function GoaMap({
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Rice Suitability:</span>
                     <strong style={{ color: "#38bdf8" }}>
-                      {selectedProps.rice_suitability_class || "Highly Suitable"} ({selectedProps.rice_suitability?.score_pct || 96}%)
+                      {selectedProps.rice_suitability_class || "Highly Suitable"}
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -1162,7 +1162,7 @@ export default function GoaMap({
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Rice Suitability:</span>
                     <strong style={{ color: "#fbbf24" }}>
-                      {compareProps.rice_suitability_class || "Highly Suitable"} ({compareProps.rice_suitability?.score_pct || 96}%)
+                      {compareProps.rice_suitability_class || "Highly Suitable"}
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>

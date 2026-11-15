@@ -13,6 +13,12 @@
 // ---------------------------------------------------------------------------
 // Confirmed Real Scientific Metric Configurations
 // ---------------------------------------------------------------------------
+export function deriveWaterRiskFromAgreement(agreement = "") {
+  if (agreement === "concurrent dry signals") return { level: "High", score: 3 };
+  if (agreement.includes("dry")) return { level: "Moderate", score: 2 };
+  return { level: "Low", score: 1 };
+}
+
 export const METRIC_CONFIGS = {
   water_risk: {
     id: "water_risk",
@@ -30,17 +36,17 @@ export const METRIC_CONFIGS = {
   rice_suitability: {
     id: "rice_suitability",
     label: "Rice Variety Suitability",
-    unit: "% Suitability",
+    unit: "Documented Ecologies",
     description: "ICAR-CCARI & KVK Goa documented suitability across local land ecologies (Khazan, Kher, Morod)",
     source: "ICAR-CCARI & KVK Goa documented recommendations with NASA water context",
     getColor: (val) => {
-      // 100%: Deep Emerald (Khazan & Kher lowlands with 6-8 varieties)
-      // 96%: Teal (Kher lowlands & Morod uplands)
-      // < 90%: Blue / Amber
-      if (val >= 98) return "#059669";
-      if (val >= 90) return "#0d9488";
-      if (val >= 75) return "#3b82f6";
-      return "#f59e0b";
+      // Color-coded by documented variety count / ecology coverage:
+      // 8+: Deep Emerald (Khazan coastal saline + Kher shallow lowlands, 8 varieties)
+      // 6: Cyan (Khazan saline lowlands, 6 varieties)
+      // 2-3: Teal (Kher lowlands + Morod uplands, 2-3 varieties)
+      if (val >= 8) return "#059669";
+      if (val >= 6) return "#0284c7";
+      return "#0d9488";
     },
   },
   rainfall_anomaly_pct: {
@@ -125,39 +131,42 @@ export const KHARIF_MONTHS = [
 export function getSeasonalProps(baseProps, activeMonthId = "all") {
   if (!baseProps) return {};
   
-  const baseWaterRisk = baseProps.water_risk_score ?? (baseProps.water_risk?.score ?? 1);
-  const baseSuitability = baseProps.rice_suitability_score ?? (baseProps.rice_suitability?.score_pct ?? 96);
+  const recCount = baseProps.rice_suitability?.recommended_varieties?.length ?? 2;
 
   if (activeMonthId === "all") {
+    const agr = baseProps.indicator_agreement || "all near normal";
+    const derived = deriveWaterRiskFromAgreement(agr);
     return {
       ...baseProps,
-      water_risk: baseWaterRisk,
-      rice_suitability: baseSuitability,
+      water_risk: derived.score,
+      water_risk_score: derived.score,
+      water_risk_level: derived.level,
+      rice_suitability: recCount,
+      _active_month: "all",
     };
   }
 
   const monthly = baseProps.monthly;
   if (!monthly || !monthly[activeMonthId]) {
-    return {
-      ...baseProps,
-      water_risk: baseWaterRisk,
-      rice_suitability: baseSuitability,
-    };
+    return getSeasonalProps(baseProps, "all");
   }
 
   const m = monthly[activeMonthId];
+  const mAgr = m.indicator_agreement || "all near normal";
+  const mDerived = deriveWaterRiskFromAgreement(mAgr);
+
   return {
     ...baseProps,
     rainfall_anomaly_pct:  m.rainfall_month_anomaly_pct  ?? baseProps.rainfall_anomaly_pct,
     rainfall_signal:       m.rainfall_signal               ?? baseProps.rainfall_signal,
     sm_gldas_percentile:   m.sm_gldas_month_percentile    ?? baseProps.sm_gldas_percentile,
     sm_gldas_signal:       m.sm_gldas_signal               ?? baseProps.sm_gldas_signal,
-    indicator_agreement:   m.indicator_agreement           ?? baseProps.indicator_agreement,
+    indicator_agreement:   mAgr,
     kharif_rainfall_mm:    m.rainfall_mm                   ?? baseProps.kharif_rainfall_mm,
-    water_risk:            m.water_risk_score              ?? baseWaterRisk,
-    water_risk_score:      m.water_risk_score              ?? baseWaterRisk,
-    water_risk_level:      m.water_risk_level              ?? (baseProps.water_risk?.level ?? "Low"),
-    rice_suitability:      baseSuitability,
+    water_risk:            mDerived.score,
+    water_risk_score:      mDerived.score,
+    water_risk_level:      mDerived.level,
+    rice_suitability:      recCount,
     _active_month:         activeMonthId,
   };
 }

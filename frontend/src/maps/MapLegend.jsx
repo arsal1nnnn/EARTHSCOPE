@@ -14,15 +14,14 @@ import { ChevronDown, ChevronUp, Info, Layers, Calendar } from "lucide-react";
 // Color-scale definitions for each real metric
 const METRIC_SCALE_ENTRIES = {
   water_risk: [
-    { color: "#10b981", label: "Low Water Risk",       range: "Healthy Buffer" },
-    { color: "#f59e0b", label: "Moderate Risk",        range: "Dry Deficit Signal" },
-    { color: "#ef4444", label: "High Water Stress",    range: "Concurrent Dry" },
+    { color: "#10b981", label: "Low Water Risk",       range: "Zero Dry Signals (Healthy Buffer)" },
+    { color: "#f59e0b", label: "Moderate Risk",        range: "Single Dry Signal (Moisture Buffer)" },
+    { color: "#ef4444", label: "High Water Stress",    range: "Concurrent Dry Signals (Rain + SM)" },
   ],
   rice_suitability: [
-    { color: "#059669", label: "Highly Suitable",      range: "100% (Khazan/Kher Lowlands)" },
-    { color: "#0d9488", label: "Highly Suitable",      range: "96% (Kher/Morod Uplands)" },
-    { color: "#3b82f6", label: "Moderately Suitable",  range: "75–89% Match" },
-    { color: "#f59e0b", label: "Constrained",          range: "< 75% Match" },
+    { color: "#059669", label: "Highly Suitable (Khazan + Kher)", range: "8 Varieties (Saline + Lowlands)" },
+    { color: "#0284c7", label: "Highly Suitable (Khazan)",        range: "6 Varieties (Coastal Saline)" },
+    { color: "#0d9488", label: "Highly Suitable (Kher + Morod)",  range: "2–3 Varieties (Lowland + Upland)" },
   ],
   rainfall_anomaly_pct: [
     { color: "#b91c1c", label: "Severe Deficit",   range: "≤ −20%" },

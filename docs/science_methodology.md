@@ -1,6 +1,6 @@
 # EARTHSCOPE science methodology, results and limitations (M4)
 
-Status: draft, 14 Nov 2026. Items marked **TO VERIFY** are not yet checked against a source.
+Status: draft, updated 15 Nov 2026 (taluka rainfall estimates added). Look-ups were checked against sources on 15 Nov 2026 (section 10). Items still marked **TO VERIFY** or **OPEN** are not confirmed.
 
 ## 1. Scope
 
@@ -22,7 +22,7 @@ Notes:
 - The project brief names SMAP L4 version 7; AppEEARS serves version 008, which is what was requested.
 - GLDAS is a land-surface model driven by weather data. It does not use SMAP observations. All GLDAS outputs are named and labelled GLDAS.
 - SMAP L4 is itself a model that assimilates SMAP observations, not a direct measurement.
-- Quality flags: IMERG Final monthly and the Giovanni area averages carry no per-value flag that was applied here. **TO VERIFY** whether SPL4SMGP has a quality flag to apply.
+- Quality flags: IMERG Final monthly and the Giovanni area averages carry no per-value flag that was applied here. For SPL4SMGP, quality control is applied inside the assimilation system (user guide, section 2.6.3) and a validation study reports that no per-value quality flag is available for the product [S8, S9]; none will be applied, and this will be re-checked against the file contents when the AppEEARS request completes.
 
 ## 3. Zones
 
@@ -30,11 +30,15 @@ Notes:
   - north_goa: 73.6756, 15.4081, 74.2824, 15.8008
   - south_goa: 73.7832, 14.7529, 74.3361, 15.5390
 - The boxes are rectangles. They include sea and parts of Maharashtra and Karnataka, and they overlap between 15.41 and 15.54 N.
-- The southern edge 14.7529 is **TO VERIFY** with M5 (Goa's southern tip is believed to be near 14.9 N).
+- The southern edge 14.7529 is correct for M5's boundary file but is not the mainland: it comes from a small detached polygon of Canacona at about 14.75-14.76 N, 74.11 E (believed to be Anjediva island; **OPEN**, M5 to confirm). The mainland polygon ends at 14.9002 N. As a result the South Goa box and the Canacona box include one row of IMERG cells (centre 14.85 N) that lies south of mainland Goa.
 - Cells actually averaged (from the Giovanni file headers):
-  - IMERG north_goa: 73.75-74.25 E, 15.45-15.75 N (about 15 cells). South Goa: read from its file header.
+  - IMERG north_goa: cell centres 73.75-74.25 E, 15.45-15.75 N (6 x 4 = 24 cells). IMERG south_goa: 73.85-74.25 E, 14.85-15.45 N (5 x 7 = 35 cells).
   - GLDAS north_goa: two cells (73.875 and 74.125 E at 15.625 N). GLDAS south_goa: six cells (73.875-74.125 E, 14.875-15.375 N).
 - The suitability table is per taluka (12, as defined by M5) and land type. Each taluka inherits its district's water indicators.
+- **What is taluka-level and what is not:**
+  - Rainfall on the map: taluka estimate (section 4.4), from the IMERG cells inside each taluka's bounding box.
+  - Soil moisture: district value, inherited by every taluka in the district.
+  - Suitability: decided by land type and variety; listed per taluka but not different between talukas.
 
 ## 4. Methods
 
@@ -44,7 +48,7 @@ Notes:
 3. Baseline = mean and sample standard deviation of the Kharif total over 2001-2020 (20 seasons).
 4. Anomaly = Kharif total - baseline mean, also given as percent of the baseline mean and in standard deviations.
 5. Percentile = percent of baseline seasons with a lower total.
-6. Category = India Meteorological Department departure classes (normal within +/-19 %, deficient -20 to -59 %, excess +20 to +59 %, large deficient/excess beyond 60 %). **TO VERIFY** against an IMD document.
+6. Category = India Meteorological Department departure classes: Large excess +60 % or more, Excess +20 to +59 %, Normal -19 to +19 %, Deficient -20 to -59 %, Large deficient -60 to -99 % [S1]. IMD applies them to whole-number percentages; this script applies them to unrounded values, so a value between -19.5 and -20.0 is labelled Normal here where IMD would round to Deficient. No Kharif 2025 seasonal value is near a boundary.
 7. Monthly table: each month compared with the same calendar month's 2001-2020 mean. Percent anomaly is only reported where the monthly normal is at least 10 mm.
 
 ### 4.2 Root-zone soil moisture, GLDAS (`soil_moisture_gldas.py`)
@@ -52,21 +56,28 @@ Notes:
 2. Kharif mean = mean of the four monthly values, all four required.
 3. Baseline, anomaly and percentile as for rainfall, against 2001-2020.
 4. Monthly table: each month compared with the same calendar month in the baseline.
-5. Values stay in kg m-2. The model layer depth needed to convert to m3/m3 is **TO VERIFY**.
+5. Values stay in kg m-2. Noah has four soil layers (0-10, 10-40, 40-100, 100-200 cm) [S7]; the README does not state a single root-zone depth for Noah, so no conversion to m3/m3 is made (**OPEN**). The percentile and percent anomaly do not need it.
 
 ### 4.3 Water-risk indicators (`water_risk.py`)
 - Indicators are shown separately. There is no combined score.
 - Signal labels:
   - Rainfall: dry at -20 % or below, wet at +20 % or above (IMD boundary).
-  - Soil moisture: dry at the 30th percentile or below, wet at the 70th or above. This follows drought-monitor style percentile classes. **TO VERIFY** with a citation (for example the US Drought Monitor classification).
+  - Soil moisture: dry at the 30th percentile or below, wet at the 70th or above. The dry side is the US Drought Monitor "D0 abnormally dry" guideline (21st-30th percentile) [S5]; the wet side is its mirror image across the median, the convention used by the NC ECONet soil-moisture climatology ("abnormally wet" above the 70th) [S6]. These are US conventions applied here for screening, not an Indian standard.
 - "Indicator agreement" states whether the available indicators point the same way (concurrent dry, concurrent wet, all near normal, mixed, conflicting).
 - Evidence coverage is reported as the number of indicators with data out of the number expected.
 
-### 4.4 Variety catalogue (`variety_catalogue.py`)
+### 4.4 Taluka rainfall estimate and map layer (`rainfall_taluka.py`, `build_map_layer.py`)
+- Same dataset, season, baseline (2001-2020), categories and signal rule as 4.1, applied to one Giovanni area-average series per taluka.
+- Area: M5's taluka bounding box (`data/boundaries/goa_bounding_boxes.json`, `bbox_exact`), not the taluka outline. Giovanni averages the 0.1 degree cells whose centres fall inside the box; the count is stored as `imerg_cells` (2 for Mormugao up to 12 for Sattari and Canacona).
+- The script refuses to run if a file is missing, is not the monthly Final Run variable, or carries a box that does not match the taluka.
+- `build_map_layer.py` attaches the district indicators to M5's taluka shapes. `rainfall_taluka.py` then replaces only the rainfall fields in the map file (`frontend/src/data/goa_taluka_indicators.geojson`) and keeps the district figure as `district_rainfall_anomaly_pct`. Soil-moisture fields stay district values.
+- "Indicator agreement" on the map is recomputed per taluka from the taluka rainfall signal and the district soil-moisture signal.
+
+### 4.5 Variety catalogue (`variety_catalogue.py`)
 - Nine candidate varieties. Every filled value has a source URL in the same row. Unverified fields are left empty.
 - No sourced value was found for any variety's soil requirement, water requirement or drought tolerance.
 
-### 4.5 Suitability screening (`suitability_engine.py`)
+### 4.6 Suitability screening (`suitability_engine.py`)
 A documentation-based screening for each taluka x land type (Morod, Kher, Khazan) x variety.
 
 | Factor | Rule |
@@ -79,6 +90,32 @@ A documentation-based screening for each taluka x land type (Morod, Kher, Khazan
 Classes: **Highly Suitable** (documented for the land type, no limiting factor), **Moderately Suitable** (documented, with a limiting factor), **Not Recommended** (no documented recommendation; score capped at 0.25).
 
 The numeric weights are a screening convention chosen by M4 to order results. They are not a validated agronomic model. "Not Recommended" means "no documented recommendation", not "will fail".
+
+### 4.6 M5 Geospatial map presentation rules (`mapStyles.js`, `rainfall_taluka.py`)
+
+To satisfy the project brief requirement that any combined presentation rule must be explicitly documented:
+
+1. **Agricultural Water Risk Classification (`water_risk_level`)**:
+   Derived deterministically from M4's multi-sensor `indicator_agreement`:
+   - **High Water Risk (Level 3)**: Concurrent dry signals (`indicator_agreement == "concurrent dry signals"`). Both IMERG rainfall departure <= -20 % and GLDAS root-zone soil moisture <= 30th percentile simultaneously.
+   - **Moderate Water Risk (Level 2)**: Single dry signal with normal buffer (`"dry" in indicator_agreement`, e.g. `mixed: dry, near normal` or conflicting signals). One sensor indicates a moisture deficit while the other remains at or above normal.
+   - **Low Water Risk (Level 1)**: Zero dry signals (`all near normal`, `concurrent wet signals`, or `mixed: near normal, wet`).
+   *Dynamic re-derivation*: Applied consistently to both the Kharif seasonal aggregate and individual monthly views (Jun-Sep). When IMERG taluka-level estimates are computed, Canacona's September rainfall departure is -19.3 % (near normal) with 50th percentile soil moisture, resulting in `all near normal` and **Low Water Risk**, while the other 11 talukas have rainfall departure <= -20 % and are classified as **Moderate Water Risk**.
+
+2. **Rice Variety Suitability Presentation**:
+   - The map displays M4's qualitative documentation-based screening classes from `rice_suitability_matrix.csv` (**Highly Suitable**, **Moderately Suitable**, **Not Recommended**) and candidate varieties per ecology (Khazan, Kher, Morod).
+   - Any undocumented scalar percentage (such as the legacy demo "96%") has been removed from all layers, tooltips, and data structures. The UI groups recommended varieties by documented agro-ecology:
+     - Khazan (coastal saline lowlands): Goa Dhan 1-4, CSR-27, CSR-36 (documented salinity tolerance).
+     - Kher (rainfed shallow lowlands): Karjat-3, Naveen (documented Goa recommendation).
+     - Morod (rainfed uplands): Annada (documented upland variety).
+   - The choropleth layer colors talukas by their documented agro-ecological suitability coverage (Multi-ecology Khazan + Kher lowlands in deep emerald, Khazan coastal saline in cyan, Kher lowlands + Morod uplands in teal).
+
+3. **Separate Indicators Access**:
+   The interactive map directly provides individual layer toggles and inspector cards for the uncombined NASA products:
+   - Precipitation Anomaly % (GPM IMERG Final monthly v07, ~11 km)
+   - Root-Zone Soil Moisture Percentile (GLDAS-2.1 Noah, ~25 km)
+   - Rainfall Percentile (GPM IMERG Final v07)
+   - Multi-Sensor Indicator Agreement (Categorical cross-sensor agreement)
 
 ## 5. Results for Kharif 2025
 
@@ -110,6 +147,28 @@ Reading:
 - May 2025 rainfall was about seven times its monthly normal in both districts. This explains why soil moisture was already at the 95th percentile in June although June rainfall was slightly below normal. The two independent datasets agree.
 - September rainfall was more than 20 % below its monthly normal after a wet August; soil moisture remained at or above its median. A near-normal seasonal total can hide a dry month, so the monthly view should be shown.
 
+### Taluka rainfall estimates (IMERG, Kharif 2025 vs 2001-2020)
+| Taluka | IMERG cells | Season vs normal | June | July | August | September |
+|---|---|---|---|---|---|---|
+| Pernem | 6 | +2.7 % | -5.0 % | +4.7 % | +22.3 % | -20.3 % |
+| Bardez | 4 | +1.9 % | -7.9 % | +6.1 % | +22.9 % | -23.3 % |
+| Tiswadi | 4 | +2.9 % | -7.7 % | +9.0 % | +23.8 % | -26.3 % |
+| Bicholim | 6 | +4.3 % | -3.7 % | +10.2 % | +21.7 % | -25.2 % |
+| Sattari | 12 | +5.2 % | -1.0 % | +11.9 % | +19.0 % | -24.7 % |
+| Ponda | 4 | +5.1 % | -5.9 % | +13.4 % | +23.6 % | -26.0 % |
+| Mormugao | 2 | +5.0 % | -8.7 % | +13.6 % | +26.8 % | -26.2 % |
+| Salcete | 6 | +6.6 % | -7.4 % | +18.4 % | +22.9 % | -23.9 % |
+| Quepem | 9 | +7.6 % | -6.5 % | +21.5 % | +19.8 % | -21.8 % |
+| Sanguem | 6 | +9.0 % | -1.7 % | +23.0 % | +16.3 % | -21.1 % |
+| Dharbandora | 4 | +6.6 % | 0.0 % | +15.9 % | +16.9 % | -24.1 % |
+| Canacona | 12 | +8.6 % | -9.3 % | +24.1 % | +23.1 % | -19.3 % |
+
+Reading:
+- Every taluka is "near normal" for the season (IMD category Normal). The range is +1.9 % to +9.0 %.
+- Talukas in the south are slightly further above normal than those in the north, consistent with the district figures (+4.3 % and +7.0 %).
+- The monthly pattern is the same everywhere: June slightly below normal, July and August above, September about 20-26 % below.
+- Differences of a few percentage points between neighbouring talukas should not be read as a ranking (see limitations 11 and 12).
+
 ### Suitability screening
 324 rows. Khazan: Goa Dhan 1-4, CSR-27, CSR-36 Highly Suitable. Kher: Karjat-3 and Naveen Highly Suitable. Morod: Annada Moderately Suitable (upland fit documented only by a non-Goa source). All other combinations Not Recommended. Results are identical for all talukas within a district.
 
@@ -120,17 +179,20 @@ Done:
 - Cross-dataset consistency: the May 2025 rainfall surge (IMERG) matches the early soil wetting (GLDAS).
 - Scripts were tested on synthetic files in the same layout before running on real data.
 
-Pending (**TO VERIFY**):
-- Compare the +4.3 % / +7.0 % departures with IMD's end-of-season 2025 monsoon figure for Goa or Konkan and Goa.
-- IMD departure class boundaries; drought-monitor percentile classes.
-- CSR-36 numeric salinity limit on the ICAR-CSSRI page.
-- A current Goa recommendation for an upland (Morod) variety; Annada's Goa status.
+- **Independent check against IMD rain gauges (15 Nov 2026).** IMD's end-of-season report for 2025, as reported in the press, gives Goa 104 % of the long-period average (3,135 mm), North Goa 100 % and South Goa 108 % [S2, S3]. This analysis gives +4.3 % (North) and +7.0 % (South) from satellite data. Both sources agree on a normal season with the south slightly wetter. Caveats: the IMD figures are taken from news reports of the IMD statement, not the IMD document itself, and IMD's reference period differs from the 2001-2020 baseline used here.
+- IMD class boundaries and the percentile convention were confirmed (sections 4.1 and 4.3).
+- Gauge normals confirm limitations 2 and 13: IMD's June-September normal is 3,007.8 mm for Goa (North 3,085.5, South 2,939.2) [S3], against an IMERG baseline of about 2,180 mm; station climatology shows the hill stations wettest (Valpoi 4,150 mm, Quepem 3,751, Sanguem 3,700, Ponda 3,400) and the coast driest (Panaji 2,892, Mormugao 2,732) [S4], the reverse of the IMERG taluka pattern.
+
+Still open:
+- CSR-36 numeric salinity limit. The ICAR-CSSRI page lists both 11 and 7 dS/m in adjacent entries and it is not clear which belongs to CSR-36 [S11]; IRRI reports trials at 6-10 dS/m [S12]. The catalogue therefore keeps "tolerant, no numeric limit".
+- Upland (Morod) candidate. No Goa source for Annada was found. Press reports state that ICAR-CCARI demonstrates and promotes **Sahbhagi Dhan** for Morod / rainfed upland conditions in Goa [S13, S14]. It is not in the catalogue because the project rule requires an institutional source, not press; it is the first variety to add if ICAR-CCARI or KVK documentation is located.
+- Context for readers: IMD reports the 2026 monsoon over Goa as 31.7 % below normal (Deficient) [S3]. This analysis covers Kharif 2025 only and must not be presented as the current season.
 - SMAP L4 results, and how SMAP and GLDAS compare.
 
 ## 7. Limitations
 
-1. **Resolution.** IMERG is about 11 km, GLDAS about 28 km, SMAP 9 km. Indicators are district-scale. They cannot distinguish talukas, land types or fields. North Goa's GLDAS value rests on two model cells.
-2. **Absolute rainfall is low.** The IMERG baseline (about 2,180 mm) is well below the gauge normal for Goa (around 3,000 mm, **TO VERIFY**). The boxes include sea, and satellite estimates tend to under-read heavy orographic rain. Use the percent departure, not the mm total, as the headline.
+1. **Resolution.** IMERG is about 11 km, GLDAS about 28 km, SMAP 9 km. Soil-moisture indicators are district-scale; rainfall is also given as a coarse taluka estimate (limitations 11-13). Nothing here distinguishes land types or fields. North Goa's GLDAS value rests on two model cells.
+2. **Absolute rainfall is low.** The IMERG baseline (about 2,180 mm) is well below the gauge normal for Goa (3,007.8 mm, IMD [S3]). The boxes include sea, and satellite estimates tend to under-read heavy orographic rain. Use the percent departure, not the mm total, as the headline.
 3. **Fixed June-September window.** The exceptional May 2025 rainfall falls outside it, so the seasonal rainfall anomaly understates how wet the start of the crop season was.
 4. **Short or modelled soil-moisture records.** GLDAS is a model. SMAP L4 has only eleven seasons (2015-2025), so its percentiles will be coarse.
 5. **"Above all 20 baseline seasons"** is a statement about this model record, not a measured record.
@@ -139,6 +201,10 @@ Pending (**TO VERIFY**):
 8. **Catalogue gaps.** No sourced drought tolerance, soil or water requirement for any variety; no numeric salinity limit for the Goa Dhan series; only one Morod candidate.
 9. **One past season.** Water indicators describe Kharif 2025. They are context for a variety choice, not a forecast.
 10. **Earlier placeholder data.** Synthetic rainfall and soil-moisture files existed in the repo before 14 Nov 2026 and were replaced. Any mock values still hardcoded in frontend or GIS files are not M4 outputs.
+11. **Taluka rainfall is a box estimate.** It uses the taluka's bounding rectangle, not its outline, and only 2 to 12 IMERG cells. Rectangles of neighbouring talukas overlap and share cells, so the values are not independent and small differences are not meaningful.
+12. **Signal labels flip near the threshold.** Monthly values sit close to the +/-20 % boundaries (for example Canacona September -19.3 % "near normal" beside Quepem -21.8 % "dry"). A colour difference on the monthly map can reflect a difference of two or three percentage points.
+13. **Taluka mm totals should not be quoted.** The IMERG baselines are higher for coastal talukas (Bardez 2,441 mm) than for the hill talukas (Sattari 2,100 mm, Dharbandora 2,063 mm). Station normals show the opposite pattern [S4], and published evaluations report that IMERG underestimates rainfall over the Western Ghats relative to gauges [S10]. Percent departure compares each taluka with its own record and is less affected.
+14. **Map-only combined values and M5 rules.** The "water risk level / score" is deterministically derived from M4's multi-sensor indicator agreement (see section 4.6). The legacy per-taluka scalar "rice suitability 96%" has been removed in favor of displaying the qualitative screening classes and recommended varieties per ecology from M4's matrix. Separate uncombined NASA indicators are directly accessible on the map.
 
 ## 8. Output tables (in `data/processed/`, each as .parquet and .csv)
 
@@ -153,6 +219,9 @@ Pending (**TO VERIFY**):
 | `soil_moisture_gldas_monthly` | zone x month | `soil_moisture`, `baseline_month_mean`, `month_anomaly`, `month_percentile` |
 | `water_risk_indicators` | zone (season) | `rainfall_anomaly_pct`, `rainfall_signal`, `sm_gldas_percentile`, `sm_gldas_signal`, `indicator_agreement`, `indicators_with_data`, `indicators_expected`, `months_with_concurrent_dry_signals` |
 | `water_risk_monthly` | zone x Kharif month | `rainfall_month_anomaly_pct`, `rainfall_signal`, `sm_gldas_month_percentile`, `sm_gldas_signal`, `indicator_agreement` |
+| `rainfall_anomalies_taluka` | taluka (`region_id`, Kharif 2025) | same rainfall columns as `rainfall_anomalies`, plus `rainfall_signal`, `imerg_cells`, `user_bbox_wsen`, `data_bbox_wsen`, `spatial_basis` |
+| `rainfall_monthly_taluka` | taluka x Kharif month | `rainfall_mm`, `baseline_month_mean_mm`, `month_anomaly_pct`, `rainfall_signal` |
+| `taluka_map_layer.geojson` | taluka polygon | `rainfall_anomaly_pct` (taluka estimate), `district_rainfall_anomaly_pct`, `rainfall_basis`, `rainfall_imerg_cells`, `sm_gldas_percentile` (district), `indicator_agreement`, `monthly.{jun,jul,aug,sep}`, `spatial_note` |
 | `rice_suitability_matrix` | taluka x land type x variety | `zone` (taluka name), `region_id`, `district`, `ecology`, `variety`, `suitability_class`, `suitability_score`, `supporting_factors`, `limiting_factors`, `missing_information`, `factors_assessed`, `seasonal_water_context`, `source_references` |
 
 Conventions:
@@ -171,4 +240,28 @@ python backend/app/science/rainfall_anomaly.py
 python backend/app/science/soil_moisture_gldas.py
 python backend/app/science/water_risk.py
 python backend/app/science/suitability_engine.py
+python backend/app/science/rainfall_taluka.py      # needs data/raw/imerg_taluka/ (12 files)
 ```
+
+`build_map_layer.py` is run once to create the map file from the taluka shapes. Do not re-run it after `rainfall_taluka.py`: it resets `data/processed/taluka_map_layer.geojson` to district rainfall values (it never overwrites the frontend copy).
+
+## 10. Sources for the look-ups (accessed 15 Nov 2026)
+
+| Ref | Source | Used for |
+|---|---|---|
+| S1 | IMD iRAINS, departure map legend: https://irainshydro.imd.gov.in/ | IMD departure classes |
+| S2 | Prudent Media, 14 Oct 2025, reporting IMD's end-of-season statement: https://www.prudentmedia.in/general/imd-announces-withdrawal-of-monsoon-ahead-of-goa-schedule/34619.html | Goa 2025: 104 % of LPA, North 100 %, South 108 % |
+| S3 | O Heraldo, 1 Oct 2026, reporting IMD data: https://www.heraldgoa.in/goa/goas-worst-monsoon-in-almost-five-decades/490573/ | June-September normals; 2025 and 2026 seasonal totals |
+| S4 | "Study of rainfall features over Goa state during southwest monsoon season", Mausam (IMD journal): https://mausamjournal.imd.gov.in/index.php/MAUSAM/article/download/796/680/2837 | Station rainfall, coast versus hills |
+| S5 | USDA Climate Hubs, "The United States Drought Monitor Process": https://www.climatehubs.usda.gov/sites/default/files/Fuchs%20USDM%20Phx%20March%202019.pdf | D0 = 21st-30th percentile |
+| S6 | NC State ECONet soil moisture climatology: https://econet.climate.ncsu.edu/soil_moisture/ | Mirrored wet classes (70th percentile) |
+| S7 | NASA GES DISC, README for GLDAS Version 2 data: https://hydro1.gesdisc.eosdis.nasa.gov/data/GLDAS/GLDAS_NOAH025_3H.2.1/doc/README_GLDAS2.pdf | RootMoist_inst units, Noah layers |
+| S8 | NSIDC, SMAP L4 user guide (Version 7): https://nsidc.org/sites/default/files/documents/user-guide/multi_spl4smau-v007-userguide_1_0.pdf | Root zone = 0-100 cm; quality control |
+| S9 | "Validation of Satellite Soil Moisture Products by Sparsification of Ground Observations": https://www.researchgate.net/publication/378019216 | No quality flag for SPL4SMGP |
+| S10 | Weather and Climate Dynamics 6, 981 (2025): https://wcd.copernicus.org/articles/6/981/2025/ | IMERG underestimation over the Western Ghats |
+| S11 | ICAR-CSSRI, varieties developed: https://cssri.res.in/varieties-developed/ | CSR-36 (ambiguous salinity figure) |
+| S12 | IRRI news, 10 Jun 2024: https://www.irri.org/news-and-events/news/salinity-tolerant-rice-variety-set-boost-rice-yield-stress-prone-areas-kenya | CSR-36 trial conditions |
+| S13 | Times of India, 9 Nov 2026: https://timesofindia.indiatimes.com/city/goa/agri-body-advises-moisture-stress-management-for-rabi-crops/articleshow/135692094.cms | Sahbhagi Dhan for Morod (press) |
+| S14 | Times of India, 16 Sep 2018: https://timesofindia.indiatimes.com/city/goa/scientists-developing-new-rice-variety-to-replace-jyoti/articleshow/65834921.cms | Sahbhagi Dhan in Goa uplands (press) |
+
+S2, S3, S13 and S14 are news reports. S1-S14 were read as search-result extracts, not as full documents.
