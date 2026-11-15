@@ -204,7 +204,7 @@ Still open:
 11. **Taluka rainfall is a box estimate.** It uses the taluka's bounding rectangle, not its outline, and only 2 to 12 IMERG cells. Rectangles of neighbouring talukas overlap and share cells, so the values are not independent and small differences are not meaningful.
 12. **Signal labels flip near the threshold.** Monthly values sit close to the +/-20 % boundaries (for example Canacona September -19.3 % "near normal" beside Quepem -21.8 % "dry"). A colour difference on the monthly map can reflect a difference of two or three percentage points.
 13. **Taluka mm totals should not be quoted.** The IMERG baselines are higher for coastal talukas (Bardez 2,441 mm) than for the hill talukas (Sattari 2,100 mm, Dharbandora 2,063 mm). Station normals show the opposite pattern [S4], and published evaluations report that IMERG underestimates rainfall over the Western Ghats relative to gauges [S10]. Percent departure compares each taluka with its own record and is less affected.
-14. **Map-only combined values are not M4 outputs.** The "water risk level / score" and the per-taluka "rice suitability score" in the map file are added by the GIS layer (M5). Their calculation rule is **TO DOCUMENT** here or they should be shown as the separate indicators only.
+14. **Map-only combined values and M5 rules.** The "water risk level / score" is deterministically derived from M4's multi-sensor indicator agreement (see section 4.6). The legacy per-taluka scalar "rice suitability 96%" has been removed in favor of displaying the qualitative screening classes and recommended varieties per ecology from M4's matrix. Separate uncombined NASA indicators are directly accessible on the map.
 
 ## 8. Output tables (in `data/processed/`, each as .parquet and .csv)
 
