@@ -1,50 +1,135 @@
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
+"""
+Water-risk service: returns M4's computed indicators for a taluka or district.
+
+Reads only M4's processed tables in data/processed/. It does NOT invent anything:
+no flood/drought probabilities, no forecast. Missing values are returned as null.
+
+    water_risk_indicators.csv      district, season      (rainfall + GLDAS soil moisture)
+    water_risk_monthly.csv         district x month
+    rainfall_anomalies_taluka.csv  taluka, season        (optional; IMERG taluka estimate)
+    rainfall_monthly_taluka.csv    taluka x month        (optional)
+"""
+import json
+import math
 from pathlib import Path
+
 import pandas as pd
+from fastapi import HTTPException
 
-from app.models.core import DBRegion
-# Assuming WaterRiskResponse is in app.schemas.water_risk
-from app.schemas.water_risk import WaterRiskResponse 
+from app.schemas.water_risk import WaterRiskMonth, WaterRiskResponse
 
-def get_water_risk_for_region(db: Session, region_id: str):
-    # 1. Get the region from the database
-    region = db.query(DBRegion).filter(DBRegion.id == region_id).first()
-    if not region:
-        raise HTTPException(status_code=404, detail="Region not found")
+ROOT = Path(__file__).resolve().parents[3]
+PROCESSED = ROOT / "data" / "processed"
+TALUKAS = ROOT / "data" / "boundaries" / "goa_talukas.geojson"
 
-    # 2. Map your DB district (e.g., "North Goa") to M4's zone format ("north_goa")
-    zone_name = region.district.lower().replace(" ", "_")
-    
-    # 3. Locate M4's pre-processed NASA data file
-    data_path = Path(__file__).resolve().parents[3] / "data" / "processed" / "rainfall_anomalies.csv"
-    
-    if not data_path.exists():
-        raise HTTPException(status_code=500, detail="Science data file missing from backend.")
+DISTRICTS = {"north_goa": "North Goa", "south_goa": "South Goa"}
+MONTH_IDS = {6: "jun", 7: "jul", 8: "aug", 9: "sep"}
+SOURCES = [
+    "Rainfall: NASA GPM IMERG Final Run monthly v07 (~11 km)",
+    "Soil moisture: NASA GLDAS-2.1 Noah root-zone soil moisture (~25 km, model; not SMAP)",
+    "Method and limitations: docs/science_methodology.md",
+]
+LIMIT = ("Kharif 2025 conditions, not the current season and not a forecast. Rainfall is a taluka-box estimate "
+         "where available; soil moisture is a district value. Not field-level; not a crop-loss or yield estimate.")
 
-    try:
-        # 4. Read the CSV and find the matching zone
-        df = pd.read_csv(data_path)
-        zone_data = df[df["zone"] == zone_name]
-        
-        if zone_data.empty:
-            raise HTTPException(status_code=404, detail=f"No water risk data for zone: {zone_name}")
-            
-        row = zone_data.iloc[0]
-        anomaly_pct = float(row["rainfall_anomaly_pct"])
-        
-        # 5. Map NASA metrics to probabilities
-        flood_risk = 0.8 if anomaly_pct > 20 else (0.4 if anomaly_pct > 0 else 0.1)
-        drought_risk = 0.8 if anomaly_pct < -20 else (0.4 if anomaly_pct < 0 else 0.1)
-        
-        # 6. Return the formatted Pydantic response
-        return WaterRiskResponse(
-            region_id=region.id,
-            rainfall_deviation_pct=anomaly_pct,
-            flood_probability=flood_risk,
-            drought_probability=drought_risk,
-            notes=f"IMD Category: {row['rainfall_category_imd']}. Kharif rainfall: {row['kharif_rainfall_mm']:.1f}mm vs Baseline: {row['baseline_mean_mm']:.1f}mm."
-        )
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Data processing error: {str(e)}")
+
+def _num(value, digits=1):
+    """NaN / missing -> None (never 0)."""
+    if value is None or pd.isna(value):
+        return None
+    return round(float(value), digits)
+
+
+def _text(value):
+    return None if value is None or pd.isna(value) else str(value)
+
+
+def _read(name: str, required: bool = True):
+    path = PROCESSED / name
+    if not path.is_file():
+        if required:
+            raise HTTPException(status_code=500, detail=f"Science table missing: data/processed/{name}")
+        return None
+    return pd.read_csv(path)
+
+
+def _agreement(signals):                      # same rule as backend/app/science/water_risk.py
+    seen = [s for s in signals if s and s != "no data"]
+    if not seen:
+        return "no data"
+    if len(seen) == 1:
+        return f"single indicator only ({seen[0]})"
+    if all(s == "dry" for s in seen):
+        return "concurrent dry signals"
+    if all(s == "wet" for s in seen):
+        return "concurrent wet signals"
+    if all(s == "near normal" for s in seen):
+        return "all near normal"
+    if "dry" in seen and "wet" in seen:
+        return "conflicting signals"
+    return "mixed: " + ", ".join(sorted(set(seen)))
+
+
+def _resolve(region_id: str):
+    """-> (region_id, name, zone, is_taluka). Accepts GOA-N-PERNEM, pernem, reg_pernem, north_goa, 'North Goa'."""
+    key = region_id.strip().lower().replace(" ", "_").replace("reg_", "")
+    if key in DISTRICTS:
+        return key, DISTRICTS[key], key, False
+    if TALUKAS.is_file():
+        for feature in json.loads(TALUKAS.read_text(encoding="utf-8"))["features"]:
+            p = feature["properties"]
+            if key in (p["region_id"].lower(), p["name"].lower()):
+                return p["region_id"], p["name"], p["district"].lower().replace(" ", "_"), True
+    raise HTTPException(status_code=404, detail=f"Unknown region: {region_id}")
+
+
+def get_water_risk_for_region(region_id: str, db=None) -> WaterRiskResponse:   # db kept optional for older callers
+    rid, name, zone, is_taluka = _resolve(region_id)
+
+    season = _read("water_risk_indicators.csv")
+    monthly = _read("water_risk_monthly.csv")
+    rows = season[season["zone"] == zone]
+    if rows.empty:
+        raise HTTPException(status_code=404, detail=f"No water indicators for district: {zone}")
+    d = rows.iloc[0]
+
+    rain_pct, rain_cat, rain_sig = d["rainfall_anomaly_pct"], d["rainfall_category_imd"], d["rainfall_signal"]
+    basis, t_month = "district value", None
+    if is_taluka:
+        t_season = _read("rainfall_anomalies_taluka.csv", required=False)
+        t_month = _read("rainfall_monthly_taluka.csv", required=False)
+        if t_season is not None and (t_season["region_id"] == rid).any():
+            t = t_season[t_season["region_id"] == rid].iloc[0]
+            rain_pct, rain_cat, rain_sig = t["rainfall_anomaly_pct"], t["rainfall_category_imd"], t["rainfall_signal"]
+            basis = "taluka bounding-box estimate"
+        else:
+            basis = "district value (inherited by taluka)"
+
+    months, dry_months = [], 0
+    for _, m in monthly[monthly["zone"] == zone].sort_values("month").iterrows():
+        m_pct, m_sig = m["rainfall_month_anomaly_pct"], m["rainfall_signal"]
+        if basis == "taluka bounding-box estimate" and t_month is not None:
+            hit = t_month[(t_month["region_id"] == rid) & (t_month["month"] == m["month"])]
+            if not hit.empty:
+                m_pct, m_sig = hit.iloc[0]["month_anomaly_pct"], hit.iloc[0]["rainfall_signal"]
+        agree = _agreement([_text(m_sig), _text(m.get("sm_gldas_signal"))])
+        dry_months += agree == "concurrent dry signals"
+        months.append(WaterRiskMonth(
+            month=MONTH_IDS.get(int(m["month"]), str(m["month"])),
+            rainfall_anomaly_pct=_num(m_pct), rainfall_signal=_text(m_sig),
+            sm_gldas_percentile=_num(m.get("sm_gldas_month_percentile"), 0),
+            sm_gldas_signal=_text(m.get("sm_gldas_signal")), indicator_agreement=agree))
+
+    n_data = _num(d.get("indicators_with_data"), 0)
+    n_expected = _num(d.get("indicators_expected"), 0)
+    return WaterRiskResponse(
+        region_id=rid, region_name=name, district=DISTRICTS.get(zone, zone),
+        season=f"Kharif {int(d['season_year'])} (Jun-Sep)", baseline=str(d["rainfall_baseline"]),
+        rainfall_anomaly_pct=_num(rain_pct), rainfall_category_imd=_text(rain_cat), rainfall_signal=_text(rain_sig),
+        rainfall_basis=basis, district_rainfall_anomaly_pct=_num(d["rainfall_anomaly_pct"]),
+        sm_gldas_percentile=_num(d.get("sm_gldas_percentile"), 0), sm_gldas_signal=_text(d.get("sm_gldas_signal")),
+        indicator_agreement=_agreement([_text(rain_sig), _text(d.get("sm_gldas_signal"))]),
+        indicators_with_data=None if n_data is None else int(n_data),
+        indicators_expected=None if n_expected is None else int(n_expected),
+        months_with_concurrent_dry_signals=int(dry_months),
+        monthly=months, sources=SOURCES, interpretation_limit=LIMIT, is_mock_data=False)
