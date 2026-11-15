@@ -1,6 +1,6 @@
 # EARTHSCOPE science methodology, results and limitations (M4)
 
-Status: draft, updated 15 Nov 2026 (taluka rainfall estimates added). Look-ups were checked against sources on 15 Nov 2026 (section 10). Items still marked **TO VERIFY** or **OPEN** are not confirmed.
+Status: draft, updated 15 Nov 2026 (taluka rainfall estimates and preliminary Kharif 2026 added). Look-ups were checked against sources on 15 Nov 2026 (section 10). Items still marked **TO VERIFY** or **OPEN** are not confirmed.
 
 ## 1. Scope
 
@@ -118,6 +118,17 @@ To satisfy the project brief requirement that any combined presentation rule mus
    - Rainfall Percentile (GPM IMERG Final v07)
    - Two-Indicator Agreement (Categorical cross-indicator agreement between IMERG rainfall and GLDAS model root-zone moisture)
 
+### 4.8 Preliminary Kharif 2026 (`rainfall_late.py`, `water_risk_2026.py`)
+
+The research-quality IMERG Final Run ends on 30 Sep 2025, so 2026 cannot be analysed with the product used for 2025. A separate, clearly labelled preliminary path is used. It never writes to the 2025 tables.
+
+1. **Rainfall:** IMERG **Late Run** daily (`GPM_3IMERGDL` v07, near-real-time, no monthly rain-gauge adjustment), Giovanni area average over the two district boxes, 2001-01-01 to 2026-10-31.
+2. Daily values (mm/day) become monthly totals: mean of valid days x days in month; a month needs at least 90 % of its days.
+3. **Like with like:** the 2026 season is compared with the Late Run's own 2001-2020 baseline, not with the Final Run baseline. Formulas, IMD classes and the +/-20 % signal rule are those of section 4.1.
+4. **Soil moisture:** the same GLDAS-2.1 Noah variable as section 4.2. The product was released only to 31 Jul 2026 when this was run, so June and July 2026 are each compared with the same calendar month in 2001-2020. August, September and the full-season value are empty.
+5. **Season agreement** uses rainfall alone and is labelled "single indicator only". Monthly agreement uses both indicators where both exist.
+6. The map file receives a separate `kharif_2026` block per taluka with the district values ("district value (inherited by taluka)"); the 2025 fields are unchanged.
+
 ## 5. Results for Kharif 2025
 
 ### Seasonal
@@ -173,6 +184,36 @@ Reading:
 ### Suitability screening
 324 rows. Khazan: Goa Dhan 1-4, CSR-27, CSR-36 Highly Suitable. Kher: Karjat-3 and Naveen Highly Suitable. Morod: Annada Moderately Suitable (upland fit documented only by a non-Goa source). All other combinations Not Recommended. Results are identical for all talukas within a district.
 
+## 5b. Preliminary results for Kharif 2026
+
+**Status: preliminary.** Near-real-time rainfall; soil moisture for June-July only; district values.
+
+| | North Goa | South Goa |
+|---|---|---|
+| Kharif rainfall vs Late Run 2001-2020 normal | -26.0 % | -32.2 % |
+| IMD class | Deficient | Deficient |
+| Rank among 26 Late Run seasons (1 = driest) | 5 | 1 |
+| Root-zone soil moisture, June (percentile of 2001-2020 Junes) | 55 | 55 |
+| Root-zone soil moisture, July (percentile of 2001-2020 Julys) | 25 (dry) | 30 (dry) |
+| Soil moisture, August-September | not yet released | not yet released |
+
+Monthly rainfall direction (Late Run; direction only, see limitation 16): below normal in all four months in both districts (June and September most strongly). May 2026 was about +21 %, with no pre-monsoon surge like May 2025.
+
+Reading:
+- Both districts had a clearly deficient Kharif 2026 in satellite rainfall.
+- Root-zone soil moisture was near its median in June and had fallen into the dry class by July in both districts, consistent with a deficit building up through the season. What happened in August and September is not known from this dataset.
+- South Goa July is the only month with two dry signals. Both sit on their thresholds (rainfall -21.2 % against -20 %; soil moisture at the 30th percentile against 30) and the rainfall value is a low-confidence monthly Late Run figure, so this "concurrent dry" flag is weak evidence on its own.
+
+Checks:
+
+| Check | Result |
+|---|---|
+| Late Run 2026 vs IMD gauges (press report [S3]) | North -26.0 % vs -36.8 %; South -32.2 % vs -26.9 %; both sources: Deficient. Mean of the two districts about -29 % vs IMD state figure -31.7 %. |
+| Late Run 2025 vs Final Run 2025 | North -4.7 % vs +4.3 %; South +0.8 % vs +7.0 %; both products: Normal. The Late Run season figure reads 6-9 points lower. |
+| Late Run vs Final Run, single months of 2025 | Large differences (North Goa June -34 % vs -3 %, August +60 % vs +21 %). |
+
+The two sources disagree on which district was drier in 2026; no claim is made about that.
+
 ## 6. Validation
 
 Done:
@@ -187,7 +228,7 @@ Done:
 Still open:
 - CSR-36 numeric salinity limit. The ICAR-CSSRI page lists both 11 and 7 dS/m in adjacent entries and it is not clear which belongs to CSR-36 [S11]; IRRI reports trials at 6-10 dS/m [S12]. The catalogue therefore keeps "tolerant, no numeric limit".
 - Upland (Morod) candidate. No Goa source for Annada was found. Press reports state that ICAR-CCARI demonstrates and promotes **Sahbhagi Dhan** for Morod / rainfed upland conditions in Goa [S13, S14]. It is not in the catalogue because the project rule requires an institutional source, not press; it is the first variety to add if ICAR-CCARI or KVK documentation is located.
-- Context for readers: IMD reports the 2026 monsoon over Goa as 31.7 % below normal (Deficient) [S3]. This analysis covers Kharif 2025 only and must not be presented as the current season.
+- Context for readers: IMD reports the 2026 monsoon over Goa as 31.7 % below normal (Deficient) [S3]. The main analysis covers Kharif 2025 and must not be presented as the current season. Kharif 2026 is covered separately and only as a preliminary result (sections 4.8 and 5b).
 - SMAP L4 results, and how SMAP and GLDAS compare.
 
 ## 7. Limitations
@@ -205,7 +246,15 @@ Still open:
 11. **Taluka rainfall is a box estimate.** It uses the taluka's bounding rectangle, not its outline, and only 2 to 12 IMERG cells. Rectangles of neighbouring talukas overlap and share cells, so the values are not independent and small differences are not meaningful.
 12. **Signal labels flip near the threshold.** Monthly values sit close to the +/-20 % boundaries (for example Canacona September -19.3 % "near normal" beside Quepem -21.8 % "dry"). A colour difference on the monthly map can reflect a difference of two or three percentage points.
 13. **Taluka mm totals should not be quoted.** The IMERG baselines are higher for coastal talukas (Bardez 2,441 mm) than for the hill talukas (Sattari 2,100 mm, Dharbandora 2,063 mm). Station normals show the opposite pattern [S4], and published evaluations report that IMERG underestimates rainfall over the Western Ghats relative to gauges [S10]. Percent departure compares each taluka with its own record and is less affected.
+<<<<<<< HEAD
+14. **Map-only combined values and M5 rules.** The "water risk level / score" is deterministically derived from M4's multi-sensor indicator agreement (see section 4.7). The legacy per-taluka scalar "rice suitability 96%" has been removed in favor of displaying the qualitative screening classes and recommended varieties per ecology from M4's matrix. Separate uncombined NASA indicators are directly accessible on the map.
+15. **2026 is preliminary.** The Late Run has no monthly gauge adjustment. On the 2025 season it differed from the Final Run by 6-9 percentage points, so a Late Run seasonal figure should be read as accurate to roughly +/-10 points. The 2026 deficits (26-32 %) are outside that margin; their exact size and the north/south ordering are not.
+16. **Late Run monthly values are low confidence.** Single months of 2025 differed from the Final Run by up to about 40 points. For 2026, show whether a month was below or above normal, not the percentage, and treat monthly dry/wet labels as indicative.
+17. **2026 soil moisture is incomplete.** June and July only. There is no full-season soil-moisture indicator, the season-level agreement rests on rainfall alone, and the "months with concurrent dry signals" count can only see June and July.
+18. **2026 has no taluka estimates.** Every taluka shows its district's value.
+=======
 14. **Map-only combined values and M5 rules.** The "water-deficit signal (Low / Moderate / High)" is deterministically derived from M4's two indicators (rainfall and soil moisture) agreement (see section 4.7). It is named "water-deficit signal" because the rule evaluates dryness only and does not assess flood risk. The legacy per-taluka scalar "rice suitability 96%" has been removed in favor of displaying the qualitative screening classes and recommended varieties per ecology from M4's matrix. Separate uncombined NASA indicators are directly accessible on the map.
+>>>>>>> origin/feat/goa-geospatial-map
 
 ## 8. Output tables (in `data/processed/`, each as .parquet and .csv)
 
@@ -223,6 +272,11 @@ Still open:
 | `rainfall_anomalies_taluka` | taluka (`region_id`, Kharif 2025) | same rainfall columns as `rainfall_anomalies`, plus `rainfall_signal`, `imerg_cells`, `user_bbox_wsen`, `data_bbox_wsen`, `spatial_basis` |
 | `rainfall_monthly_taluka` | taluka x Kharif month | `rainfall_mm`, `baseline_month_mean_mm`, `month_anomaly_pct`, `rainfall_signal` |
 | `taluka_map_layer.geojson` | taluka polygon | `rainfall_anomaly_pct` (taluka estimate), `district_rainfall_anomaly_pct`, `rainfall_basis`, `rainfall_imerg_cells`, `sm_gldas_percentile` (district), `indicator_agreement`, `monthly.{jun,jul,aug,sep}`, `spatial_note` |
+| `rainfall_late_anomalies` | zone x season (2025, 2026), Late Run | rainfall columns as in `rainfall_anomalies`, plus `rainfall_signal`, `data_quality` |
+| `rainfall_late_monthly` | zone x month (May-Sep of 2025, 2026) | `rainfall_mm`, `baseline_month_mean_mm`, `month_anomaly_pct`, `rainfall_signal`, `days_valid` |
+| `rainfall_late_kharif_history` | zone x year, Late Run | all seasons 2001-2026 |
+| `water_risk_indicators_2026` | zone (preliminary) | `rainfall_anomaly_pct`, `rainfall_category_imd`, `rainfall_signal`, `sm_gldas_months_available`, `sm_gldas_partial_percentile`, `indicator_agreement`, `data_quality` |
+| `water_risk_monthly_2026` | zone x Kharif month | `rainfall_month_anomaly_pct`, `rainfall_signal`, `sm_gldas_month_percentile`, `sm_gldas_signal`, `indicator_agreement` |
 | `rice_suitability_matrix` | taluka x land type x variety | `zone` (taluka name), `region_id`, `district`, `ecology`, `variety`, `suitability_class`, `suitability_score`, `supporting_factors`, `limiting_factors`, `missing_information`, `factors_assessed`, `seasonal_water_context`, `source_references` |
 
 Conventions:
@@ -242,6 +296,8 @@ python backend/app/science/soil_moisture_gldas.py
 python backend/app/science/water_risk.py
 python backend/app/science/suitability_engine.py
 python backend/app/science/rainfall_taluka.py      # needs data/raw/imerg_taluka/ (12 files)
+python backend/app/science/rainfall_late.py        # needs data/raw/imerg_late/ (daily Late Run, 4 files)
+python backend/app/science/water_risk_2026.py      # needs data/raw/gldas_2026/ (2 files); run after the two above
 ```
 
 `build_map_layer.py` is run once to create the map file from the taluka shapes. Do not re-run it after `rainfall_taluka.py`: it resets `data/processed/taluka_map_layer.geojson` to district rainfall values (it never overwrites the frontend copy).

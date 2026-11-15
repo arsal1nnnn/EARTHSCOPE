@@ -1,0 +1,9 @@
+zone,season_year,month,rainfall_mm,rainfall_month_anomaly_pct,rainfall_signal,sm_gldas_value,sm_gldas_baseline_month_mean,sm_gldas_month_percentile,sm_gldas_signal,indicator_agreement,indicators_with_data,indicators_expected,sm_baseline_years
+north_goa,2026,6,413.8720161469,-42.53023370736504,dry,285.52140399583334,273.651584359375,55.00000000000001,near normal,"mixed: dry, near normal",2,2,20
+north_goa,2026,7,614.476252251,-12.523886509128022,near normal,366.5683407782258,382.90450793891125,25.0,dry,"mixed: dry, near normal",2,2,20
+north_goa,2026,8,441.82927808999995,-7.348725578828616,near normal,,393.58208876895156,,no data,single indicator only (near normal),1,2,20
+north_goa,2026,9,168.93472985280002,-46.48114048375128,dry,,380.9500700189584,,no data,single indicator only (dry),1,2,20
+south_goa,2026,6,479.71928695200006,-34.45842230454386,dry,320.4874616333334,313.9729361889584,55.00000000000001,near normal,"mixed: dry, near normal",2,2,20
+south_goa,2026,7,546.8722016284,-21.212131715253665,dry,428.17608952419357,446.66249046028236,30.0,dry,concurrent dry signals,2,2,20
+south_goa,2026,8,352.8301522599999,-26.677764808164262,dry,,457.3489848649195,,no data,single indicator only (dry),1,2,20
+south_goa,2026,9,132.3755908711,-58.93379144871105,dry,,442.964504473125,,no data,single indicator only (dry),1,2,20
