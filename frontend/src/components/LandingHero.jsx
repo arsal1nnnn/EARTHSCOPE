@@ -3,12 +3,10 @@ import DitherCanvas from "./DitherCanvas";
 
 /**
  * LandingHero — Replicates the Figma design (Dashboard.png)
- * Clean, uncluttered, and precise:
- * - Top-left: EARTHSCOPE
- * - Top-right: NASA EARTH OBSERVATION • GOA AGRICULTURAL INTELLIGENCE
- * - Upper-right: 4-line tagline in Montserrat Bold, right-aligned
- * - Pill CTA: Open Stress Dashboard ➔
- * - Softened Bayer 16x16 dithering on landscape background
+ * - Typography: Pure Montserrat (Weights 800 / Bold)
+ * - Tagline: Exactly 4 lines, 100% white text (no green)
+ * - Background: Lowered landscape photo with softened Bayer 16x16 dithering
+ * - CTA Button: Open Stress Dashboard ➔ in vivid blue (#004FF4)
  */
 export default function LandingHero({ onOpenDashboard }) {
   const handleScrollToDashboard = () => {
@@ -23,11 +21,11 @@ export default function LandingHero({ onOpenDashboard }) {
 
   return (
     <section className="hero-landing-section relative w-full min-h-screen flex flex-col justify-between overflow-hidden">
-      {/* 1. Dithered Canvas & Backdrop Engine (Softened Bayer 16x16) */}
+      {/* 1. Dithered Canvas & Lowered Backdrop Engine */}
       <DitherCanvas
         size={2}
         levels={4}
-        ditherStrength={0.62}
+        ditherStrength={0.60}
         brightness={1.0}
         contrast={1.0}
         gradientTop="#004FF4"
@@ -39,7 +37,7 @@ export default function LandingHero({ onOpenDashboard }) {
         className="pointer-events-none absolute inset-0 z-1"
         style={{
           background:
-            "radial-gradient(ellipse at 85% 35%, rgba(0, 0, 0, 0.15) 20%, rgba(6, 12, 26, 0.35) 100%)",
+            "radial-gradient(ellipse at 85% 30%, rgba(0, 0, 0, 0.12) 20%, rgba(6, 12, 26, 0.32) 100%)",
         }}
       />
 
@@ -48,7 +46,11 @@ export default function LandingHero({ onOpenDashboard }) {
         {/* Brand Left */}
         <span
           className="text-white text-xl md:text-2xl font-black tracking-wider uppercase font-montserrat"
-          style={{ letterSpacing: "2.5px" }}
+          style={{
+            fontFamily: "'Montserrat', system-ui, -apple-system, sans-serif",
+            letterSpacing: "2.5px",
+            color: "#ffffff",
+          }}
         >
           EARTHSCOPE
         </span>
@@ -56,28 +58,36 @@ export default function LandingHero({ onOpenDashboard }) {
         {/* Provenance Tag Right */}
         <span
           className="text-white text-[11px] md:text-[13px] font-bold uppercase tracking-widest font-montserrat text-right"
-          style={{ letterSpacing: "1.8px" }}
+          style={{
+            fontFamily: "'Montserrat', system-ui, -apple-system, sans-serif",
+            letterSpacing: "1.8px",
+            color: "#ffffff",
+          }}
         >
           NASA EARTH OBSERVATION <span className="text-blue-300 mx-1">•</span> GOA AGRICULTURAL INTELLIGENCE
         </span>
       </header>
 
-      {/* 3. Hero Copy & CTA Button (Right Aligned — Exactly 4 Lines) */}
+      {/* 3. Hero Copy & CTA Button (Right Aligned — Exactly 4 Lines — 100% White) */}
       <div className="relative z-10 w-full px-8 md:px-16 py-12 md:py-24 flex flex-col items-end my-auto">
         <div className="max-w-[840px] text-right">
-          {/* Main Headline in Montserrat Bold — Exactly 4 Lines */}
+          {/* Main Headline in Montserrat Bold — Exactly 4 Lines — Pure White Only */}
           <h1
-            className="hero-headline text-white font-extrabold font-montserrat text-right tracking-tight select-none"
+            className="hero-headline font-montserrat text-right tracking-tight select-none"
             style={{
+              fontFamily: "'Montserrat', system-ui, -apple-system, sans-serif",
               fontSize: "clamp(2rem, 3.4vw, 3.25rem)",
+              fontWeight: 800,
               lineHeight: 1.18,
+              color: "#ffffff",
+              WebkitTextFillColor: "#ffffff",
               textShadow: "0 3px 20px rgba(0, 0, 0, 0.45)",
               hyphens: "none",
             }}
           >
-            Turning NASA <span className="whitespace-nowrap">Earth-observation</span><br />
+            Turning NASA Earth&#8209;observation<br />
             data into explainable<br />
-            agricultural <span className="whitespace-nowrap">water-stress</span><br />
+            agricultural water&#8209;stress<br />
             intelligence across Goa.
           </h1>
 
@@ -87,6 +97,7 @@ export default function LandingHero({ onOpenDashboard }) {
               onClick={handleScrollToDashboard}
               className="hero-cta-btn group inline-flex items-center gap-4 px-7 py-3.5 rounded-full text-white font-montserrat font-bold text-[15px] md:text-[16px] tracking-wide transition-all duration-300 cursor-pointer shadow-lg hover:shadow-blue-500/50"
               style={{
+                fontFamily: "'Montserrat', system-ui, -apple-system, sans-serif",
                 backgroundColor: "#004FF4",
                 boxShadow: "0 8px 30px rgba(0, 79, 244, 0.48), inset 0 1px 1px rgba(255, 255, 255, 0.35)",
               }}

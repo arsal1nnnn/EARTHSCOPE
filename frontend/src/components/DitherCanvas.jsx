@@ -40,11 +40,8 @@ const BAYER_16_THRESHOLDS = createBayer16Thresholds();
 
 /**
  * High-performance Bayer 16x16 Dither Canvas component
- * Refined and toned down for a clean, non-noisy aesthetic:
- * - Style: Bayer 16x16
- * - Size: 2 (finer, crisper 2px dither cell)
- * - Levels: 4
- * - Dither Strength: 0.65 (softened blend to prevent harsh speckles)
+ * - Lowered background image so palm tree tops align at y = 355px (matching Figma Dashboard.png)
+ * - Refined dither effect: fine 2px cells, softened blend (0.60 strength)
  * - Gradient overlay: #004FF4 at top to #86A6D9 at mid-sky
  */
 export default function DitherCanvas({
@@ -53,7 +50,7 @@ export default function DitherCanvas({
   levels = 4,
   brightness = 1.0,
   contrast = 1.0,
-  ditherStrength = 0.62,
+  ditherStrength = 0.60,
   gradientTop = "#004FF4",
   gradientBottom = "#86A6D9",
   className = "",
@@ -83,19 +80,31 @@ export default function DitherCanvas({
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (!ctx) return;
 
-      // 1. Draw pure source landscape scaled to 1920x1080
-      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+      // 1. Fill base with sky gradient from #004FF4 to #86A6D9
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.55);
+      skyGrad.addColorStop(0, "#004FF4");
+      skyGrad.addColorStop(0.55, "#86A6D9");
+      skyGrad.addColorStop(1, "#86A6D9");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
 
-      // 2. Apply smooth linear gradient overlay on top: #004FF4 -> #86A6D9
-      const grad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.52);
-      grad.addColorStop(0, "rgba(0, 79, 244, 0.72)");        // #004FF4 at top
-      grad.addColorStop(0.55, "rgba(134, 166, 217, 0.45)");   // #86A6D9 mid-sky
+      // 2. Lower the landscape photo so palm tree tops start at y ≈ 355px (matching Figma Dashboard.png)
+      // Original image is 800x556. Scaling to cover width = 1920x1334.4px
+      const scale = targetWidth / img.width;
+      const scaledHeight = img.height * scale;
+      const offsetY = 125; // Lowers image down, giving tall clear blue sky above
+      ctx.drawImage(img, 0, offsetY, targetWidth, scaledHeight);
+
+      // 3. Apply smooth linear gradient overlay on top: #004FF4 -> #86A6D9
+      const grad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.54);
+      grad.addColorStop(0, "rgba(0, 79, 244, 0.74)");        // #004FF4 at top
+      grad.addColorStop(0.55, "rgba(134, 166, 217, 0.44)");   // #86A6D9 mid-sky
       grad.addColorStop(1, "rgba(134, 166, 217, 0.0)");      // feather into horizon
 
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, targetWidth, targetHeight);
 
-      // 3. Extract pixel buffer for Bayer 16x16 dithering
+      // 4. Extract pixel buffer for Bayer 16x16 dithering
       const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
       const data = imgData.data;
       const step = 255 / (levels - 1); // 85 for 4 levels
@@ -142,7 +151,7 @@ export default function DitherCanvas({
         }
       }
 
-      // 4. Put dithered pixels back to canvas
+      // 5. Put dithered pixels back to canvas
       ctx.putImageData(imgData, 0, 0);
       setRendered(true);
     };
@@ -162,7 +171,7 @@ export default function DitherCanvas({
         backgroundColor: "#004FF4",
         backgroundImage: `url(${defaultLandscape})`,
         backgroundSize: "cover",
-        backgroundPosition: "center top",
+        backgroundPosition: "center 125px",
         ...style,
       }}
     >
