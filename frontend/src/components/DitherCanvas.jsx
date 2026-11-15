@@ -40,9 +40,10 @@ const BAYER_16_THRESHOLDS = createBayer16Thresholds();
 
 /**
  * High-performance Bayer 16x16 Dither Canvas component
- * - Flawless continuous sky with zero seams or hard boxes
- * - Uses alpha-feathering on the landscape image top edge so it dissolves seamlessly into the sky gradient
- * - Fine 2px dither cell with softened blend (0.58)
+ * - Complete background photograph with zero missing areas or seams
+ * - Beautifully positioned landscape with open sky above and trees/water reflections below
+ * - Fine 2px Bayer 16x16 dither with softened blend (0.58)
+ * - Pure smooth linear gradient from #004FF4 to #86A6D9
  */
 export default function DitherCanvas({
   imageSrc = defaultLandscape,
@@ -80,46 +81,45 @@ export default function DitherCanvas({
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (!ctx) return;
 
-      // 1. Draw continuous background sky gradient across the entire canvas
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.60);
-      skyGrad.addColorStop(0, "#004FF4");
-      skyGrad.addColorStop(0.55, "#86A6D9");
-      skyGrad.addColorStop(1, "#86A6D9");
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, targetWidth, targetHeight);
+      // In source image (800x556):
+      // Row 0..110 is pure blue sky
+      // Row 110..556 is the palm trees, fields, and water reflections
+      // On the 1920x1080 canvas:
+      // We want the trees to start at y ≈ 330px, giving tall open sky for the header & tagline
+      const sySplit = 110;
+      const destTreeY = 320;
 
-      // 2. Render lowered landscape image with smooth alpha feathering on its top edge
-      // This completely eliminates any sharp horizontal line or "box"
-      const scale = targetWidth / img.width;
-      const scaledHeight = img.height * scale;
-      const offsetY = 120; // Lower image so palm tree tops align at y ≈ 355px
+      // 1. Draw sky slice: maps source sky (y: 0..110) across dest (y: 0..destTreeY)
+      // This guarantees the sky starts at the very top (y = 0) with zero gaps or boxes
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        img.width,
+        sySplit,
+        0,
+        0,
+        targetWidth,
+        destTreeY
+      );
 
-      // Use an offscreen canvas to apply an alpha fade-in on the image's top edge
-      const offCanvas = document.createElement("canvas");
-      offCanvas.width = targetWidth;
-      offCanvas.height = targetHeight;
-      const offCtx = offCanvas.getContext("2d");
-
-      if (offCtx) {
-        offCtx.drawImage(img, 0, offsetY, targetWidth, scaledHeight);
-
-        // Alpha feather the top 140px of the image so it melts into the sky gradient
-        offCtx.globalCompositeOperation = "destination-in";
-        const maskGrad = offCtx.createLinearGradient(0, offsetY, 0, offsetY + 140);
-        maskGrad.addColorStop(0, "rgba(0, 0, 0, 0)");
-        maskGrad.addColorStop(1, "rgba(0, 0, 0, 1)");
-        offCtx.fillStyle = maskGrad;
-        offCtx.fillRect(0, offsetY, targetWidth, 140);
-
-        // Composite the feathered image onto the main sky canvas
-        ctx.drawImage(offCanvas, 0, 0);
-      } else {
-        ctx.drawImage(img, 0, offsetY, targetWidth, scaledHeight);
-      }
+      // 2. Draw landscape slice: maps source trees/field/water (y: 110..556) across dest (y: destTreeY..1080)
+      // Meets the sky slice at the exact same row (110) for 100% seamless continuity
+      ctx.drawImage(
+        img,
+        0,
+        sySplit,
+        img.width,
+        img.height - sySplit,
+        0,
+        destTreeY,
+        targetWidth,
+        targetHeight - destTreeY
+      );
 
       // 3. Apply smooth linear gradient overlay from #004FF4 at top to #86A6D9 at mid-sky
       const grad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.55);
-      grad.addColorStop(0, "rgba(0, 79, 244, 0.70)");        // #004FF4 at top
+      grad.addColorStop(0, "rgba(0, 79, 244, 0.72)");        // #004FF4 at top
       grad.addColorStop(0.55, "rgba(134, 166, 217, 0.38)");   // #86A6D9 mid-sky
       grad.addColorStop(1, "rgba(134, 166, 217, 0.0)");      // feather into horizon
 
@@ -191,6 +191,9 @@ export default function DitherCanvas({
         inset: 0,
         overflow: "hidden",
         backgroundColor: "#004FF4",
+        backgroundImage: `url(${defaultLandscape})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center top",
         ...style,
       }}
     >
