@@ -39,7 +39,6 @@ const METRIC_SCALE_ENTRIES = {
 export default function MapLegend({
   activeMetric = "rainfall_anomaly_pct",
   activeMonthId = "all",
-  nasaGridMode = "none",
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const metric = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.rainfall_anomaly_pct;
@@ -146,44 +145,6 @@ export default function MapLegend({
               </div>
             ))}
           </div>
-
-          {/* NASA Satellite Grid Footprint Disclosure */}
-          {nasaGridMode !== "none" && (
-            <div
-              style={{
-                backgroundColor: "rgba(15, 23, 42, 0.9)",
-                border: "1px solid #334155",
-                borderRadius: "8px",
-                padding: "8px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "5px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", fontWeight: 700, color: "#e2e8f0", textTransform: "uppercase" }}>
-                <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#38bdf8" }} />
-                <span>Active Satellite Grids</span>
-              </div>
-
-              {(nasaGridMode === "gpm" || nasaGridMode === "both") && (
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px" }}>
-                  <span style={{ width: 14, height: 0, borderTop: "2px dashed #f59e0b", display: "inline-block" }} />
-                  <span style={{ color: "#fcd34d" }}><strong>GPM IMERG:</strong> ~11 km monthly v07</span>
-                </div>
-              )}
-
-              {(nasaGridMode === "gldas" || nasaGridMode === "both") && (
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px" }}>
-                  <span style={{ width: 14, height: 0, borderTop: "2px dashed #06b6d4", display: "inline-block" }} />
-                  <span style={{ color: "#67e8f9" }}><strong>GLDAS-2.1 Noah:</strong> ~25 km root-zone SM</span>
-                </div>
-              )}
-
-              <div style={{ fontSize: "9px", color: "#64748b", marginTop: "2px", lineHeight: "1.25" }}>
-                Values are district-level aggregates downscaled to 12 Goa talukas.
-              </div>
-            </div>
-          )}
 
           {/* NASA Spatial Resolution Disclosure */}
           <div style={{ borderTop: "1px solid #1e293b", paddingTop: "8px" }}>

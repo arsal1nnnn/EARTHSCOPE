@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import StressLayer from "./StressLayer";
-import NasaGridLayer from "./NasaGridLayer";
 import MapLegend from "./MapLegend";
 import MapErrorBoundary from "./ErrorBoundary";
 import {
@@ -24,7 +23,6 @@ import {
   Scale,
   Calendar,
   Tag,
-  Satellite,
   Info,
 } from "lucide-react";
 
@@ -179,7 +177,6 @@ export default function GoaMap({
   const [baseMap, setBaseMap] = useState("dark");
   const [showLabels, setShowLabels] = useState(true);
   const [activeMonth, setActiveMonth] = useState("all");
-  const [nasaGridMode, setNasaGridMode] = useState("none"); // "none" | "smap" | "gpm" | "both"
 
   // Comparison state
   const [comparisonMode, setComparisonMode] = useState(false);
@@ -609,7 +606,7 @@ export default function GoaMap({
               ))}
             </div>
 
-            {/* Right Tools: NASA Sensor Badge & Glassmorphic Zoom Controls */}
+            {/* Right Tools: Glassmorphic Zoom Controls */}
             <div
               style={{
                 display: "flex",
@@ -618,91 +615,6 @@ export default function GoaMap({
                 pointerEvents: "auto",
               }}
             >
-              {/* NASA Satellite Footprint Grids Switcher */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "2px",
-                  padding: "3px",
-                  backgroundColor: "rgba(15, 23, 42, 0.94)",
-                  backdropFilter: "blur(14px)",
-                  borderRadius: "8px",
-                  border: "1px solid #1e293b",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    padding: "0 6px",
-                    fontSize: "10px",
-                    color: "#94a3b8",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <Satellite style={{ width: 12, height: 12, color: "#38bdf8" }} />
-                  <span>NASA Grids</span>
-                </div>
-                {[
-                  { id: "none", label: "Off" },
-                  { id: "smap", label: "SMAP 9km" },
-                  { id: "gpm", label: "GPM 10km" },
-                  { id: "both", label: "Both" },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setNasaGridMode(opt.id)}
-                    style={{
-                      padding: "3px 7px",
-                      borderRadius: "6px",
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      border:
-                        nasaGridMode === opt.id
-                          ? opt.id === "smap"
-                            ? "1px solid #06b6d4"
-                            : opt.id === "gpm"
-                            ? "1px solid #f59e0b"
-                            : "1px solid #6366f1"
-                          : "1px solid transparent",
-                      backgroundColor:
-                        nasaGridMode === opt.id
-                          ? opt.id === "smap"
-                            ? "rgba(6, 182, 212, 0.25)"
-                            : opt.id === "gpm"
-                            ? "rgba(245, 158, 11, 0.25)"
-                            : "rgba(99, 102, 241, 0.25)"
-                          : "transparent",
-                      color:
-                        nasaGridMode === opt.id
-                          ? opt.id === "smap"
-                            ? "#67e8f9"
-                            : opt.id === "gpm"
-                            ? "#fcd34d"
-                            : "#c7d2fe"
-                          : "#94a3b8",
-                      transition: "all 0.15s",
-                    }}
-                    title={
-                      opt.id === "none"
-                        ? "Hide satellite grid overlays"
-                        : opt.id === "smap"
-                        ? "Show NASA SMAP L4 (9 km) EASE-Grid 2.0 Soil Moisture Footprints"
-                        : opt.id === "gpm"
-                        ? "Show NASA GPM IMERG (0.10° / ~10 km) Multi-Satellite Precipitation Grid"
-                        : "Show both SMAP and GPM satellite footprints"
-                    }
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
               {/* Glassmorphic Zoom (+ / -) */}
               <div
                 style={{
@@ -819,14 +731,6 @@ export default function GoaMap({
                 compareRegionId={compareRegionId}
                 activeMonthId={activeMonth}
                 onSelectTaluka={handleSelectTaluka}
-              />
-            )}
-
-            {/* NASA Satellite Footprint Grids Overlay */}
-            {nasaGridMode !== "none" && (
-              <NasaGridLayer
-                gridMode={nasaGridMode}
-                activeMonthId={activeMonth}
               />
             )}
 
@@ -1235,7 +1139,6 @@ export default function GoaMap({
         <MapLegend
           activeMetric={activeMetric}
           activeMonthId={activeMonth}
-          nasaGridMode={nasaGridMode}
         />
 
         {/* CSS Fixes for Leaflet */}
