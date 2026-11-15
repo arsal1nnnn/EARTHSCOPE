@@ -202,13 +202,9 @@ export default function AssessmentResults({
               </div>
 
               {/* Source Reference Footer */}
-              <div className="pt-2.5 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono text-[#7a8296]">
+              <div className="pt-2.5 border-t border-white/[0.04] flex items-center text-[10px] font-mono text-[#7a8296]">
                 <span className="truncate max-w-[280px]" title={result.source_references}>
                   ICAR-CCARI Varietal Records · NASA GES DISC
-                </span>
-                <span className="inline-flex items-center gap-1 text-emerald-400/90 shrink-0">
-                  <ShieldCheck size={11} />
-                  <span>M4/M5 Verified</span>
                 </span>
               </div>
             </article>
