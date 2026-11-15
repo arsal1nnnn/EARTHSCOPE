@@ -30,7 +30,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+def _find_project_root() -> Path:
+    """Repo root = nearest parent holding .git or data/processed (works from science/ or backend/app/science/)."""
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        if (parent / ".git").exists() or (parent / "data" / "processed").is_dir():
+            return parent
+    return here.parents[1]
+
+
+PROJECT_ROOT = _find_project_root()
 RAW = PROJECT_ROOT / "data" / "raw" / "imerg"
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 
