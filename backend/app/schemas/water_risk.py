@@ -47,3 +47,23 @@ class WaterRiskResponse(BaseModel):
     def model_post_init(self, __context) -> None:
         if self.name is None:
             self.name = self.region_name
+
+
+class RainfallHistoryYear(BaseModel):
+    year: int
+    kharif_rainfall_mm: float
+    rainfall_anomaly_pct: float
+    rainfall_category_imd: str
+    rainfall_percentile: Optional[float] = None
+    rainfall_anomaly_mm: Optional[float] = None
+    baseline_mean_mm: Optional[float] = None
+
+
+class WaterRiskHistoryResponse(BaseModel):
+    region_id: str
+    region_name: str
+    district: str
+    baseline_period: str = "2001-2020"
+    source: str = "NASA GPM IMERG Final Run monthly v07 (~11 km)"
+    history: List[RainfallHistoryYear] = []
+

@@ -1,0 +1,406 @@
+{
+  "north_goa": [
+    {
+      "year": 2001,
+      "kharif_rainfall_mm": 1572.6,
+      "rainfall_anomaly_pct": -27.9,
+      "rainfall_category_imd": "Deficient",
+      "rainfall_percentile": 0.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2002,
+      "kharif_rainfall_mm": 1675.2,
+      "rainfall_anomaly_pct": -23.2,
+      "rainfall_category_imd": "Deficient",
+      "rainfall_percentile": 5.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2003,
+      "kharif_rainfall_mm": 1921.3,
+      "rainfall_anomaly_pct": -11.9,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 30.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2004,
+      "kharif_rainfall_mm": 1687.6,
+      "rainfall_anomaly_pct": -22.6,
+      "rainfall_category_imd": "Deficient",
+      "rainfall_percentile": 10.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2005,
+      "kharif_rainfall_mm": 2387.1,
+      "rainfall_anomaly_pct": 9.5,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 70.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2006,
+      "kharif_rainfall_mm": 1879.7,
+      "rainfall_anomaly_pct": -13.8,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 20.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2007,
+      "kharif_rainfall_mm": 2578.0,
+      "rainfall_anomaly_pct": 18.2,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 85.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2008,
+      "kharif_rainfall_mm": 2141.1,
+      "rainfall_anomaly_pct": -1.8,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 50.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2009,
+      "kharif_rainfall_mm": 2152.7,
+      "rainfall_anomaly_pct": -1.3,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 55.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2010,
+      "kharif_rainfall_mm": 2571.3,
+      "rainfall_anomaly_pct": 17.9,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 80.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2011,
+      "kharif_rainfall_mm": 2486.9,
+      "rainfall_anomaly_pct": 14.0,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 75.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2012,
+      "kharif_rainfall_mm": 2111.5,
+      "rainfall_anomaly_pct": -3.2,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 45.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2013,
+      "kharif_rainfall_mm": 2253.3,
+      "rainfall_anomaly_pct": 3.3,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 60.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2014,
+      "kharif_rainfall_mm": 2101.9,
+      "rainfall_anomaly_pct": -3.6,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 40.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2015,
+      "kharif_rainfall_mm": 1795.2,
+      "rainfall_anomaly_pct": -17.7,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 15.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2016,
+      "kharif_rainfall_mm": 2318.0,
+      "rainfall_anomaly_pct": 6.3,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 65.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2017,
+      "kharif_rainfall_mm": 1921.1,
+      "rainfall_anomaly_pct": -11.9,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 25.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2018,
+      "kharif_rainfall_mm": 1947.3,
+      "rainfall_anomaly_pct": -10.7,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 35.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2019,
+      "kharif_rainfall_mm": 3065.9,
+      "rainfall_anomaly_pct": 40.6,
+      "rainfall_category_imd": "Excess",
+      "rainfall_percentile": 95.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2020,
+      "kharif_rainfall_mm": 3049.2,
+      "rainfall_anomaly_pct": 39.8,
+      "rainfall_category_imd": "Excess",
+      "rainfall_percentile": 90.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2021,
+      "kharif_rainfall_mm": 2108.5,
+      "rainfall_anomaly_pct": -3.3,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 45.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2022,
+      "kharif_rainfall_mm": 2138.8,
+      "rainfall_anomaly_pct": -1.9,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 50.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2023,
+      "kharif_rainfall_mm": 2384.0,
+      "rainfall_anomaly_pct": 9.3,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 70.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2024,
+      "kharif_rainfall_mm": 3109.3,
+      "rainfall_anomaly_pct": 42.6,
+      "rainfall_category_imd": "Excess",
+      "rainfall_percentile": 100.0,
+      "baseline_mean_mm": 2180.8
+    },
+    {
+      "year": 2025,
+      "kharif_rainfall_mm": 2274.2,
+      "rainfall_anomaly_pct": 4.3,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 65.0,
+      "baseline_mean_mm": 2180.8
+    }
+  ],
+  "south_goa": [
+    {
+      "year": 2001,
+      "kharif_rainfall_mm": 1652.9,
+      "rainfall_anomaly_pct": -24.0,
+      "rainfall_category_imd": "Deficient",
+      "rainfall_percentile": 10.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2002,
+      "kharif_rainfall_mm": 1638.4,
+      "rainfall_anomaly_pct": -24.7,
+      "rainfall_category_imd": "Deficient",
+      "rainfall_percentile": 5.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2003,
+      "kharif_rainfall_mm": 2042.8,
+      "rainfall_anomaly_pct": -6.1,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 40.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2004,
+      "kharif_rainfall_mm": 1625.9,
+      "rainfall_anomaly_pct": -25.3,
+      "rainfall_category_imd": "Deficient",
+      "rainfall_percentile": 0.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2005,
+      "kharif_rainfall_mm": 2309.0,
+      "rainfall_anomaly_pct": 6.1,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 70.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2006,
+      "kharif_rainfall_mm": 1878.3,
+      "rainfall_anomaly_pct": -13.7,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 20.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2007,
+      "kharif_rainfall_mm": 2622.5,
+      "rainfall_anomaly_pct": 20.5,
+      "rainfall_category_imd": "Excess",
+      "rainfall_percentile": 85.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2008,
+      "kharif_rainfall_mm": 2074.7,
+      "rainfall_anomaly_pct": -4.7,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 50.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2009,
+      "kharif_rainfall_mm": 2286.5,
+      "rainfall_anomaly_pct": 5.1,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 60.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2010,
+      "kharif_rainfall_mm": 2603.1,
+      "rainfall_anomaly_pct": 19.6,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 80.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2011,
+      "kharif_rainfall_mm": 2534.1,
+      "rainfall_anomaly_pct": 16.5,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 75.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2012,
+      "kharif_rainfall_mm": 2001.9,
+      "rainfall_anomaly_pct": -8.0,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 35.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2013,
+      "kharif_rainfall_mm": 2293.6,
+      "rainfall_anomaly_pct": 5.4,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 65.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2014,
+      "kharif_rainfall_mm": 2074.4,
+      "rainfall_anomaly_pct": -4.7,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 45.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2015,
+      "kharif_rainfall_mm": 1853.8,
+      "rainfall_anomaly_pct": -14.8,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 15.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2016,
+      "kharif_rainfall_mm": 2176.9,
+      "rainfall_anomaly_pct": 0.0,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 55.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2017,
+      "kharif_rainfall_mm": 1897.9,
+      "rainfall_anomaly_pct": -12.8,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 25.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2018,
+      "kharif_rainfall_mm": 1912.2,
+      "rainfall_anomaly_pct": -12.1,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 30.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2019,
+      "kharif_rainfall_mm": 2903.3,
+      "rainfall_anomaly_pct": 33.4,
+      "rainfall_category_imd": "Excess",
+      "rainfall_percentile": 90.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2020,
+      "kharif_rainfall_mm": 3136.5,
+      "rainfall_anomaly_pct": 44.1,
+      "rainfall_category_imd": "Excess",
+      "rainfall_percentile": 95.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2021,
+      "kharif_rainfall_mm": 2171.2,
+      "rainfall_anomaly_pct": -0.2,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 55.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2022,
+      "kharif_rainfall_mm": 2072.6,
+      "rainfall_anomaly_pct": -4.7,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 45.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2023,
+      "kharif_rainfall_mm": 2306.3,
+      "rainfall_anomaly_pct": 6.0,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 70.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2024,
+      "kharif_rainfall_mm": 3156.3,
+      "rainfall_anomaly_pct": 45.1,
+      "rainfall_category_imd": "Excess",
+      "rainfall_percentile": 100.0,
+      "baseline_mean_mm": 2175.9
+    },
+    {
+      "year": 2025,
+      "kharif_rainfall_mm": 2327.7,
+      "rainfall_anomaly_pct": 7.0,
+      "rainfall_category_imd": "Normal",
+      "rainfall_percentile": 75.0,
+      "baseline_mean_mm": 2175.9
+    }
+  ]
+}

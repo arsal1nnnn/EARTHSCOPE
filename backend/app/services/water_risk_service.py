@@ -16,7 +16,7 @@ from pathlib import Path
 import pandas as pd
 from fastapi import HTTPException
 
-from app.schemas.water_risk import WaterRiskMonth, WaterRiskResponse
+from app.schemas.water_risk import WaterRiskMonth, WaterRiskResponse, RainfallHistoryYear, WaterRiskHistoryResponse
 
 ROOT = Path(__file__).resolve().parents[3]
 PROCESSED = ROOT / "data" / "processed"
@@ -139,3 +139,36 @@ def get_water_risk_for_region(region_id: str = None, db=None) -> WaterRiskRespon
         indicators_expected=None if n_expected is None else int(n_expected),
         months_with_concurrent_dry_signals=int(dry_months),
         monthly=months, sources=SOURCES, interpretation_limit=LIMIT, is_mock_data=False)
+
+
+def get_water_risk_history_for_region(region_id: str) -> WaterRiskHistoryResponse:
+    """Returns 25-year (2001-2025) historical Kharif rainfall anomalies and raw measurements."""
+    rid, name, zone, is_taluka = _resolve(region_id)
+    history_df = _read("rainfall_kharif_history.csv")
+    zone_rows = history_df[history_df["zone"] == zone].sort_values("year")
+    if zone_rows.empty:
+        raise HTTPException(status_code=404, detail=f"No rainfall history for district: {zone}")
+
+    items = []
+    for _, r in zone_rows.iterrows():
+        items.append(
+            RainfallHistoryYear(
+                year=int(r["year"]),
+                kharif_rainfall_mm=_num(r["kharif_rainfall_mm"], 1),
+                rainfall_anomaly_pct=_num(r["rainfall_anomaly_pct"], 1),
+                rainfall_category_imd=_text(r["rainfall_category_imd"]) or "Normal",
+                rainfall_percentile=_num(r.get("rainfall_percentile"), 0),
+                rainfall_anomaly_mm=_num(r.get("rainfall_anomaly_mm"), 1),
+                baseline_mean_mm=_num(r.get("baseline_mean_mm"), 1),
+            )
+        )
+
+    return WaterRiskHistoryResponse(
+        region_id=rid,
+        region_name=name,
+        district=DISTRICTS.get(zone, zone),
+        baseline_period=str(zone_rows.iloc[0].get("baseline_period", "2001-2020")),
+        source="NASA GPM IMERG Final Run monthly v07 (~11 km)",
+        history=items,
+    )
+

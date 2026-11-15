@@ -25,7 +25,9 @@ import {
   Calendar,
   Tag,
   Info,
+  BarChart3,
 } from "lucide-react";
+import RainfallHistoryChart from "../components/RainfallHistoryChart";
 
 const fallbackGeoJson = rawFallbackGeoJson?.default || rawFallbackGeoJson;
 
@@ -196,6 +198,7 @@ export default function GoaMap({
   const [showLabels, setShowLabels] = useState(true);
   const [activeMonth, setActiveMonth] = useState("all");
   const [season, setSeason] = useState(externalSeason || "2025");
+  const [showHistoryChart, setShowHistoryChart] = useState(false);
 
   useEffect(() => {
     if (externalSeason !== undefined && externalSeason !== season) {
@@ -297,6 +300,7 @@ export default function GoaMap({
     setComparisonMode(false);
     setCompareRegionId(null);
     setCompareFeature(null);
+    setShowHistoryChart(false);
     if (externalOnSelect) {
       externalOnSelect(null);
     }
@@ -580,7 +584,7 @@ export default function GoaMap({
 
         {/* Primary Selected Taluka Detail Drawer */}
         {selectedProps && !compareProps && (
-          <div className="absolute bottom-4 left-4 z-[1000] w-[350px] max-w-[calc(100%-2rem)] max-h-[calc(100%-7.5rem)] overflow-y-auto bg-[#0b0d14]/95 backdrop-blur-md border border-white/[0.08] rounded-xl p-4 shadow-xl text-[#eef0f5] flex flex-col gap-3">
+          <div className={`absolute bottom-4 left-4 z-[1000] w-[350px] ${showHistoryChart ? "sm:w-[500px]" : ""} max-w-[calc(100%-2rem)] max-h-[calc(100%-7.5rem)] overflow-y-auto bg-[#0b0d14]/95 backdrop-blur-md border border-white/[0.08] rounded-xl p-4 shadow-xl text-[#eef0f5] flex flex-col gap-3 transition-all duration-200`}>
             {/* Drawer Header */}
             <div className="flex items-start justify-between border-b border-white/[0.08] pb-2.5">
               <div>
@@ -741,14 +745,42 @@ export default function GoaMap({
               </div>
             )}
 
-            {/* Action Button: Compare */}
-            <button
-              onClick={() => setComparisonMode(true)}
-              className="w-full py-2 px-3 rounded-lg text-xs font-medium border border-white/[0.08] bg-white/[0.04] text-[#eef0f5] hover:bg-white/[0.08] transition flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Scale className="w-3.5 h-3.5 shrink-0 text-amber-300" />
-              <span>Compare with another taluka</span>
-            </button>
+            {/* Action Buttons: 25-Year History & Comparison */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowHistoryChart(!showHistoryChart)}
+                className={`flex-1 py-2 px-2.5 rounded-lg text-xs font-medium border transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  showHistoryChart
+                    ? "bg-sky-500/20 border-sky-500/40 text-sky-200"
+                    : "border-white/[0.08] bg-white/[0.04] text-[#eef0f5] hover:bg-white/[0.08]"
+                }`}
+                title="Toggle 25-year rainfall anomaly history bar chart"
+              >
+                <BarChart3 className="w-3.5 h-3.5 shrink-0 text-sky-400" />
+                <span>25-year history</span>
+              </button>
+
+              <button
+                onClick={() => setComparisonMode(true)}
+                className="flex-1 py-2 px-2.5 rounded-lg text-xs font-medium border border-white/[0.08] bg-white/[0.04] text-[#eef0f5] hover:bg-white/[0.08] transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Scale className="w-3.5 h-3.5 shrink-0 text-amber-300" />
+                <span>Compare</span>
+              </button>
+            </div>
+
+            {/* Expandable 25-Year History Bar Chart */}
+            {showHistoryChart && (
+              <div className="mt-1">
+                <RainfallHistoryChart
+                  regionId={selectedProps.region_id}
+                  regionName={selectedProps.name}
+                  district={selectedProps.district}
+                  height={220}
+                  onClose={() => setShowHistoryChart(false)}
+                />
+              </div>
+            )}
           </div>
         )}
 
