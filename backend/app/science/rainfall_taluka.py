@@ -84,6 +84,19 @@ def agreement(signals: list[str]) -> str:           # identical to water_risk.ag
     return "mixed: " + ", ".join(sorted(set(seen)))
 
 
+def water_risk_from_agreement(agr: str) -> tuple[str, int]:
+    """Derives transparent water risk classification from multi-sensor indicator agreement:
+    - High (score 3): concurrent dry signals (both rain & root-zone moisture in deficit)
+    - Moderate (score 2): single dry signal (deficit buffered by normal soil moisture)
+    - Low (score 1): zero dry signals (all near normal, concurrent wet, or mixed wet/normal)
+    """
+    if agr == "concurrent dry signals":
+        return "High", 3
+    if "dry" in agr:
+        return "Moderate", 2
+    return "Low", 1
+
+
 def _bbox(text) -> list[float] | None:
     try:
         return [float(x) for x in str(text).split(",")]
@@ -207,11 +220,21 @@ def update_map(path: Path, season: pd.DataFrame, month: pd.DataFrame) -> bool:
             slot["rainfall_signal"] = m["rainfall_signal"]
             slot["indicator_agreement"] = agreement([slot["rainfall_signal"], slot.get("sm_gldas_signal"),
                                                      slot.get("sm_smap_signal")])
+            m_lvl, m_score = water_risk_from_agreement(slot["indicator_agreement"])
+            slot["water_risk_level"] = m_lvl
+            slot["water_risk_score"] = m_score
             dry_months += slot["indicator_agreement"] == "concurrent dry signals"
         p["months_with_concurrent_dry_signals"] = int(dry_months)
 
-        wr = p.get("water_risk")                     # M5's summary block: keep its level/score, refresh the mirrored facts
+        s_lvl, s_score = water_risk_from_agreement(p["indicator_agreement"])
+        p["water_risk_level"] = s_lvl
+        p["water_risk_score"] = s_score
+
+        wr = p.get("water_risk")                     # M5's summary block: refresh level/score, refresh the mirrored facts
         if isinstance(wr, dict):
+            wr["level"] = s_lvl
+            wr["score"] = s_score
+            wr["label"] = f"{s_lvl} Water Risk"
             wr["rainfall_signal"] = p["rainfall_signal"]
             wr["agreement"] = p["indicator_agreement"]
             wr["concurrent_dry_months"] = p["months_with_concurrent_dry_signals"]
@@ -219,9 +242,15 @@ def update_map(path: Path, season: pd.DataFrame, month: pd.DataFrame) -> bool:
                 wr["summary"] = re.sub(r"(recorded )[-+]?\d+(?:\.\d+)?(% rainfall anomaly)(?: \(estimate for [^)]*\))*",
                                        lambda k: f"{k.group(1)}{p['rainfall_anomaly_pct']:+.1f}{k.group(2)} "
                                                  f"(estimate for {p['name']})", wr["summary"])
+
+        # Strip legacy undocumented scalar percentage scores from rice_suitability
+        if "rice_suitability" in p and isinstance(p["rice_suitability"], dict):
+            p["rice_suitability"].pop("score", None)
+            p["rice_suitability"].pop("score_pct", None)
+        p.pop("rice_suitability_score", None)
     path.write_text(json.dumps(layer, ensure_ascii=False, allow_nan=False), encoding="utf-8")
     if changed:
-        print(f"  monthly rainfall signals that changed in {path.name} (M5: re-derive any level built on them):")
+        print(f"  monthly rainfall signals that changed in {path.name} (water-risk levels automatically re-derived):")
         for line in changed:
             print("    " + line)
     return True

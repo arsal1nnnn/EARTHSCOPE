@@ -91,6 +91,32 @@ Classes: **Highly Suitable** (documented for the land type, no limiting factor),
 
 The numeric weights are a screening convention chosen by M4 to order results. They are not a validated agronomic model. "Not Recommended" means "no documented recommendation", not "will fail".
 
+### 4.6 M5 Geospatial map presentation rules (`mapStyles.js`, `rainfall_taluka.py`)
+
+To satisfy the project brief requirement that any combined presentation rule must be explicitly documented:
+
+1. **Agricultural Water Risk Classification (`water_risk_level`)**:
+   Derived deterministically from M4's multi-sensor `indicator_agreement`:
+   - **High Water Risk (Level 3)**: Concurrent dry signals (`indicator_agreement == "concurrent dry signals"`). Both IMERG rainfall departure <= -20 % and GLDAS root-zone soil moisture <= 30th percentile simultaneously.
+   - **Moderate Water Risk (Level 2)**: Single dry signal with normal buffer (`"dry" in indicator_agreement`, e.g. `mixed: dry, near normal` or conflicting signals). One sensor indicates a moisture deficit while the other remains at or above normal.
+   - **Low Water Risk (Level 1)**: Zero dry signals (`all near normal`, `concurrent wet signals`, or `mixed: near normal, wet`).
+   *Dynamic re-derivation*: Applied consistently to both the Kharif seasonal aggregate and individual monthly views (Jun-Sep). When IMERG taluka-level estimates are computed, Canacona's September rainfall departure is -19.3 % (near normal) with 50th percentile soil moisture, resulting in `all near normal` and **Low Water Risk**, while the other 11 talukas have rainfall departure <= -20 % and are classified as **Moderate Water Risk**.
+
+2. **Rice Variety Suitability Presentation**:
+   - The map displays M4's qualitative documentation-based screening classes from `rice_suitability_matrix.csv` (**Highly Suitable**, **Moderately Suitable**, **Not Recommended**) and candidate varieties per ecology (Khazan, Kher, Morod).
+   - Any undocumented scalar percentage (such as the legacy demo "96%") has been removed from all layers, tooltips, and data structures. The UI groups recommended varieties by documented agro-ecology:
+     - Khazan (coastal saline lowlands): Goa Dhan 1-4, CSR-27, CSR-36 (documented salinity tolerance).
+     - Kher (rainfed shallow lowlands): Karjat-3, Naveen (documented Goa recommendation).
+     - Morod (rainfed uplands): Annada (documented upland variety).
+   - The choropleth layer colors talukas by their documented agro-ecological suitability coverage (Multi-ecology Khazan + Kher lowlands in deep emerald, Khazan coastal saline in cyan, Kher lowlands + Morod uplands in teal).
+
+3. **Separate Indicators Access**:
+   The interactive map directly provides individual layer toggles and inspector cards for the uncombined NASA products:
+   - Precipitation Anomaly % (GPM IMERG Final monthly v07, ~11 km)
+   - Root-Zone Soil Moisture Percentile (GLDAS-2.1 Noah, ~25 km)
+   - Rainfall Percentile (GPM IMERG Final v07)
+   - Multi-Sensor Indicator Agreement (Categorical cross-sensor agreement)
+
 ## 5. Results for Kharif 2025
 
 ### Seasonal
