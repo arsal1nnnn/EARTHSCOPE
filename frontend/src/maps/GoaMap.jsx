@@ -369,7 +369,7 @@ export default function GoaMap({
                 }}
               >
                 <ShieldAlert style={{ width: 14, height: 14 }} />
-                <span>Water Risk</span>
+                <span>Water-Deficit Signal</span>
               </button>
 
               <button
@@ -889,7 +889,7 @@ export default function GoaMap({
                     }}
                   >
                     <ShieldAlert style={{ width: 13, height: 13 }} />
-                    {selectedProps.water_risk_level || "Low"} Water Risk
+                    Water-deficit signal: {selectedProps.water_risk_level || "Low"}
                   </span>
                   <span style={{ fontSize: "10px", color: "#94a3b8" }}>
                     Signal: {selectedProps.rainfall_signal || "near normal"}
@@ -1112,9 +1112,9 @@ export default function GoaMap({
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Water Risk:</span>
+                    <span style={{ color: "#94a3b8" }}>Water-Deficit Signal:</span>
                     <strong style={{ color: selectedProps.water_risk_level === "High" ? "#f87171" : selectedProps.water_risk_level === "Moderate" ? "#fbbf24" : "#34d399" }}>
-                      {selectedProps.water_risk_level || "Low Risk"}
+                      {selectedProps.water_risk_level || "Low"}
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -1154,9 +1154,9 @@ export default function GoaMap({
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Water Risk:</span>
+                    <span style={{ color: "#94a3b8" }}>Water-Deficit Signal:</span>
                     <strong style={{ color: compareProps.water_risk_level === "High" ? "#f87171" : compareProps.water_risk_level === "Moderate" ? "#fbbf24" : "#34d399" }}>
-                      {compareProps.water_risk_level || "Low Risk"}
+                      {compareProps.water_risk_level || "Low"}
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>

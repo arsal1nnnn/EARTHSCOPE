@@ -15,8 +15,8 @@ def generate_report(assessment_id: str) -> ReportResponse:
         assessment_id=assessment_id,
         summary_text=f"Demonstration Report for Assessment {assessment_id}: Suitability and Water Risk integrated analysis.",
         recommended_actions=[
-            "Review NASA water risk projections for the upcoming Kharif season.",
-            "Verify field-level soil salinity before recommending Korgut."
+            "Review NASA GPM IMERG rainfall and GLDAS soil moisture indicators for Kharif.",
+            "Verify field-level soil salinity before planting Khazan varieties (Goa Dhan 1-4, CSR-27, CSR-36)."
         ],
         generated_at=timestamp
     )

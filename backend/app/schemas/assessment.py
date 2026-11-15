@@ -7,17 +7,17 @@ class AssessmentRequest(BaseModel):
     variety_id: str
 
 class AssessmentResponse(BaseModel):
-    assessment_id: str
     region_id: str
-    ecology: str
     variety_id: str
-    is_suitable: bool
+    ecology: str
+    suitability_class: str
     suitability_score: float
-    water_risk_level: str
-    scientific_notes: List[str]
-    is_mock_data: bool = True
-
-# --- NEW COMPARISON SCHEMAS ---
+    supporting_factors: List[str]
+    limiting_factors: List[str]
+    missing_information: Optional[str] = None
+    seasonal_water_context: Optional[str] = None
+    source_references: Optional[str] = None
+    is_demo_data: bool = False
 
 class ComparisonRequest(BaseModel):
     region_id: str

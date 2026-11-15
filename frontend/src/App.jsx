@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { id: "regions", label: "Region Explorer", icon: MapPinned },
   { id: "suitability", label: "Rice Suitability", icon: Sprout },
   { id: "comparison", label: "Variety Comparison", icon: BarChart3 },
-  { id: "water", label: "Water-Risk Monitor", icon: Waves },
+  { id: "water", label: "Water-Deficit Monitor", icon: Waves },
   { id: "reports", label: "Reports", icon: FileText },
 ];
 
@@ -23,16 +23,23 @@ const ECOLOGIES = [
   { value: "khazan", label: "Khazan", description: "Coastal saline lowlands" },
 ];
 
-// Provisional UI catalogue only. Verify names and requirements with the research lead.
+// Confirmed ICAR-CCARI & KVK Goa documented varieties from rice_variety_catalogue.csv
 const VARIETIES = [
-  { id: "goa_dhan_1", name: "Goa Dhan 1" },
-  { id: "goa_dhan_2", name: "Goa Dhan 2" },
-  { id: "goa_dhan_3", name: "Goa Dhan 3" },
+  { id: "goa_dhan_1", name: "Goa Dhan 1", ecology: "Khazan (coastal saline)" },
+  { id: "goa_dhan_2", name: "Goa Dhan 2", ecology: "Khazan (coastal saline)" },
+  { id: "goa_dhan_3", name: "Goa Dhan 3", ecology: "Khazan (coastal saline)" },
+  { id: "goa_dhan_4", name: "Goa Dhan 4", ecology: "Khazan (coastal saline)" },
+  { id: "csr_27",     name: "CSR-27",     ecology: "Khazan (coastal saline)" },
+  { id: "csr_36",     name: "CSR-36",     ecology: "Khazan (coastal saline)" },
+  { id: "karjat_3",   name: "Karjat-3",   ecology: "Kher (rainfed shallow lowland)" },
+  { id: "naveen",     name: "Naveen",     ecology: "Kher (rainfed shallow lowland)" },
+  { id: "annada",     name: "Annada",     ecology: "Morod (rainfed upland)" },
 ];
 
-const DEMO_AREAS = {
-  "North Goa": ["Demo area 001", "Demo area 002"],
-  "South Goa": ["Demo area 003", "Demo area 004"],
+// All 12 Goa administrative talukas
+const GOA_TALUKAS = {
+  "North Goa": ["Pernem", "Bardez", "Tiswadi", "Bicholim", "Sattari"],
+  "South Goa": ["Ponda", "Mormugao", "Salcete", "Quepem", "Sanguem", "Dharbandora", "Canacona"],
 };
 
 function Sidebar({ activePage, onNavigate, mobileOpen, onClose }) {
@@ -118,7 +125,7 @@ function SelectField({ label, value, onChange, options, help }) {
 }
 
 function AssessmentForm({ district, setDistrict, area, setArea, ecology, setEcology, varieties, setVarieties, onSubmit }) {
-  const areas = DEMO_AREAS[district] || [];
+  const talukas = GOA_TALUKAS[district] || [];
   const toggleVariety = (id) => {
     setVarieties((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   };
@@ -134,12 +141,12 @@ function AssessmentForm({ district, setDistrict, area, setArea, ecology, setEcol
         <span className="step-pill">KHARIF</span>
       </div>
       <div className="form-grid">
-        <SelectField label="01 / DISTRICT" value={district} onChange={(v) => { setDistrict(v); setArea(DEMO_AREAS[v][0]); }} options={DISTRICTS} />
-        <SelectField label="02 / DEMONSTRATION AREA" value={area} onChange={setArea} options={areas} help="Illustrative demo IDs until verified GIS areas are connected." />
+        <SelectField label="01 / DISTRICT" value={district} onChange={(v) => { setDistrict(v); setArea(GOA_TALUKAS[v][0]); }} options={DISTRICTS} />
+        <SelectField label="02 / TALUKA" value={area} onChange={setArea} options={talukas} help="Goa administrative taluka boundary." />
         <SelectField label="03 / AGRICULTURAL ECOLOGY" value={ecology} onChange={setEcology} options={ECOLOGIES.map((e) => ({ value: e.value, label: `${e.label} — ${e.description}` }))} />
         <div className="field">
           <span className="field-label">04 / SEASON</span>
-          <div className="fixed-value"><Leaf size={16} /> Kharif <span>Initial project scope</span></div>
+          <div className="fixed-value"><Leaf size={16} /> Kharif <span>June–September 2025</span></div>
         </div>
       </div>
       <div className="field variety-field">
@@ -149,11 +156,11 @@ function AssessmentForm({ district, setDistrict, area, setArea, ecology, setEcol
             <label className={`variety-option ${varieties.includes(variety.id) ? "selected" : ""}`} key={variety.id}>
               <input type="checkbox" checked={varieties.includes(variety.id)} onChange={() => toggleVariety(variety.id)} />
               <span className="fake-check"><CheckCircle2 size={15} /></span>
-              <span>{variety.name}</span>
+              <span>{variety.name} <small style={{ color: "#94a3b8", fontSize: "10px" }}>({variety.ecology})</small></span>
             </label>
           ))}
         </div>
-        <small className="field-help">Provisional catalogue for interface development. Confirm variety names and requirements with the agricultural research lead.</small>
+        <small className="field-help">ICAR-CCARI & KVK Goa documented rice varieties screened across local ecologies.</small>
       </div>
       <button className="primary-button" type="submit" disabled={varieties.length === 0}>
         Configure assessment <ChevronRight size={17} />
@@ -165,12 +172,12 @@ function AssessmentForm({ district, setDistrict, area, setArea, ecology, setEcol
 function Dashboard({ onNavigate, formProps, message, onSubmit }) {
   return (
     <>
-      <PageIntro eyebrow="YOUR REGION. YOUR AGRICULTURAL DECISIONS." title={<>Understand Goa's rice-growing <span>landscape.</span></>} description="Explore rice variety suitability and environmental water-risk evidence to support district-level agricultural planning." />
+      <PageIntro eyebrow="YOUR REGION. YOUR AGRICULTURAL DECISIONS." title={<>Understand Goa's rice-growing <span>landscape.</span></>} description="Explore rice variety suitability and environmental water-deficit evidence to support district-level agricultural planning." />
       <div className="stats-grid">
-        <StatCard icon={MapPinned} label="DEMONSTRATION AREAS" value="12 Talukas" detail="Goa GIS boundaries connected" />
-        <StatCard icon={Sprout} label="RICE VARIETIES" value="Provisional 03" detail="Catalogue awaiting research verification" tone="blue" />
-        <StatCard icon={ClipboardList} label="ASSESSMENTS" value="Not yet available" detail="No live assessments connected" tone="violet" />
-        <StatCard icon={Waves} label="WATER-RISK DATA" value="Connected" detail="GPM IMERG & GLDAS-2.1 Noah" tone="amber" />
+        <StatCard icon={MapPinned} label="GEOSPATIAL COVERAGE" value="12 Talukas" detail="Goa administrative boundaries" />
+        <StatCard icon={Sprout} label="RICE VARIETIES" value="9 Varieties" detail="ICAR-CCARI & KVK documented catalogue" tone="blue" />
+        <StatCard icon={ClipboardList} label="AGRO-ECOLOGIES" value="3 Ecologies" detail="Khazan, Kher, Morod" tone="violet" />
+        <StatCard icon={Waves} label="WATER-DEFICIT DATA" value="Connected" detail="GPM IMERG Final v07 & GLDAS-2.1" tone="amber" />
       </div>
 
       {/* Interactive 2D Geospatial Map */}
@@ -194,14 +201,14 @@ function Dashboard({ onNavigate, formProps, message, onSubmit }) {
         <aside className="panel workflow-panel">
           <p className="eyebrow">HOW IT WORKS</p>
           <h2>Decision-support workflow</h2>
-          <div className="workflow-step"><span>01</span><div><strong>Select an area</strong><small>Choose district and verified demonstration area.</small></div></div>
-          <div className="workflow-step"><span>02</span><div><strong>Assess rice suitability</strong><small>Compare documented variety needs with local conditions.</small></div></div>
-          <div className="workflow-step"><span>03</span><div><strong>Review water-risk evidence</strong><small>Inspect rainfall and soil-moisture indicators separately.</small></div></div>
-          <button className="text-button" onClick={() => onNavigate("water")}>Explore water-risk monitor <ChevronRight size={15} /></button>
+          <div className="workflow-step"><span>01</span><div><strong>Select an area</strong><small>Choose district and administrative taluka.</small></div></div>
+          <div className="workflow-step"><span>02</span><div><strong>Assess rice suitability</strong><small>Compare documented variety needs with local ecologies.</small></div></div>
+          <div className="workflow-step"><span>03</span><div><strong>Review water-deficit evidence</strong><small>Inspect rainfall and soil-moisture indicators separately.</small></div></div>
+          <button className="text-button" onClick={() => onNavigate("water")}>Explore water-deficit monitor <ChevronRight size={15} /></button>
         </aside>
       </div>
       {message && <div className="notice success-notice"><CheckCircle2 size={18} /><div><strong>Assessment configuration saved</strong><p>{message}</p></div></div>}
-      <div className="notice info-notice"><CircleHelp size={18} /><p><strong>Prototype data notice:</strong> Areas and variety options shown here are illustrative placeholders. No real suitability result or NASA measurement is being displayed.</p></div>
+      <div className="notice info-notice"><CircleHelp size={18} /><p><strong>NASA Earth Observation Data:</strong> Rainfall metrics from NASA GPM IMERG Final monthly v07 (~11 km) and root-zone soil moisture from GLDAS-2.1 Noah (~25 km model assimilation). Rice suitability derived from ICAR-CCARI and KVK Goa documentation across Khazan, Kher, and Morod land types.</p></div>
     </>
   );
 }
@@ -209,11 +216,11 @@ function Dashboard({ onNavigate, formProps, message, onSubmit }) {
 function RegionExplorer({ district, setDistrict, area, setArea, ecology, setEcology }) {
   return (
     <>
-      <PageIntro eyebrow="GEOGRAPHIC CONTEXT" title="Region Explorer" description="Choose a Goa district and inspect the agricultural ecology assigned to a verified demonstration area." />
+      <PageIntro eyebrow="GEOGRAPHIC CONTEXT" title="Region Explorer" description="Choose a Goa district and inspect the agricultural ecology assigned to a verified taluka." />
       <div className="panel">
         <div className="form-grid">
-          <SelectField label="DISTRICT" value={district} onChange={(v) => { setDistrict(v); setArea(DEMO_AREAS[v][0]); }} options={DISTRICTS} />
-          <SelectField label="DEMONSTRATION AREA" value={area} onChange={setArea} options={DEMO_AREAS[district]} />
+          <SelectField label="DISTRICT" value={district} onChange={(v) => { setDistrict(v); setArea(GOA_TALUKAS[v][0]); }} options={DISTRICTS} />
+          <SelectField label="TALUKA" value={area} onChange={setArea} options={GOA_TALUKAS[district]} />
           <SelectField label="ECOLOGY" value={ecology} onChange={setEcology} options={ECOLOGIES.map((e) => ({ value: e.value, label: `${e.label} — ${e.description}` }))} />
         </div>
         
@@ -255,7 +262,7 @@ function VarietyComparison({ varieties }) {
 function WaterRisk() {
   return (
     <>
-      <PageIntro eyebrow="NASA EARTH OBSERVATION EVIDENCE" title="Water-Risk Monitor" description="Review environmental indicators that may help characterize changing water conditions across selected areas." />
+      <PageIntro eyebrow="NASA EARTH OBSERVATION EVIDENCE" title="Water-Deficit Monitor" description="Review environmental indicators (rainfall anomaly and model root-zone moisture) that characterize dryness across selected areas." />
       <div className="stats-grid two-stats">
         <StatCard icon={Waves} label="RAINFALL INDICATOR" value="Connected" detail="GPM IMERG Final monthly v07 (~11 km)" tone="blue" />
         <StatCard icon={Layers3} label="ROOT-ZONE SOIL MOISTURE" value="Connected" detail="GLDAS-2.1 Noah (~25 km, model assimilation)" tone="amber" />
@@ -265,7 +272,7 @@ function WaterRisk() {
           <GoaMap height="560px" />
         </div>
       </div>
-      <div className="notice info-notice"><CircleHelp size={18} /><p>Water-risk indicators are separate from rice variety suitability and do not represent an official drought declaration.</p></div>
+      <div className="notice info-notice"><CircleHelp size={18} /><p>Water-deficit indicators evaluate dryness only and do not represent an official drought declaration or flood assessment.</p></div>
     </>
   );
 }
@@ -283,9 +290,9 @@ function App() {
   const [activePage, setActivePage] = useState("dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [district, setDistrict] = useState("North Goa");
-  const [area, setArea] = useState(DEMO_AREAS["North Goa"][0]);
+  const [area, setArea] = useState(GOA_TALUKAS["North Goa"][0]);
   const [ecology, setEcology] = useState("morod");
-  const [varieties, setVarieties] = useState(["goa_dhan_1", "goa_dhan_2"]);
+  const [varieties, setVarieties] = useState(["goa_dhan_1", "csr_27"]);
   const [message, setMessage] = useState("");
 
   const pageTitle = useMemo(() => NAV_ITEMS.find((item) => item.id === activePage)?.label || "Dashboard", [activePage]);

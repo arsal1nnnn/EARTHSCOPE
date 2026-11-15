@@ -95,12 +95,13 @@ The numeric weights are a screening convention chosen by M4 to order results. Th
 
 To satisfy the project brief requirement that any combined presentation rule must be explicitly documented:
 
-1. **Agricultural Water Risk Classification (`water_risk_level`)**:
-   Derived deterministically from M4's multi-sensor `indicator_agreement`:
-   - **High Water Risk (Level 3)**: Concurrent dry signals (`indicator_agreement == "concurrent dry signals"`). Both IMERG rainfall departure <= -20 % and GLDAS root-zone soil moisture <= 30th percentile simultaneously.
-   - **Moderate Water Risk (Level 2)**: Single dry signal with normal buffer (`"dry" in indicator_agreement`, e.g. `mixed: dry, near normal` or conflicting signals). One sensor indicates a moisture deficit while the other remains at or above normal.
-   - **Low Water Risk (Level 1)**: Zero dry signals (`all near normal`, `concurrent wet signals`, or `mixed: near normal, wet`).
-   *Dynamic re-derivation*: Applied consistently to both the Kharif seasonal aggregate and individual monthly views (Jun-Sep). When IMERG taluka-level estimates are computed, Canacona's September rainfall departure is -19.3 % (near normal) with 50th percentile soil moisture, resulting in `all near normal` and **Low Water Risk**, while the other 11 talukas have rainfall departure <= -20 % and are classified as **Moderate Water Risk**.
+1. **Water-Deficit Signal Classification (`water_risk_level`)**:
+   Derived deterministically from M4's two indicators (`indicator_agreement` between IMERG rainfall and GLDAS root-zone soil moisture):
+   - **High Deficit (Level 3)**: Concurrent dry signals (`indicator_agreement == "concurrent dry signals"`). Both IMERG rainfall departure <= -20 % and GLDAS root-zone soil moisture <= 30th percentile simultaneously.
+   - **Moderate Deficit (Level 2)**: Single dry signal with normal buffer (`"dry" in indicator_agreement`, e.g. `mixed: dry, near normal` or conflicting signals). One indicator indicates a moisture deficit while the other remains at or above normal.
+   - **Low Deficit (Level 1)**: Zero dry signals (`all near normal`, `concurrent wet signals`, or `mixed: near normal, wet`).
+   *Naming*: Named "Water-deficit signal: Low / Moderate / High" because the rule evaluates dryness only. Kharif 2025 had root-zone soil moisture above all 20 baseline seasons and May rainfall about six to seven times normal; calling this "low water risk" would be misleading for flood-prone Kher and Khazan lands.
+   *Dynamic re-derivation*: Applied consistently to both the Kharif seasonal aggregate and individual monthly views (Jun-Sep). When IMERG taluka-level estimates are computed, Canacona's September rainfall departure is -19.3 % (near normal) with 50th percentile soil moisture, resulting in `all near normal` and **Low Deficit**, while the other 11 talukas have rainfall departure <= -20 % and are classified as **Moderate Deficit**.
 
 2. **Rice Variety Suitability Presentation**:
    - The map displays M4's qualitative documentation-based screening classes from `rice_suitability_matrix.csv` (**Highly Suitable**, **Moderately Suitable**, **Not Recommended**) and candidate varieties per ecology (Khazan, Kher, Morod).
@@ -113,9 +114,9 @@ To satisfy the project brief requirement that any combined presentation rule mus
 3. **Separate Indicators Access**:
    The interactive map directly provides individual layer toggles and inspector cards for the uncombined NASA products:
    - Precipitation Anomaly % (GPM IMERG Final monthly v07, ~11 km)
-   - Root-Zone Soil Moisture Percentile (GLDAS-2.1 Noah, ~25 km)
+   - Root-Zone Soil Moisture Percentile (GLDAS-2.1 Noah model assimilation, ~25 km)
    - Rainfall Percentile (GPM IMERG Final v07)
-   - Multi-Sensor Indicator Agreement (Categorical cross-sensor agreement)
+   - Two-Indicator Agreement (Categorical cross-indicator agreement between IMERG rainfall and GLDAS model root-zone moisture)
 
 ### 4.8 Preliminary Kharif 2026 (`rainfall_late.py`, `water_risk_2026.py`)
 
@@ -245,11 +246,15 @@ Still open:
 11. **Taluka rainfall is a box estimate.** It uses the taluka's bounding rectangle, not its outline, and only 2 to 12 IMERG cells. Rectangles of neighbouring talukas overlap and share cells, so the values are not independent and small differences are not meaningful.
 12. **Signal labels flip near the threshold.** Monthly values sit close to the +/-20 % boundaries (for example Canacona September -19.3 % "near normal" beside Quepem -21.8 % "dry"). A colour difference on the monthly map can reflect a difference of two or three percentage points.
 13. **Taluka mm totals should not be quoted.** The IMERG baselines are higher for coastal talukas (Bardez 2,441 mm) than for the hill talukas (Sattari 2,100 mm, Dharbandora 2,063 mm). Station normals show the opposite pattern [S4], and published evaluations report that IMERG underestimates rainfall over the Western Ghats relative to gauges [S10]. Percent departure compares each taluka with its own record and is less affected.
+<<<<<<< HEAD
 14. **Map-only combined values and M5 rules.** The "water risk level / score" is deterministically derived from M4's multi-sensor indicator agreement (see section 4.7). The legacy per-taluka scalar "rice suitability 96%" has been removed in favor of displaying the qualitative screening classes and recommended varieties per ecology from M4's matrix. Separate uncombined NASA indicators are directly accessible on the map.
 15. **2026 is preliminary.** The Late Run has no monthly gauge adjustment. On the 2025 season it differed from the Final Run by 6-9 percentage points, so a Late Run seasonal figure should be read as accurate to roughly +/-10 points. The 2026 deficits (26-32 %) are outside that margin; their exact size and the north/south ordering are not.
 16. **Late Run monthly values are low confidence.** Single months of 2025 differed from the Final Run by up to about 40 points. For 2026, show whether a month was below or above normal, not the percentage, and treat monthly dry/wet labels as indicative.
 17. **2026 soil moisture is incomplete.** June and July only. There is no full-season soil-moisture indicator, the season-level agreement rests on rainfall alone, and the "months with concurrent dry signals" count can only see June and July.
 18. **2026 has no taluka estimates.** Every taluka shows its district's value.
+=======
+14. **Map-only combined values and M5 rules.** The "water-deficit signal (Low / Moderate / High)" is deterministically derived from M4's two indicators (rainfall and soil moisture) agreement (see section 4.7). It is named "water-deficit signal" because the rule evaluates dryness only and does not assess flood risk. The legacy per-taluka scalar "rice suitability 96%" has been removed in favor of displaying the qualitative screening classes and recommended varieties per ecology from M4's matrix. Separate uncombined NASA indicators are directly accessible on the map.
+>>>>>>> origin/feat/goa-geospatial-map
 
 ## 8. Output tables (in `data/processed/`, each as .parquet and .csv)
 
