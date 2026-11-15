@@ -50,7 +50,7 @@ export default function StressLayer({
     const smPctile         = props.sm_gldas_percentile  !== undefined ? `${props.sm_gldas_percentile}th pctl` : "N/A";
     const smSignal         = props.sm_gldas_signal       || "—";
     const agreement        = props.indicator_agreement   || "—";
-    const waterRiskLabel   = props.water_risk_level || (props.water_risk?.label || "Low Water Risk");
+    const deficitSignal    = props.water_risk_level      || "Low";
     const riceClass        = props.rice_suitability_class || (props.rice_suitability?.class || "Highly Suitable");
     const topVarieties     = (props.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ");
     const isMonthView      = activeMonthId !== "all";
@@ -71,8 +71,8 @@ export default function StressLayer({
         </div>
 
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-          <span style="color: #94a3b8;">Water Risk:</span>
-          <strong style="color: ${waterRiskLabel.includes('High') ? '#f87171' : waterRiskLabel.includes('Moderate') ? '#fbbf24' : '#34d399'};">${waterRiskLabel}</strong>
+          <span style="color: #94a3b8;">Water-Deficit Signal:</span>
+          <strong style="color: ${deficitSignal === 'High' ? '#f87171' : deficitSignal === 'Moderate' ? '#fbbf24' : '#34d399'};">${deficitSignal}</strong>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
           <span style="color: #94a3b8;">Rice Suitability:</span>

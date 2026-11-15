@@ -22,15 +22,15 @@ export function deriveWaterRiskFromAgreement(agreement = "") {
 export const METRIC_CONFIGS = {
   water_risk: {
     id: "water_risk",
-    label: "Agricultural Water Risk",
-    unit: "Risk Class",
-    description: "Multi-indicator water stress based on concurrent NASA GPM rain & GLDAS moisture signals",
-    source: "NASA GPM IMERG + GLDAS-2.1 Noah indicator agreement",
+    label: "Water-Deficit Signal",
+    unit: "Deficit Class (Low / Moderate / High)",
+    description: "Evaluates dryness based on two indicators: NASA GPM IMERG rainfall departure and GLDAS-2.1 Noah model root-zone moisture",
+    source: "Two indicators: GPM IMERG + GLDAS-2.1 Noah model",
     getColor: (val) => {
-      // 1: Low Risk (Healthy Water Buffer), 2: Moderate Risk (Deficit / Transition), 3: High Risk
-      if (val >= 3) return "#ef4444"; // Red
-      if (val >= 2) return "#f59e0b"; // Amber
-      return "#10b981"; // Emerald
+      // 1: Low Deficit (No dry signals), 2: Moderate Deficit (Single dry signal with buffer), 3: High Deficit (Concurrent dry signals)
+      if (val >= 3) return "#ef4444"; // Red (High Deficit)
+      if (val >= 2) return "#f59e0b"; // Amber (Moderate Deficit)
+      return "#10b981"; // Emerald (Low Deficit)
     },
   },
   rice_suitability: {

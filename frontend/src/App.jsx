@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { id: "regions", label: "Region Explorer", icon: MapPinned },
   { id: "suitability", label: "Rice Suitability", icon: Sprout },
   { id: "comparison", label: "Variety Comparison", icon: BarChart3 },
-  { id: "water", label: "Water-Risk Monitor", icon: Waves },
+  { id: "water", label: "Water-Deficit Monitor", icon: Waves },
   { id: "reports", label: "Reports", icon: FileText },
 ];
 
@@ -172,12 +172,12 @@ function AssessmentForm({ district, setDistrict, area, setArea, ecology, setEcol
 function Dashboard({ onNavigate, formProps, message, onSubmit }) {
   return (
     <>
-      <PageIntro eyebrow="YOUR REGION. YOUR AGRICULTURAL DECISIONS." title={<>Understand Goa's rice-growing <span>landscape.</span></>} description="Explore rice variety suitability and environmental water-risk evidence to support district-level agricultural planning." />
+      <PageIntro eyebrow="YOUR REGION. YOUR AGRICULTURAL DECISIONS." title={<>Understand Goa's rice-growing <span>landscape.</span></>} description="Explore rice variety suitability and environmental water-deficit evidence to support district-level agricultural planning." />
       <div className="stats-grid">
         <StatCard icon={MapPinned} label="GEOSPATIAL COVERAGE" value="12 Talukas" detail="Goa administrative boundaries" />
         <StatCard icon={Sprout} label="RICE VARIETIES" value="9 Varieties" detail="ICAR-CCARI & KVK documented catalogue" tone="blue" />
         <StatCard icon={ClipboardList} label="AGRO-ECOLOGIES" value="3 Ecologies" detail="Khazan, Kher, Morod" tone="violet" />
-        <StatCard icon={Waves} label="WATER-RISK DATA" value="Connected" detail="GPM IMERG Final v07 & GLDAS-2.1" tone="amber" />
+        <StatCard icon={Waves} label="WATER-DEFICIT DATA" value="Connected" detail="GPM IMERG Final v07 & GLDAS-2.1" tone="amber" />
       </div>
 
       {/* Interactive 2D Geospatial Map */}
@@ -203,8 +203,8 @@ function Dashboard({ onNavigate, formProps, message, onSubmit }) {
           <h2>Decision-support workflow</h2>
           <div className="workflow-step"><span>01</span><div><strong>Select an area</strong><small>Choose district and administrative taluka.</small></div></div>
           <div className="workflow-step"><span>02</span><div><strong>Assess rice suitability</strong><small>Compare documented variety needs with local ecologies.</small></div></div>
-          <div className="workflow-step"><span>03</span><div><strong>Review water-risk evidence</strong><small>Inspect rainfall and soil-moisture indicators separately.</small></div></div>
-          <button className="text-button" onClick={() => onNavigate("water")}>Explore water-risk monitor <ChevronRight size={15} /></button>
+          <div className="workflow-step"><span>03</span><div><strong>Review water-deficit evidence</strong><small>Inspect rainfall and soil-moisture indicators separately.</small></div></div>
+          <button className="text-button" onClick={() => onNavigate("water")}>Explore water-deficit monitor <ChevronRight size={15} /></button>
         </aside>
       </div>
       {message && <div className="notice success-notice"><CheckCircle2 size={18} /><div><strong>Assessment configuration saved</strong><p>{message}</p></div></div>}
@@ -262,7 +262,7 @@ function VarietyComparison({ varieties }) {
 function WaterRisk() {
   return (
     <>
-      <PageIntro eyebrow="NASA EARTH OBSERVATION EVIDENCE" title="Water-Risk Monitor" description="Review environmental indicators that may help characterize changing water conditions across selected areas." />
+      <PageIntro eyebrow="NASA EARTH OBSERVATION EVIDENCE" title="Water-Deficit Monitor" description="Review environmental indicators (rainfall anomaly and model root-zone moisture) that characterize dryness across selected areas." />
       <div className="stats-grid two-stats">
         <StatCard icon={Waves} label="RAINFALL INDICATOR" value="Connected" detail="GPM IMERG Final monthly v07 (~11 km)" tone="blue" />
         <StatCard icon={Layers3} label="ROOT-ZONE SOIL MOISTURE" value="Connected" detail="GLDAS-2.1 Noah (~25 km, model assimilation)" tone="amber" />
@@ -272,7 +272,7 @@ function WaterRisk() {
           <GoaMap height="560px" />
         </div>
       </div>
-      <div className="notice info-notice"><CircleHelp size={18} /><p>Water-risk indicators are separate from rice variety suitability and do not represent an official drought declaration.</p></div>
+      <div className="notice info-notice"><CircleHelp size={18} /><p>Water-deficit indicators evaluate dryness only and do not represent an official drought declaration or flood assessment.</p></div>
     </>
   );
 }
