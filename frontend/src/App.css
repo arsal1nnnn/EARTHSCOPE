@@ -131,6 +131,8 @@ h2 { margin: 0 0 8px; color: #edf3f6; font-size: 20px; font-weight: 600; font-fa
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
   font-weight: 800 !important;
+  text-shadow: none !important;
+  filter: none !important;
   hyphens: none !important;
   word-break: normal !important;
   overflow-wrap: normal !important;
@@ -138,14 +140,16 @@ h2 { margin: 0 0 8px; color: #edf3f6; font-size: 20px; font-weight: 600; font-fa
 
 .hero-cta-btn {
   background-color: #004FF4;
-  box-shadow: 0 8px 30px rgba(0, 79, 244, 0.45);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none !important;
+  filter: none !important;
+  transition: all 0.2s ease;
 }
 
 .hero-cta-btn:hover {
-  background-color: #0045d8;
-  transform: translateY(-2px);
-  box-shadow: 0 12px 36px rgba(0, 79, 244, 0.6);
+  background-color: #0042db;
+  transform: translateY(-1px);
+  box-shadow: none !important;
+  filter: none !important;
 }
 
 .hero-cta-btn:active {

@@ -40,9 +40,9 @@ const BAYER_16_THRESHOLDS = createBayer16Thresholds();
 
 /**
  * High-performance Bayer 16x16 Dither Canvas component
- * - Lowered background image so palm tree tops align at y = 355px (matching Figma Dashboard.png)
- * - Refined dither effect: fine 2px cells, softened blend (0.60 strength)
- * - Gradient overlay: #004FF4 at top to #86A6D9 at mid-sky
+ * - Flawless continuous sky with zero seams or hard boxes
+ * - Uses alpha-feathering on the landscape image top edge so it dissolves seamlessly into the sky gradient
+ * - Fine 2px dither cell with softened blend (0.58)
  */
 export default function DitherCanvas({
   imageSrc = defaultLandscape,
@@ -50,7 +50,7 @@ export default function DitherCanvas({
   levels = 4,
   brightness = 1.0,
   contrast = 1.0,
-  ditherStrength = 0.60,
+  ditherStrength = 0.58,
   gradientTop = "#004FF4",
   gradientBottom = "#86A6D9",
   className = "",
@@ -80,25 +80,47 @@ export default function DitherCanvas({
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (!ctx) return;
 
-      // 1. Fill base with sky gradient from #004FF4 to #86A6D9
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.55);
+      // 1. Draw continuous background sky gradient across the entire canvas
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.60);
       skyGrad.addColorStop(0, "#004FF4");
       skyGrad.addColorStop(0.55, "#86A6D9");
       skyGrad.addColorStop(1, "#86A6D9");
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, targetWidth, targetHeight);
 
-      // 2. Lower the landscape photo so palm tree tops start at y ≈ 355px (matching Figma Dashboard.png)
-      // Original image is 800x556. Scaling to cover width = 1920x1334.4px
+      // 2. Render lowered landscape image with smooth alpha feathering on its top edge
+      // This completely eliminates any sharp horizontal line or "box"
       const scale = targetWidth / img.width;
       const scaledHeight = img.height * scale;
-      const offsetY = 125; // Lowers image down, giving tall clear blue sky above
-      ctx.drawImage(img, 0, offsetY, targetWidth, scaledHeight);
+      const offsetY = 120; // Lower image so palm tree tops align at y ≈ 355px
 
-      // 3. Apply smooth linear gradient overlay on top: #004FF4 -> #86A6D9
-      const grad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.54);
-      grad.addColorStop(0, "rgba(0, 79, 244, 0.74)");        // #004FF4 at top
-      grad.addColorStop(0.55, "rgba(134, 166, 217, 0.44)");   // #86A6D9 mid-sky
+      // Use an offscreen canvas to apply an alpha fade-in on the image's top edge
+      const offCanvas = document.createElement("canvas");
+      offCanvas.width = targetWidth;
+      offCanvas.height = targetHeight;
+      const offCtx = offCanvas.getContext("2d");
+
+      if (offCtx) {
+        offCtx.drawImage(img, 0, offsetY, targetWidth, scaledHeight);
+
+        // Alpha feather the top 140px of the image so it melts into the sky gradient
+        offCtx.globalCompositeOperation = "destination-in";
+        const maskGrad = offCtx.createLinearGradient(0, offsetY, 0, offsetY + 140);
+        maskGrad.addColorStop(0, "rgba(0, 0, 0, 0)");
+        maskGrad.addColorStop(1, "rgba(0, 0, 0, 1)");
+        offCtx.fillStyle = maskGrad;
+        offCtx.fillRect(0, offsetY, targetWidth, 140);
+
+        // Composite the feathered image onto the main sky canvas
+        ctx.drawImage(offCanvas, 0, 0);
+      } else {
+        ctx.drawImage(img, 0, offsetY, targetWidth, scaledHeight);
+      }
+
+      // 3. Apply smooth linear gradient overlay from #004FF4 at top to #86A6D9 at mid-sky
+      const grad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.55);
+      grad.addColorStop(0, "rgba(0, 79, 244, 0.70)");        // #004FF4 at top
+      grad.addColorStop(0.55, "rgba(134, 166, 217, 0.38)");   // #86A6D9 mid-sky
       grad.addColorStop(1, "rgba(134, 166, 217, 0.0)");      // feather into horizon
 
       ctx.fillStyle = grad;
@@ -169,9 +191,6 @@ export default function DitherCanvas({
         inset: 0,
         overflow: "hidden",
         backgroundColor: "#004FF4",
-        backgroundImage: `url(${defaultLandscape})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center 125px",
         ...style,
       }}
     >
@@ -182,8 +201,7 @@ export default function DitherCanvas({
           height: "100%",
           objectFit: "cover",
           display: "block",
-          opacity: rendered ? 1 : 0.9,
-          transition: "opacity 0.25s ease-in-out",
+          opacity: 1,
         }}
       />
     </div>

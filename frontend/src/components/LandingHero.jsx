@@ -3,10 +3,10 @@ import DitherCanvas from "./DitherCanvas";
 
 /**
  * LandingHero — Replicates the Figma design (Dashboard.png)
- * - Typography: Pure Montserrat (Weights 800 / Bold)
- * - Tagline: Exactly 4 lines, 100% white text (no green)
- * - Background: Lowered landscape photo with softened Bayer 16x16 dithering
- * - CTA Button: Open Stress Dashboard ➔ in vivid blue (#004FF4)
+ * - Typography: Pure Montserrat Bold
+ * - Tagline: Exactly 4 lines, 100% white text, zero drop shadows
+ * - CTA Button: Flat vibrant blue (#004FF4), zero drop shadows
+ * - Background: Lowered landscape photo with seamless feathered sky & softened Bayer 16x16 dithering
  */
 export default function LandingHero({ onOpenDashboard }) {
   const handleScrollToDashboard = () => {
@@ -21,31 +21,22 @@ export default function LandingHero({ onOpenDashboard }) {
 
   return (
     <section className="hero-landing-section relative w-full min-h-screen flex flex-col justify-between overflow-hidden">
-      {/* 1. Dithered Canvas & Lowered Backdrop Engine */}
+      {/* 1. Dithered Canvas & Lowered Backdrop Engine (Zero Seams) */}
       <DitherCanvas
         size={2}
         levels={4}
-        ditherStrength={0.60}
+        ditherStrength={0.58}
         brightness={1.0}
         contrast={1.0}
         gradientTop="#004FF4"
         gradientBottom="#86A6D9"
       />
 
-      {/* Subtle Gradient Shadow for Crisp Typography Contrast */}
-      <div
-        className="pointer-events-none absolute inset-0 z-1"
-        style={{
-          background:
-            "radial-gradient(ellipse at 85% 30%, rgba(0, 0, 0, 0.12) 20%, rgba(6, 12, 26, 0.32) 100%)",
-        }}
-      />
-
       {/* 2. Top Header Bar (Exact Figma layout) */}
       <header className="relative z-10 w-full px-8 md:px-16 py-8 flex items-center justify-between">
         {/* Brand Left */}
         <span
-          className="text-white text-xl md:text-2xl font-black tracking-wider uppercase font-montserrat"
+          className="text-white text-xl md:text-2xl font-black tracking-wider uppercase font-montserrat select-none"
           style={{
             fontFamily: "'Montserrat', system-ui, -apple-system, sans-serif",
             letterSpacing: "2.5px",
@@ -57,7 +48,7 @@ export default function LandingHero({ onOpenDashboard }) {
 
         {/* Provenance Tag Right */}
         <span
-          className="text-white text-[11px] md:text-[13px] font-bold uppercase tracking-widest font-montserrat text-right"
+          className="text-white text-[11px] md:text-[13px] font-bold uppercase tracking-widest font-montserrat text-right select-none"
           style={{
             fontFamily: "'Montserrat', system-ui, -apple-system, sans-serif",
             letterSpacing: "1.8px",
@@ -68,10 +59,10 @@ export default function LandingHero({ onOpenDashboard }) {
         </span>
       </header>
 
-      {/* 3. Hero Copy & CTA Button (Right Aligned — Exactly 4 Lines — 100% White) */}
+      {/* 3. Hero Copy & CTA Button (Right Aligned — Exactly 4 Lines — 100% White — Zero Drop Shadows) */}
       <div className="relative z-10 w-full px-8 md:px-16 py-12 md:py-24 flex flex-col items-end my-auto">
         <div className="max-w-[840px] text-right">
-          {/* Main Headline in Montserrat Bold — Exactly 4 Lines — Pure White Only */}
+          {/* Main Headline in Montserrat Bold — Exactly 4 Lines — Zero Drop Shadow */}
           <h1
             className="hero-headline font-montserrat text-right tracking-tight select-none"
             style={{
@@ -81,7 +72,8 @@ export default function LandingHero({ onOpenDashboard }) {
               lineHeight: 1.18,
               color: "#ffffff",
               WebkitTextFillColor: "#ffffff",
-              textShadow: "0 3px 20px rgba(0, 0, 0, 0.45)",
+              textShadow: "none",
+              filter: "none",
               hyphens: "none",
             }}
           >
@@ -91,19 +83,20 @@ export default function LandingHero({ onOpenDashboard }) {
             intelligence across Goa.
           </h1>
 
-          {/* CTA Button Aligned Right */}
+          {/* CTA Button Aligned Right — Flat Pill, Zero Drop Shadow */}
           <div className="mt-8 flex justify-end">
             <button
               onClick={handleScrollToDashboard}
-              className="hero-cta-btn group inline-flex items-center gap-4 px-7 py-3.5 rounded-full text-white font-montserrat font-bold text-[15px] md:text-[16px] tracking-wide transition-all duration-300 cursor-pointer shadow-lg hover:shadow-blue-500/50"
+              className="hero-cta-btn group inline-flex items-center gap-4 px-7 py-3.5 rounded-full text-white font-montserrat font-bold text-[15px] md:text-[16px] tracking-wide transition-all duration-200 cursor-pointer"
               style={{
                 fontFamily: "'Montserrat', system-ui, -apple-system, sans-serif",
                 backgroundColor: "#004FF4",
-                boxShadow: "0 8px 30px rgba(0, 79, 244, 0.48), inset 0 1px 1px rgba(255, 255, 255, 0.35)",
+                boxShadow: "none",
+                filter: "none",
               }}
             >
               <span>Open Stress Dashboard</span>
-              <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#004FF4] shadow-sm transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
+              <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#004FF4] transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
                 <ArrowUpRight size={19} strokeWidth={2.8} />
               </span>
             </button>
