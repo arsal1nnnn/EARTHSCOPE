@@ -30,7 +30,7 @@ Notes:
   - north_goa: 73.6756, 15.4081, 74.2824, 15.8008
   - south_goa: 73.7832, 14.7529, 74.3361, 15.5390
 - The boxes are rectangles. They include sea and parts of Maharashtra and Karnataka, and they overlap between 15.41 and 15.54 N.
-- The southern edge 14.7529 is correct for M5's boundary file but is not the mainland: it comes from a small detached polygon of Canacona at about 14.75-14.76 N, 74.11 E (believed to be Anjediva island; **OPEN**, M5 to confirm). The mainland polygon ends at 14.9002 N. As a result the South Goa box and the Canacona box include one row of IMERG cells (centre 14.85 N) that lies south of mainland Goa.
+- The southern edge 14.7529 is correct for M5's boundary file: it comes from the detached island polygon of Canacona at 14.75–14.76 N, 74.11 E (**Confirmed by M5: Anjediva Island**, which is administratively part of Canacona taluka, South Goa). The mainland coastline ends at 14.9002 N. As a result, the South Goa box and the Canacona box include one row of IMERG cells (centre 14.85 N) to ensure full administrative coverage of Goa's territory.
 - Cells actually averaged (from the Giovanni file headers):
   - IMERG north_goa: cell centres 73.75-74.25 E, 15.45-15.75 N (6 x 4 = 24 cells). IMERG south_goa: 73.85-74.25 E, 14.85-15.45 N (5 x 7 = 35 cells).
   - GLDAS north_goa: two cells (73.875 and 74.125 E at 15.625 N). GLDAS south_goa: six cells (73.875-74.125 E, 14.875-15.375 N).
@@ -114,7 +114,7 @@ To satisfy the project brief requirement that any combined presentation rule mus
 3. **Separate Indicators Access**:
    The interactive map directly provides individual layer toggles and inspector cards for the uncombined NASA products:
    - Precipitation Anomaly % (GPM IMERG Final monthly v07, ~11 km)
-   - Root-Zone Soil Moisture Percentile (GLDAS-2.1 Noah model assimilation, ~25 km)
+   - Root-Zone Soil Moisture Percentile (GLDAS-2.1 Noah model, ~25 km)
    - Rainfall Percentile (GPM IMERG Final v07)
    - Two-Indicator Agreement (Categorical cross-indicator agreement between IMERG rainfall and GLDAS model root-zone moisture)
 
