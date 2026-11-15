@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   Globe2,
-  Layers3,
-  Leaf,
   MapPinned,
   Sprout,
   ShieldCheck,
@@ -10,7 +8,6 @@ import {
   CircleHelp,
   ChevronRight,
   FileText,
-  RotateCcw,
 } from "lucide-react";
 import "./App.css";
 import LandingHero from "./components/LandingHero";
@@ -266,6 +263,272 @@ function AssessmentForm({
   );
 }
 
+function HistoricalRainfallChart({ records }) {
+  // Plot every valid year returned by the 25-year history endpoint.
+  const data = [...(Array.isArray(records) ? records : [])]
+    .filter((item) =>
+      Number.isFinite(Number(item.year)) &&
+      Number.isFinite(Number(item.rainfall_anomaly_pct))
+    )
+    .sort((a, b) => Number(a.year) - Number(b.year));
+
+  if (!data.length) {
+    return <p className="text-[11px] text-[#7a8296]">Historical rainfall anomaly data unavailable.</p>;
+  }
+
+  // Match the compact right-side panel so labels remain legible without horizontal scrolling.
+  const width = 420;
+  const height = 330;
+  const left = 60;
+  const right = 14;
+  const top = 24;
+  const bottom = 48;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const anomalies = data.map((item) => Number(item.rainfall_anomaly_pct));
+  const rawMin = Math.min(0, ...anomalies);
+  const rawMax = Math.max(0, ...anomalies);
+  const spread = rawMax - rawMin || 1;
+  const padding = spread * 0.12;
+  const minValue = rawMin < 0 ? rawMin - padding : 0;
+  const maxValue = rawMax > 0 ? rawMax + padding : 0;
+  const range = maxValue - minValue || 1;
+  const yFor = (value) => top + ((maxValue - value) / range) * plotHeight;
+  const zeroY = yFor(0);
+  const slotWidth = plotWidth / data.length;
+  const barWidth = Math.max(4, Math.min(20, slotWidth * 0.72));
+  const ticks = Array.from({ length: 5 }, (_, index) => minValue + (range * index) / 4);
+
+  const categoryColor = (category) => {
+    const value = String(category || '').toLowerCase();
+    if (value.includes('excess')) return '#38a8ff';
+    if (value.includes('deficient') || value.includes('deficit') || value.includes('drought')) return '#ef4444';
+    if (value.includes('normal')) return '#16c79a';
+    return '#94a3b8';
+  };
+
+  return (
+    <div className="rounded-lg border border-white/[0.06] bg-[#1a1e28]/60 p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 px-1">
+        <span className="text-sm font-semibold text-[#e3e7ef]">Rainfall anomaly over time</span>
+        <span className="text-xs text-[#a3a9b8]">Anomaly (%) · hover bars for raw rainfall</span>
+      </div>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Kharif rainfall anomaly percentage by year. Hover each bar for exact rainfall in millimetres and IMD category."
+        className="block w-full overflow-visible"
+      >
+        {ticks.map((tick, index) => {
+          const y = yFor(tick);
+          return (
+            <g key={index}>
+              <line
+                x1={left}
+                x2={width - right}
+                y1={y}
+                y2={y}
+                stroke={Math.abs(tick) < range * 0.001 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.09)'}
+                strokeDasharray={Math.abs(tick) < range * 0.001 ? undefined : '3 4'}
+                strokeWidth={Math.abs(tick) < range * 0.001 ? 1.4 : 1}
+              />
+              <text x={left - 7} y={y + 3} textAnchor="end" fill="#b8bfcd" fontSize="13">
+                {`${tick > 0 ? '+' : ''}${tick.toFixed(0)}%`}
+              </text>
+            </g>
+          );
+        })}
+        {data.map((item, index) => {
+          const anomaly = Number(item.rainfall_anomaly_pct);
+          const x = left + index * slotWidth + (slotWidth - barWidth) / 2;
+          const valueY = yFor(anomaly);
+          const y = Math.min(zeroY, valueY);
+          const barHeight = Math.max(1.5, Math.abs(zeroY - valueY));
+          const category = item.rainfall_category_imd || 'Unclassified';
+          const rainfall = Number(item.kharif_rainfall_mm);
+          const rainfallText = Number.isFinite(rainfall) ? `${rainfall.toFixed(1)} mm` : 'Unavailable';
+          const tooltip = `${item.year}\nRainfall anomaly: ${anomaly > 0 ? '+' : ''}${anomaly.toFixed(1)}%\nKharif rainfall: ${rainfallText}\nIMD category: ${category}`;
+          const showYear = data.length <= 12 || index % Math.ceil(data.length / 8) === 0 || index === data.length - 1;
+          return (
+            <g key={`${item.year}-${index}`}>
+              <rect
+                x={x}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                rx="2"
+                fill={categoryColor(category)}
+                opacity="0.9"
+                tabIndex="0"
+                aria-label={tooltip.replaceAll('\n', ', ')}
+              >
+                <title>{tooltip}</title>
+              </rect>
+              {showYear && (
+                <text x={x + barWidth / 2} y={height - 10} textAnchor="middle" fill="#d0d5df" fontSize="12">
+                  {item.year}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 px-1">
+        {[
+          { label: 'Normal', color: '#16c79a' },
+          { label: 'Deficient', color: '#ef4444' },
+          { label: 'Excess', color: '#38a8ff' },
+        ].map((item) => (
+          <span key={item.label} className="inline-flex items-center gap-2 text-sm text-[#d0d5df]">
+            <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: item.color }} />
+            {item.label}
+          </span>
+        ))}
+        <span className="ml-auto text-xs text-[#a3a9b8]">{data.length} years available</span>
+      </div>
+    </div>
+  );
+}
+
+function WaterRiskPanel({ selectedRegionId, waterRisk, rainfallHistory, loading, error }) {
+  if (!selectedRegionId) {
+    return (
+      <aside className="rounded-xl border border-white/[0.08] bg-[#11141c] p-5 min-h-[260px]">
+        <h3 className="text-sm font-semibold font-montserrat text-[#eef0f5] mb-2">Water Risk Intelligence</h3>
+        <p className="text-xs leading-relaxed text-[#7a8296]">
+          Select a taluka on the map to inspect its rainfall and soil-moisture indicators.
+        </p>
+        <div className="mt-6 flex items-center justify-center rounded-lg border border-dashed border-white/[0.1] min-h-[150px]">
+          <div className="text-center">
+            <MapPinned size={25} className="mx-auto mb-2 text-[#7a8296]" />
+            <p className="text-xs text-[#7a8296]">Awaiting taluka selection</p>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className="rounded-xl border border-white/[0.08] bg-[#11141c] p-5 min-h-[260px] max-h-[640px] overflow-y-auto">
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.16em] font-mono text-[#7a8296]">Selected region</p>
+          <h3 className="text-lg font-semibold font-montserrat text-[#eef0f5] mt-1">
+            {waterRisk?.region_name || selectedRegionId}
+          </h3>
+          {waterRisk?.district && (
+            <p className="text-xs text-[#7a8296] mt-1">{waterRisk.district} · {waterRisk.season}</p>
+          )}
+        </div>
+        <span className="shrink-0 rounded-md border border-white/[0.08] bg-[#1a1e28] px-2 py-1 text-[10px] font-mono text-[#a3a9b8]">
+          NASA DATA
+        </span>
+      </div>
+
+      {loading && (
+        <div className="py-8 text-center">
+          <div className="mx-auto mb-3 h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-[#004FF4]" />
+          <p className="text-xs text-[#a3a9b8]">Retrieving water-risk indicators…</p>
+        </div>
+      )}
+
+      {!loading && error && (
+        <div className="rounded-lg border border-red-500/20 bg-red-500/[0.06] p-3">
+          <p className="text-xs font-medium text-red-300">Unable to load water-risk data</p>
+          <p className="mt-1 text-xs text-red-200/70">{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && waterRisk && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg bg-[#1a1e28] p-3">
+              <p className="text-[10px] uppercase tracking-wide text-[#7a8296]">Rainfall anomaly</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-[#eef0f5]">
+                {waterRisk.rainfall_anomaly_pct != null
+                  ? `${Number(waterRisk.rainfall_anomaly_pct).toFixed(1)}%`
+                  : "N/A"}
+              </p>
+              <p className="mt-1 text-[11px] capitalize text-[#a3a9b8]">
+                {waterRisk.rainfall_signal || waterRisk.rainfall_category_imd || "No signal"}
+              </p>
+            </div>
+            <div className="rounded-lg bg-[#1a1e28] p-3">
+              <p className="text-[10px] uppercase tracking-wide text-[#7a8296]">Soil moisture</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-[#eef0f5]">
+                {waterRisk.sm_gldas_percentile != null
+                  ? Number(waterRisk.sm_gldas_percentile).toFixed(1)
+                  : "N/A"}
+              </p>
+              <p className="mt-1 text-[11px] capitalize text-[#a3a9b8]">
+                {waterRisk.sm_gldas_signal || "No signal"}
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-white/[0.06] p-3">
+            <p className="text-[10px] uppercase tracking-wide text-[#7a8296]">Indicator agreement</p>
+            <p className="mt-1 text-sm text-[#eef0f5]">{waterRisk.indicator_agreement || "Not available"}</p>
+            <p className="mt-1 text-[11px] text-[#7a8296]">
+              {waterRisk.indicators_with_data ?? "—"} of {waterRisk.indicators_expected ?? "—"} indicators available
+            </p>
+          </div>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <h4 className="text-xs font-semibold text-[#eef0f5]">Monthly indicators</h4>
+              <span className="text-[10px] font-mono text-[#7a8296]">{waterRisk.monthly?.length || 0} MONTHS</span>
+            </div>
+            {waterRisk.monthly?.length ? (
+              <div className="space-y-1">
+                {waterRisk.monthly.map((month) => (
+                  <div key={month.month} className="flex items-center justify-between gap-3 rounded-md bg-[#1a1e28]/70 px-3 py-2">
+                    <span className="text-[11px] uppercase text-[#a3a9b8]">{month.month}</span>
+                    <div className="text-right">
+                      <span className="text-[11px] text-[#eef0f5]">{month.rainfall_signal || "Rainfall n/a"}</span>
+                      <span className="ml-2 text-[10px] text-[#7a8296]">{month.sm_gldas_signal || ""}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[11px] text-[#7a8296]">Monthly breakdown unavailable.</p>
+            )}
+          </div>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-[#eef0f5]">Historical rainfall</h4>
+              <span className="text-[10px] font-mono text-[#7a8296]">KHARIF</span>
+            </div>
+            <HistoricalRainfallChart records={rainfallHistory} />
+          </div>
+
+          <div className="border-t border-white/[0.06] pt-3 space-y-1">
+            <p className="text-[10px] text-[#7a8296]">Baseline: {waterRisk.baseline || "Not specified"}</p>
+            {waterRisk.rainfall_basis && (
+              <p className="text-[10px] text-[#7a8296]">Rainfall basis: {waterRisk.rainfall_basis}</p>
+            )}
+            {waterRisk.interpretation_limit && (
+              <p className="text-[10px] leading-relaxed text-[#7a8296]">{waterRisk.interpretation_limit}</p>
+            )}
+            {waterRisk.sources?.length > 0 && (
+              <p className="text-[10px] leading-relaxed text-[#7a8296]">Sources: {waterRisk.sources.join(" · ")}</p>
+            )}
+            {waterRisk.is_mock_data && (
+              <p className="pt-1 text-[10px] font-medium text-amber-300">Demonstration data — not verified observations.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!loading && !error && !waterRisk && (
+        <p className="text-xs text-[#7a8296]">No water-risk record was returned for this taluka.</p>
+      )}
+    </aside>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("map");
   const [season, setSeason] = useState("2025");
@@ -275,6 +538,14 @@ export default function App() {
   const [varieties, setVarieties] = useState(["goa_dhan_1", "csr_27", "karjat_3"]);
   const [savedMessage, setSavedMessage] = useState("");
   const [assessmentResults, setAssessmentResults] = useState([]);
+
+  // Water-risk API state for the currently selected taluka on the map.
+  const [selectedTaluka, setSelectedTaluka] = useState(null);
+  const [waterRisk, setWaterRisk] = useState(null);
+  const [rainfallHistory, setRainfallHistory] = useState([]);
+  const [waterRiskLoading, setWaterRiskLoading] = useState(false);
+  const [waterRiskError, setWaterRiskError] = useState("");
+  const selectedRegionId = selectedTaluka?.properties?.region_id || null;
 
   const evaluateVarieties = (
     currentArea = area,
@@ -316,6 +587,63 @@ export default function App() {
   useEffect(() => {
     evaluateVarieties(area, district, ecology, varieties, season);
   }, [area, district, ecology, varieties, season]);
+
+
+  // Load water-risk indicators when a map feature is selected.
+  useEffect(() => {
+    if (!selectedRegionId) {
+      setWaterRisk(null);
+      setRainfallHistory([]);
+      setWaterRiskError("");
+      setWaterRiskLoading(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    async function loadWaterRisk() {
+      setWaterRiskLoading(true);
+      setWaterRiskError("");
+      setWaterRisk(null);
+      setRainfallHistory([]);
+
+      try {
+        const regionId = encodeURIComponent(selectedRegionId);
+        const response = await fetch(`/api/water-risk/${regionId}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error(`Water-risk API returned HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        setWaterRisk(data);
+
+        // Historical rainfall is supplementary; current indicators remain visible if it fails.
+        try {
+          const historyResponse = await fetch(`/api/water-risk/${regionId}/history`, {
+            signal: controller.signal,
+          });
+          if (historyResponse.ok) {
+            const historyData = await historyResponse.json();
+            setRainfallHistory(Array.isArray(historyData.history) ? historyData.history : []);
+          }
+        } catch (historyError) {
+          if (historyError.name === "AbortError") throw historyError;
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setWaterRiskError(error.message || "An unexpected error occurred.");
+          setWaterRisk(null);
+        }
+      } finally {
+        if (!controller.signal.aborted) setWaterRiskLoading(false);
+      }
+    }
+
+    loadWaterRisk();
+    return () => controller.abort();
+  }, [selectedRegionId]);
 
   const formProps = {
     district,
@@ -460,8 +788,22 @@ export default function App() {
           {/* Tab 1: Interactive 2D Leaflet Geospatial Map */}
           {activeTab === "map" && (
             <div className="space-y-4">
-              <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#11141c] p-2">
-                <GoaMap height="640px" season={season} onSeasonChange={setSeason} />
+              <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
+                <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#11141c] p-2">
+                  <GoaMap
+                    height="640px"
+                    season={season}
+                    onSeasonChange={setSeason}
+                    onSelectTaluka={setSelectedTaluka}
+                  />
+                </div>
+                <WaterRiskPanel
+                  selectedRegionId={selectedRegionId}
+                  waterRisk={waterRisk}
+                  rainfallHistory={rainfallHistory}
+                  loading={waterRiskLoading}
+                  error={waterRiskError}
+                />
               </div>
               <div className="p-3.5 rounded-lg bg-[#11141c] border border-white/[0.08] flex items-start gap-2.5 text-xs text-[#a3a9b8]">
                 <CircleHelp size={16} className="text-[#a3a9b8] shrink-0 mt-0.5" />
