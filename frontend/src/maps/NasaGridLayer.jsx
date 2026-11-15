@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { GeoJSON } from "react-leaflet";
 import { KHARIF_MONTHS } from "./mapStyles";
 

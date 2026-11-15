@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -9,20 +9,15 @@ import MapErrorBoundary from "./ErrorBoundary";
 import {
   GOA_BOUNDS,
   GOA_MAP_CONFIG,
-  METRIC_CONFIGS,
-  STRESS_CATEGORIES,
   TALUKA_METADATA,
   KHARIF_MONTHS,
   getSeasonalProps,
 } from "./mapStyles";
-import rawFallbackGeoJson from "../data/goa_mock.geojson";
+import rawFallbackGeoJson from "../data/goa_taluka_indicators.geojson";
 import {
-  Layers,
-  MapPin,
   Activity,
   Droplets,
   CloudRain,
-  Sparkles,
   X,
   Compass,
   Search,
@@ -31,9 +26,6 @@ import {
   Tag,
   Satellite,
   Info,
-  ChevronRight,
-  TrendingDown,
-  TrendingUp,
 } from "lucide-react";
 
 const fallbackGeoJson = rawFallbackGeoJson?.default || rawFallbackGeoJson;
@@ -81,7 +73,6 @@ function createTalukaLabelIcon(name, isSelected = false, isCompared = false) {
 function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
   const map = useMap();
 
-  // On mount: ensure Leaflet correctly calculates container dimensions and fits bounds directly to Goa
   useEffect(() => {
     if (!map) return;
     map.invalidateSize();
@@ -171,6 +162,7 @@ const BASE_MAPS = {
 /**
  * GoaMap Component
  * Interactive 2D Leaflet geospatial map focused on Goa's 12 talukas.
+ * Visualizes verified NASA GPM IMERG and GLDAS-2.1 indicator datasets.
  */
 export default function GoaMap({
   selectedRegionId: externalSelectedRegionId = null,
@@ -183,7 +175,7 @@ export default function GoaMap({
   const [data, setData] = useState(externalGeoJson || fallbackGeoJson);
   const [selectedRegionId, setSelectedRegionId] = useState(externalSelectedRegionId);
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const [activeMetric, setActiveMetric] = useState("asi_score");
+  const [activeMetric, setActiveMetric] = useState("rainfall_anomaly_pct");
   const [baseMap, setBaseMap] = useState("dark");
   const [showLabels, setShowLabels] = useState(true);
   const [activeMonth, setActiveMonth] = useState("all");
@@ -302,17 +294,10 @@ export default function GoaMap({
   const selectedRawProps = selectedFeature?.properties;
   const selectedProps = selectedRawProps ? getSeasonalProps(selectedRawProps, activeMonth) : null;
   const selectedMeta = selectedProps ? TALUKA_METADATA[selectedProps.region_id] || {} : {};
-  const selectedStressCat = selectedProps
-    ? STRESS_CATEGORIES[selectedProps.stress_category] || STRESS_CATEGORIES.Normal
-    : null;
 
   // Comparison feature metrics
   const compareRawProps = compareFeature?.properties;
   const compareProps = compareRawProps ? getSeasonalProps(compareRawProps, activeMonth) : null;
-  const compareMeta = compareProps ? TALUKA_METADATA[compareProps.region_id] || {} : {};
-  const compareStressCat = compareProps
-    ? STRESS_CATEGORIES[compareProps.stress_category] || STRESS_CATEGORIES.Normal
-    : null;
 
   return (
     <MapErrorBoundary height={height}>
@@ -329,7 +314,7 @@ export default function GoaMap({
           backgroundColor: "#090d16",
         }}
       >
-        {/* Unified Top Controls Header - Single Flex Container, Never Overlaps */}
+        {/* Unified Top Controls Header - Single Flex Container */}
         <div
           style={{
             position: "absolute",
@@ -353,7 +338,7 @@ export default function GoaMap({
               gap: "8px",
             }}
           >
-            {/* Left Group: Metric Layer Switcher */}
+            {/* Left Group: Real NASA Metric Layer Switcher */}
             <div
               style={{
                 display: "flex",
@@ -369,7 +354,7 @@ export default function GoaMap({
               }}
             >
               <button
-                onClick={() => setActiveMetric("asi_score")}
+                onClick={() => setActiveMetric("rainfall_anomaly_pct")}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -380,59 +365,17 @@ export default function GoaMap({
                   fontWeight: 600,
                   cursor: "pointer",
                   border: "none",
-                  backgroundColor: activeMetric === "asi_score" ? "#4f46e5" : "transparent",
-                  color: activeMetric === "asi_score" ? "#ffffff" : "#94a3b8",
-                  transition: "all 0.2s",
-                }}
-              >
-                <Activity style={{ width: 14, height: 14 }} />
-                <span>Stress Index (ASI)</span>
-              </button>
-
-              <button
-                onClick={() => setActiveMetric("soil_moisture_pct")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 11px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "none",
-                  backgroundColor: activeMetric === "soil_moisture_pct" ? "#0284c7" : "transparent",
-                  color: activeMetric === "soil_moisture_pct" ? "#ffffff" : "#94a3b8",
-                  transition: "all 0.2s",
-                }}
-              >
-                <Droplets style={{ width: 14, height: 14 }} />
-                <span>Soil Moisture</span>
-              </button>
-
-              <button
-                onClick={() => setActiveMetric("rainfall_anomaly")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 11px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "none",
-                  backgroundColor: activeMetric === "rainfall_anomaly" ? "#d97706" : "transparent",
-                  color: activeMetric === "rainfall_anomaly" ? "#ffffff" : "#94a3b8",
+                  backgroundColor: activeMetric === "rainfall_anomaly_pct" ? "#0284c7" : "transparent",
+                  color: activeMetric === "rainfall_anomaly_pct" ? "#ffffff" : "#94a3b8",
                   transition: "all 0.2s",
                 }}
               >
                 <CloudRain style={{ width: 14, height: 14 }} />
-                <span>Precipitation</span>
+                <span>Precipitation (GPM IMERG)</span>
               </button>
 
               <button
-                onClick={() => setActiveMetric("predicted_30d_prob")}
+                onClick={() => setActiveMetric("sm_gldas_percentile")}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -443,13 +386,34 @@ export default function GoaMap({
                   fontWeight: 600,
                   cursor: "pointer",
                   border: "none",
-                  backgroundColor: activeMetric === "predicted_30d_prob" ? "#e11d48" : "transparent",
-                  color: activeMetric === "predicted_30d_prob" ? "#ffffff" : "#94a3b8",
+                  backgroundColor: activeMetric === "sm_gldas_percentile" ? "#4f46e5" : "transparent",
+                  color: activeMetric === "sm_gldas_percentile" ? "#ffffff" : "#94a3b8",
                   transition: "all 0.2s",
                 }}
               >
-                <Sparkles style={{ width: 14, height: 14 }} />
-                <span>30d Prediction</span>
+                <Droplets style={{ width: 14, height: 14 }} />
+                <span>Soil Moisture (GLDAS-2.1)</span>
+              </button>
+
+              <button
+                onClick={() => setActiveMetric("rainfall_percentile")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 11px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: activeMetric === "rainfall_percentile" ? "#0d9488" : "transparent",
+                  color: activeMetric === "rainfall_percentile" ? "#ffffff" : "#94a3b8",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Activity style={{ width: 14, height: 14 }} />
+                <span>Rainfall Percentile</span>
               </button>
             </div>
 
@@ -495,7 +459,7 @@ export default function GoaMap({
                   </option>
                   <optgroup label="North Goa" style={{ background: "#0f172a" }}>
                     {Object.entries(TALUKA_METADATA)
-                      .filter(([_, t]) => t.district === "North Goa")
+                      .filter(([, t]) => t.district === "North Goa")
                       .map(([rid, t]) => (
                         <option key={rid} value={rid} style={{ background: "#0f172a" }}>
                           {t.name}
@@ -504,7 +468,7 @@ export default function GoaMap({
                   </optgroup>
                   <optgroup label="South Goa" style={{ background: "#0f172a" }}>
                     {Object.entries(TALUKA_METADATA)
-                      .filter(([_, t]) => t.district === "South Goa")
+                      .filter(([, t]) => t.district === "South Goa")
                       .map(([rid, t]) => (
                         <option key={rid} value={rid} style={{ background: "#0f172a" }}>
                           {t.name}
@@ -789,7 +753,7 @@ export default function GoaMap({
             </div>
           </div>
 
-          {/* Row 3: Active Comparison Prompt Banner (Centered, Non-colliding) */}
+          {/* Row 3: Active Comparison Prompt Banner */}
           {comparisonMode && selectedProps && !compareProps && (
             <div
               style={{
@@ -906,8 +870,8 @@ export default function GoaMap({
               bottom: 16,
               left: 16,
               zIndex: 1000,
-              width: "350px",
-              maxWidth: "min(350px, calc(100% - 32px))",
+              width: "360px",
+              maxWidth: "min(360px, calc(100% - 32px))",
               maxHeight: "calc(100% - 135px)",
               overflowY: "auto",
               backgroundColor: "rgba(15, 23, 42, 0.95)",
@@ -964,91 +928,129 @@ export default function GoaMap({
               </button>
             </div>
 
-            {/* Metrics Breakdown */}
+            {/* Real NASA Metrics Breakdown */}
             <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px", fontSize: "12px" }}>
-              {/* Stress Level Status Badge */}
+              {/* Indicator Agreement Status Badge */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ color: "#94a3b8" }}>Agricultural Water Stress:</span>
+                <span style={{ color: "#94a3b8" }}>Indicator Agreement:</span>
                 <span
                   style={{
                     padding: "3px 10px",
                     borderRadius: "999px",
                     fontWeight: 700,
                     fontSize: "11px",
-                    backgroundColor: `${selectedStressCat?.fillColor || "#38bdf8"}20`,
-                    color: selectedStressCat?.fillColor || "#38bdf8",
-                    border: `1px solid ${selectedStressCat?.fillColor || "#38bdf8"}50`,
+                    backgroundColor: "rgba(56, 189, 248, 0.15)",
+                    color: "#38bdf8",
+                    border: "1px solid rgba(56, 189, 248, 0.35)",
                   }}
                 >
-                  {selectedProps.stress_category}
+                  {selectedProps.indicator_agreement || "Mixed"}
                 </span>
               </div>
 
-              {/* Composite ASI Progress Bar */}
+              {/* Real Percentile Bars */}
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "4px" }}>
-                  <span style={{ color: "#94a3b8" }}>Composite Stress Index</span>
-                  <strong style={{ fontFamily: "monospace", color: "#ffffff" }}>
-                    {selectedProps.asi_score} / 100
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "3px" }}>
+                  <span style={{ color: "#94a3b8" }}>Soil Moisture (GLDAS-2.1 Noah)</span>
+                  <strong style={{ fontFamily: "monospace", color: "#38bdf8" }}>
+                    {selectedProps.sm_gldas_percentile}th percentile
                   </strong>
                 </div>
-                <div style={{ width: "100%", height: "6px", backgroundColor: "#1e293b", borderRadius: "999px", overflow: "hidden" }}>
+                <div style={{ width: "100%", height: "5px", backgroundColor: "#1e293b", borderRadius: "999px", overflow: "hidden", marginBottom: "8px" }}>
                   <div
                     style={{
                       height: "100%",
-                      width: `${selectedProps.asi_score}%`,
-                      backgroundColor: selectedStressCat?.fillColor || "#4f46e5",
+                      width: `${Math.min(100, Math.max(0, selectedProps.sm_gldas_percentile || 0))}%`,
+                      backgroundColor: "#0284c7",
+                      transition: "width 0.4s ease",
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "3px" }}>
+                  <span style={{ color: "#94a3b8" }}>Rainfall (GPM IMERG v07)</span>
+                  <strong style={{ fontFamily: "monospace", color: "#34d399" }}>
+                    {selectedProps.rainfall_percentile}th percentile
+                  </strong>
+                </div>
+                <div style={{ width: "100%", height: "5px", backgroundColor: "#1e293b", borderRadius: "999px", overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${Math.min(100, Math.max(0, selectedProps.rainfall_percentile || 0))}%`,
+                      backgroundColor: "#0d9488",
                       transition: "width 0.4s ease",
                     }}
                   />
                 </div>
               </div>
 
-              {/* NASA Sensor Breakdown Grid */}
+              {/* NASA Observation Grid */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", paddingTop: "8px", borderTop: "1px solid #1e293b" }}>
                 <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
                   <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    SMAP L4 Moisture
-                  </div>
-                  <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#e2e8f0" }}>
-                    {selectedProps.soil_moisture_pct}% <small style={{ fontSize: "9px", color: "#64748b" }}>vol</small>
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
-                  <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    GPM IMERG Rain
+                    Precip Anomaly
                   </div>
                   <div
                     style={{
                       fontSize: "13px",
                       fontWeight: "bold",
                       marginTop: "2px",
-                      color: selectedProps.rainfall_anomaly < 0 ? "#f87171" : "#4ade80",
+                      color: selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80",
                     }}
                   >
-                    {selectedProps.rainfall_anomaly > 0 ? "+" : ""}
-                    {selectedProps.rainfall_anomaly}%
+                    {selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}
+                    {selectedProps.rainfall_anomaly_pct}%
+                  </div>
+                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
+                    Signal: {selectedProps.rainfall_signal || "—"}
                   </div>
                 </div>
 
                 <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
                   <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    30d Stress Risk
+                    Kharif Rainfall
                   </div>
-                  <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#fb7185" }}>
-                    {Math.round(selectedProps.predicted_30d_prob * 100)}%
+                  <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#e2e8f0" }}>
+                    {selectedProps.kharif_rainfall_mm ?? "—"} <small style={{ fontSize: "9px", color: "#64748b" }}>mm</small>
+                  </div>
+                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
+                    {selectedProps.rainfall_category_imd || "Normal"} (IMD)
                   </div>
                 </div>
 
                 <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
                   <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    Evidence Coverage
+                    GLDAS Soil Moisture
                   </div>
                   <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#38bdf8" }}>
-                    {Math.round(selectedProps.evidence_coverage * 100)}%
+                    {selectedProps.sm_gldas_percentile}th pctl
+                  </div>
+                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
+                    Signal: {selectedProps.sm_gldas_signal || "—"}
                   </div>
                 </div>
+
+                <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
+                  <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
+                    Dry Months
+                  </div>
+                  <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#fb7185" }}>
+                    {selectedProps.months_with_concurrent_dry_signals ?? 0} mo
+                  </div>
+                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
+                    {selectedProps.indicators_with_data ?? 2} active sources
+                  </div>
+                </div>
+              </div>
+
+              {/* Spatial Basis Disclosure Badge */}
+              <div style={{ backgroundColor: "rgba(15, 23, 42, 0.7)", border: "1px solid #334155", borderRadius: "8px", padding: "6px 8px", fontSize: "10px", color: "#94a3b8", display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                <Info style={{ width: 13, height: 13, color: "#38bdf8", flexShrink: 0, marginTop: "1px" }} />
+                <span>
+                  <strong>District aggregation: </strong>
+                  {selectedProps.spatial_note || "Talukas inherit district-level values from NASA GPM IMERG and GLDAS-2.1."}
+                </span>
               </div>
 
               {/* Scientific Advisory Note */}
@@ -1096,8 +1098,8 @@ export default function GoaMap({
               bottom: 16,
               left: 16,
               zIndex: 1000,
-              width: "520px",
-              maxWidth: "min(520px, calc(100% - 32px))",
+              width: "540px",
+              maxWidth: "min(540px, calc(100% - 32px))",
               maxHeight: "calc(100% - 135px)",
               overflowY: "auto",
               backgroundColor: "rgba(15, 23, 42, 0.96)",
@@ -1115,7 +1117,7 @@ export default function GoaMap({
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Scale style={{ width: 16, height: 16, color: "#fbbf24" }} />
                 <h3 style={{ fontSize: "15px", fontWeight: "bold", margin: 0 }}>
-                  Taluka Agricultural Water Stress Comparison
+                  Taluka NASA Earth Observation Comparison
                 </h3>
               </div>
               <button
@@ -1140,26 +1142,34 @@ export default function GoaMap({
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Stress Index (ASI):</span>
-                    <strong style={{ color: selectedStressCat?.fillColor || "#ffffff" }}>{selectedProps.asi_score} / 100</strong>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Status:</span>
-                    <span>{selectedProps.stress_category}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Soil Moisture:</span>
-                    <span>{selectedProps.soil_moisture_pct}%</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Rainfall Anom:</span>
-                    <span style={{ color: selectedProps.rainfall_anomaly < 0 ? "#f87171" : "#4ade80" }}>
-                      {selectedProps.rainfall_anomaly > 0 ? "+" : ""}{selectedProps.rainfall_anomaly}%
-                    </span>
+                    <strong style={{ color: selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
+                      {selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}{selectedProps.rainfall_anomaly_pct}%
+                    </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>30d Risk:</span>
-                    <span>{Math.round(selectedProps.predicted_30d_prob * 100)}%</span>
+                    <span style={{ color: "#94a3b8" }}>Rainfall Signal:</span>
+                    <span>{selectedProps.rainfall_signal || "—"}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Rainfall Percentile:</span>
+                    <span>{selectedProps.rainfall_percentile}th pctl</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>GLDAS SM Percentile:</span>
+                    <span style={{ color: "#38bdf8" }}>{selectedProps.sm_gldas_percentile}th pctl</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>SM Signal:</span>
+                    <span>{selectedProps.sm_gldas_signal || "—"}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
+                    <span>{selectedProps.kharif_rainfall_mm ?? "—"} mm</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Agreement:</span>
+                    <span>{selectedProps.indicator_agreement || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -1172,26 +1182,34 @@ export default function GoaMap({
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Stress Index (ASI):</span>
-                    <strong style={{ color: compareStressCat?.fillColor || "#ffffff" }}>{compareProps.asi_score} / 100</strong>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Status:</span>
-                    <span>{compareProps.stress_category}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Soil Moisture:</span>
-                    <span>{compareProps.soil_moisture_pct}%</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Rainfall Anom:</span>
-                    <span style={{ color: compareProps.rainfall_anomaly < 0 ? "#f87171" : "#4ade80" }}>
-                      {compareProps.rainfall_anomaly > 0 ? "+" : ""}{compareProps.rainfall_anomaly}%
-                    </span>
+                    <strong style={{ color: compareProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
+                      {compareProps.rainfall_anomaly_pct > 0 ? "+" : ""}{compareProps.rainfall_anomaly_pct}%
+                    </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>30d Risk:</span>
-                    <span>{Math.round(compareProps.predicted_30d_prob * 100)}%</span>
+                    <span style={{ color: "#94a3b8" }}>Rainfall Signal:</span>
+                    <span>{compareProps.rainfall_signal || "—"}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Rainfall Percentile:</span>
+                    <span>{compareProps.rainfall_percentile}th pctl</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>GLDAS SM Percentile:</span>
+                    <span style={{ color: "#38bdf8" }}>{compareProps.sm_gldas_percentile}th pctl</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>SM Signal:</span>
+                    <span>{compareProps.sm_gldas_signal || "—"}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
+                    <span>{compareProps.kharif_rainfall_mm ?? "—"} mm</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Agreement:</span>
+                    <span>{compareProps.indicator_agreement || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -1200,15 +1218,13 @@ export default function GoaMap({
             {/* Differential Takeaway */}
             <div style={{ marginTop: "12px", backgroundColor: "rgba(15, 23, 42, 0.8)", border: "1px solid #1e293b", borderRadius: "8px", padding: "8px 10px", fontSize: "11px", color: "#cbd5e1" }}>
               <strong>Differential Analysis: </strong>
-              {selectedProps.asi_score === compareProps.asi_score ? (
-                `Both ${selectedProps.name} and ${compareProps.name} share matching composite stress levels (${selectedProps.asi_score} / 100).`
-              ) : selectedProps.asi_score > compareProps.asi_score ? (
+              {selectedProps.district === compareProps.district ? (
                 <span>
-                  <strong style={{ color: "#60a5fa" }}>{selectedProps.name}</strong> has a higher water stress index (+{selectedProps.asi_score - compareProps.asi_score} points) compared to <strong style={{ color: "#fbbf24" }}>{compareProps.name}</strong>, with soil moisture difference of {selectedProps.soil_moisture_pct - compareProps.soil_moisture_pct}%.
+                  Both <strong>{selectedProps.name}</strong> and <strong>{compareProps.name}</strong> are in <strong>{selectedProps.district}</strong> and share the same district-level NASA indicator values ({selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}{selectedProps.rainfall_anomaly_pct}% rainfall anomaly, {selectedProps.sm_gldas_percentile}th percentile soil moisture).
                 </span>
               ) : (
                 <span>
-                  <strong style={{ color: "#fbbf24" }}>{compareProps.name}</strong> has a higher water stress index (+{compareProps.asi_score - selectedProps.asi_score} points) compared to <strong style={{ color: "#60a5fa" }}>{selectedProps.name}</strong>, with soil moisture difference of {compareProps.soil_moisture_pct - selectedProps.soil_moisture_pct}%.
+                  <strong>{selectedProps.name}</strong> ({selectedProps.district}) recorded {selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}{selectedProps.rainfall_anomaly_pct}% rainfall anomaly ({selectedProps.kharif_rainfall_mm} mm) vs <strong>{compareProps.name}</strong> ({compareProps.district}) with {compareProps.rainfall_anomaly_pct > 0 ? "+" : ""}{compareProps.rainfall_anomaly_pct}% anomaly ({compareProps.kharif_rainfall_mm} mm). Both districts maintain high soil moisture ({selectedProps.sm_gldas_percentile}th percentile, {selectedProps.sm_gldas_signal}).
                 </span>
               )}
             </div>
