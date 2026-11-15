@@ -70,6 +70,7 @@ export const METRIC_CONFIGS = {
     description: "GLDAS-2.1 Noah root-zone soil moisture percentile (~25 km, model assimilation)",
     source: "GLDAS-2.1 Noah root-zone soil moisture (~25 km, model assimilation)",
     getColor: (val) => {
+      if (val === null || val === undefined) return "#64748b"; // Neutral slate for "June–July only"
       if (val <= 10) return "#dc2626";
       if (val <= 25) return "#f97316";
       if (val <= 40) return "#facc15";
@@ -127,47 +128,83 @@ export const KHARIF_MONTHS = [
 // getSeasonalProps
 // Returns real monthly sub-data from the `monthly` nested object when a specific
 // month is active, otherwise returns the full-season aggregated props.
+// When season === "2026", reads from baseProps.kharif_2026.
 // ---------------------------------------------------------------------------
-export function getSeasonalProps(baseProps, activeMonthId = "all") {
+export function getSeasonalProps(baseProps, activeMonthId = "all", season = "2025") {
   if (!baseProps) return {};
   
-  const recCount = baseProps.rice_suitability?.recommended_varieties?.length ?? 2;
+  const is2026 = season === "2026";
+  const sourceProps = (is2026 && baseProps.kharif_2026) ? baseProps.kharif_2026 : baseProps;
+  const recCount = sourceProps.rice_suitability?.recommended_varieties?.length ?? 2;
 
   if (activeMonthId === "all") {
-    const agr = baseProps.indicator_agreement || "all near normal";
-    const derived = deriveWaterRiskFromAgreement(agr);
+    const agr = sourceProps.indicator_agreement || (is2026 ? "single indicator only (dry)" : "all near normal");
+    const derived = is2026
+      ? { level: "Moderate", score: 2 }
+      : (sourceProps.water_risk_level ? { level: sourceProps.water_risk_level, score: sourceProps.water_risk_score ?? 1 } : deriveWaterRiskFromAgreement(agr));
+
     return {
-      ...baseProps,
+      ...sourceProps,
+      _season: season,
       water_risk: derived.score,
       water_risk_score: derived.score,
       water_risk_level: derived.level,
       rice_suitability: recCount,
       _active_month: "all",
+      sm_display: is2026 ? "June–July only" : (sourceProps.sm_gldas_percentile !== null && sourceProps.sm_gldas_percentile !== undefined ? `${sourceProps.sm_gldas_percentile}th pctl` : "—"),
+      sm_signal_display: is2026 ? "June–July only" : (sourceProps.sm_gldas_signal || "—"),
     };
   }
 
-  const monthly = baseProps.monthly;
+  const monthly = sourceProps.monthly;
   if (!monthly || !monthly[activeMonthId]) {
-    return getSeasonalProps(baseProps, "all");
+    return getSeasonalProps(baseProps, "all", season);
   }
 
   const m = monthly[activeMonthId];
-  const mAgr = m.indicator_agreement || "all near normal";
-  const mDerived = deriveWaterRiskFromAgreement(mAgr);
+  const mAgr = m.indicator_agreement || (is2026 && m.rainfall_signal === "dry" ? "single indicator only (dry)" : "all near normal");
+  const mDerived = m.water_risk_level
+    ? { level: m.water_risk_level, score: m.water_risk_score ?? (m.water_risk_level === "Moderate" ? 2 : m.water_risk_level === "High" ? 3 : 1) }
+    : deriveWaterRiskFromAgreement(mAgr);
+
+  // Compute monthly rainfall display: below/above/near normal for 2026, or percentage for 2025
+  let rainDisplay = "";
+  if (is2026) {
+    if (m.rainfall_display) {
+      rainDisplay = m.rainfall_display;
+    } else if (m.rainfall_signal === "dry") {
+      rainDisplay = "Below normal";
+    } else if (m.rainfall_signal === "wet") {
+      rainDisplay = "Above normal";
+    } else {
+      rainDisplay = "Near normal";
+    }
+  } else {
+    rainDisplay = m.rainfall_month_anomaly_pct !== undefined && m.rainfall_month_anomaly_pct !== null
+      ? `${m.rainfall_month_anomaly_pct > 0 ? "+" : ""}${m.rainfall_month_anomaly_pct}%`
+      : "—";
+  }
+
+  const smMonthDisplay = is2026 ? "June–July only" : (m.sm_gldas_month_percentile !== null && m.sm_gldas_month_percentile !== undefined ? `${m.sm_gldas_month_percentile}th pctl` : "—");
+  const smMonthSignal = is2026 ? "June–July only" : (m.sm_gldas_signal || "—");
 
   return {
-    ...baseProps,
-    rainfall_anomaly_pct:  m.rainfall_month_anomaly_pct  ?? baseProps.rainfall_anomaly_pct,
-    rainfall_signal:       m.rainfall_signal               ?? baseProps.rainfall_signal,
-    sm_gldas_percentile:   m.sm_gldas_month_percentile    ?? baseProps.sm_gldas_percentile,
-    sm_gldas_signal:       m.sm_gldas_signal               ?? baseProps.sm_gldas_signal,
-    indicator_agreement:   mAgr,
-    kharif_rainfall_mm:    m.rainfall_mm                   ?? baseProps.kharif_rainfall_mm,
-    water_risk:            mDerived.score,
-    water_risk_score:      mDerived.score,
-    water_risk_level:      mDerived.level,
-    rice_suitability:      recCount,
-    _active_month:         activeMonthId,
+    ...sourceProps,
+    _season: season,
+    rainfall_anomaly_pct: m.rainfall_month_anomaly_pct ?? sourceProps.rainfall_anomaly_pct,
+    rainfall_signal: m.rainfall_signal ?? sourceProps.rainfall_signal,
+    rainfall_display: rainDisplay,
+    sm_gldas_percentile: m.sm_gldas_month_percentile ?? (is2026 ? null : sourceProps.sm_gldas_percentile),
+    sm_gldas_signal: is2026 ? "June–July only" : (m.sm_gldas_signal ?? sourceProps.sm_gldas_signal),
+    sm_display: smMonthDisplay,
+    sm_signal_display: smMonthSignal,
+    indicator_agreement: mAgr,
+    kharif_rainfall_mm: m.rainfall_mm ?? sourceProps.kharif_rainfall_mm,
+    water_risk: mDerived.score,
+    water_risk_score: mDerived.score,
+    water_risk_level: mDerived.level,
+    rice_suitability: recCount,
+    _active_month: activeMonthId,
   };
 }
 
@@ -180,12 +217,13 @@ export function getTalukaStyle(
   isSelected = false,
   isHovered = false,
   isCompared = false,
-  activeMonthId = "all"
+  activeMonthId = "all",
+  season = "2025"
 ) {
   const rawProps = feature?.properties || {};
-  const props = getSeasonalProps(rawProps, activeMonthId);
+  const props = getSeasonalProps(rawProps, activeMonthId, season);
   const metricCfg = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.water_risk;
-  const rawValue = props[activeMetric] ?? 0;
+  const rawValue = props[activeMetric] ?? (activeMetric === "water_risk" ? (props.water_risk_score ?? 1) : 0);
   const fillColor = metricCfg.getColor(rawValue);
 
   if (isSelected) {

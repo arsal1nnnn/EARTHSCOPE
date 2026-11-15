@@ -168,6 +168,8 @@ export default function GoaMap({
   selectedRegionId: externalSelectedRegionId = null,
   onSelectTaluka: externalOnSelect = null,
   geojsonData: externalGeoJson = null,
+  season: externalSeason = "2025",
+  onSeasonChange: externalOnSeasonChange = null,
   className = "",
   height = "650px",
 }) {
@@ -179,6 +181,20 @@ export default function GoaMap({
   const [baseMap, setBaseMap] = useState("dark");
   const [showLabels, setShowLabels] = useState(true);
   const [activeMonth, setActiveMonth] = useState("all");
+  const [season, setSeason] = useState(externalSeason || "2025");
+
+  useEffect(() => {
+    if (externalSeason !== undefined && externalSeason !== season) {
+      setSeason(externalSeason);
+    }
+  }, [externalSeason]);
+
+  const handleSeasonChange = (newSeason) => {
+    setSeason(newSeason);
+    if (externalOnSeasonChange) {
+      externalOnSeasonChange(newSeason);
+    }
+  };
 
   // Comparison state
   const [comparisonMode, setComparisonMode] = useState(false);
@@ -289,13 +305,15 @@ export default function GoaMap({
     }
   };
 
-  // Selected feature metrics (with active month simulation)
+  const is2026 = season === "2026";
+
+  // Selected feature metrics (with active month and season)
   const selectedRawProps = selectedFeature?.properties;
-  const selectedProps = selectedRawProps ? getSeasonalProps(selectedRawProps, activeMonth) : null;
+  const selectedProps = selectedRawProps ? getSeasonalProps(selectedRawProps, activeMonth, season) : null;
 
   // Comparison feature metrics
   const compareRawProps = compareFeature?.properties;
-  const compareProps = compareRawProps ? getSeasonalProps(compareRawProps, activeMonth) : null;
+  const compareProps = compareRawProps ? getSeasonalProps(compareRawProps, activeMonth, season) : null;
 
   return (
     <MapErrorBoundary height={height}>
@@ -577,7 +595,7 @@ export default function GoaMap({
             </div>
           </div>
 
-          {/* Row 2: Kharif Monsoon Scrubber (Left) & Map Zoom / Sensor Tools (Right) */}
+          {/* Row 2: Season Switcher & Kharif Monsoon Scrubber (Left) & Map Zoom / Sensor Tools (Right) */}
           <div
             style={{
               display: "flex",
@@ -587,45 +605,106 @@ export default function GoaMap({
               gap: "8px",
             }}
           >
-            {/* Kharif Monsoon Timeline Scrubber */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                backgroundColor: "rgba(15, 23, 42, 0.94)",
-                backdropFilter: "blur(14px)",
-                borderRadius: "10px",
-                border: "1px solid #1e293b",
-                padding: "3px 6px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                pointerEvents: "auto",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingRight: "6px", borderRight: "1px solid #1e293b", fontSize: "10px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
-                <Calendar style={{ width: 12, height: 12, color: "#818cf8" }} />
-                <span>Kharif Cycle</span>
-              </div>
-              {KHARIF_MONTHS.map((m) => (
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px" }}>
+              {/* Season Switcher: 2025 vs 2026 (preliminary) */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  backgroundColor: "rgba(15, 23, 42, 0.94)",
+                  backdropFilter: "blur(14px)",
+                  borderRadius: "10px",
+                  border: "1px solid #1e293b",
+                  padding: "3px 6px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                  pointerEvents: "auto",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingRight: "6px", borderRight: "1px solid #1e293b", fontSize: "10px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
+                  <span>Season</span>
+                </div>
                 <button
-                  key={m.id}
-                  onClick={() => setActiveMonth(m.id)}
+                  onClick={() => handleSeasonChange("2025")}
                   style={{
                     padding: "3px 8px",
                     borderRadius: "6px",
                     fontSize: "11px",
                     fontWeight: 600,
                     cursor: "pointer",
-                    border: activeMonth === m.id ? "1px solid #4f46e5" : "1px solid transparent",
-                    backgroundColor: activeMonth === m.id ? "#312e81" : "transparent",
-                    color: activeMonth === m.id ? "#c7d2fe" : "#94a3b8",
+                    border: season === "2025" ? "1px solid #3b82f6" : "1px solid transparent",
+                    backgroundColor: season === "2025" ? "#1d4ed8" : "transparent",
+                    color: season === "2025" ? "#ffffff" : "#94a3b8",
                     transition: "all 0.15s",
                   }}
-                  title={m.phase}
                 >
-                  {m.label.split(" ")[0]}
+                  2025
                 </button>
-              ))}
+                <button
+                  onClick={() => handleSeasonChange("2026")}
+                  style={{
+                    padding: "3px 8px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    border: season === "2026" ? "1px solid #f59e0b" : "1px solid transparent",
+                    backgroundColor: season === "2026" ? "rgba(245, 158, 11, 0.25)" : "transparent",
+                    color: season === "2026" ? "#fbbf24" : "#94a3b8",
+                    transition: "all 0.15s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                  title="Kharif 2026 Preliminary (IMERG Late Run)"
+                >
+                  <span>2026</span>
+                  <span style={{ fontSize: "9px", padding: "1px 4px", borderRadius: "4px", backgroundColor: "rgba(245, 158, 11, 0.3)", color: "#fde68a" }}>
+                    preliminary
+                  </span>
+                </button>
+              </div>
+
+              {/* Kharif Monsoon Timeline Scrubber */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  backgroundColor: "rgba(15, 23, 42, 0.94)",
+                  backdropFilter: "blur(14px)",
+                  borderRadius: "10px",
+                  border: "1px solid #1e293b",
+                  padding: "3px 6px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                  pointerEvents: "auto",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingRight: "6px", borderRight: "1px solid #1e293b", fontSize: "10px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
+                  <Calendar style={{ width: 12, height: 12, color: "#818cf8" }} />
+                  <span>Kharif Cycle</span>
+                </div>
+                {KHARIF_MONTHS.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setActiveMonth(m.id)}
+                    style={{
+                      padding: "3px 8px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      border: activeMonth === m.id ? "1px solid #4f46e5" : "1px solid transparent",
+                      backgroundColor: activeMonth === m.id ? "#312e81" : "transparent",
+                      color: activeMonth === m.id ? "#c7d2fe" : "#94a3b8",
+                      transition: "all 0.15s",
+                    }}
+                    title={m.phase}
+                  >
+                    {m.label.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Right Tools: Glassmorphic Zoom Controls */}
@@ -752,6 +831,7 @@ export default function GoaMap({
                 selectedRegionId={selectedRegionId}
                 compareRegionId={compareRegionId}
                 activeMonthId={activeMonth}
+                season={season}
                 onSelectTaluka={handleSelectTaluka}
               />
             )}
@@ -828,16 +908,16 @@ export default function GoaMap({
                 <div style={{ display: "flex", gap: "4px" }}>
                   <span
                     style={{
-                      background: "rgba(56, 189, 248, 0.12)",
-                      color: "#38bdf8",
-                      border: "1px solid rgba(56, 189, 248, 0.25)",
+                      background: is2026 ? "rgba(245, 158, 11, 0.12)" : "rgba(56, 189, 248, 0.12)",
+                      color: is2026 ? "#fbbf24" : "#38bdf8",
+                      border: `1px solid ${is2026 ? "rgba(245, 158, 11, 0.3)" : "rgba(56, 189, 248, 0.25)"}`,
                       padding: "1px 6px",
                       borderRadius: "4px",
                       fontSize: "9px",
                       fontWeight: 600,
                     }}
                   >
-                    Kharif 2025 Domain
+                    {is2026 ? "Kharif 2026 (Preliminary)" : (selectedProps.season || "Kharif 2025 Domain")}
                   </span>
                 </div>
               </div>
@@ -889,15 +969,17 @@ export default function GoaMap({
                     }}
                   >
                     <ShieldAlert style={{ width: 13, height: 13 }} />
-                    Water-deficit signal: {selectedProps.water_risk_level || "Low"}
+                    Water-deficit signal: {selectedProps.water_risk_level || (is2026 ? "Moderate" : "Low")}
                   </span>
                   <span style={{ fontSize: "10px", color: "#94a3b8" }}>
                     Signal: {selectedProps.rainfall_signal || "near normal"}
                   </span>
                 </div>
                 <div style={{ fontSize: "11px", color: "#cbd5e1", lineHeight: 1.3 }}>
-                  {selectedProps.water_risk?.summary ||
-                    `${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly with ${selectedProps.sm_gldas_percentile}th percentile root-zone moisture.`}
+                  {is2026
+                    ? `Water-deficit signal Moderate: ${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly (preliminary IMERG Late Run) with soil moisture available for June–July only.`
+                    : (selectedProps.water_risk?.summary ||
+                        `${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly with ${selectedProps.sm_gldas_percentile}th percentile root-zone moisture.`)}
                 </div>
               </div>
 
@@ -959,21 +1041,22 @@ export default function GoaMap({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", paddingTop: "8px", borderTop: "1px solid #1e293b" }}>
                 <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
                   <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    Precip Anomaly
+                    {is2026 && activeMonth !== "all" ? "Monthly Rain" : "Precip Anomaly"}
                   </div>
                   <div
                     style={{
                       fontSize: "13px",
                       fontWeight: "bold",
                       marginTop: "2px",
-                      color: selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80",
+                      color: selectedProps.rainfall_signal === "dry" || selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80",
                     }}
                   >
-                    {selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}
-                    {selectedProps.rainfall_anomaly_pct}%
+                    {is2026 && activeMonth !== "all"
+                      ? (selectedProps.rainfall_display || (selectedProps.rainfall_signal === "dry" ? "Below normal" : "Near normal"))
+                      : `${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}%`}
                   </div>
                   <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
-                    Signal: {selectedProps.rainfall_signal || "—"}
+                    {is2026 && activeMonth !== "all" ? "IMD Departure category" : `Signal: ${selectedProps.rainfall_signal || "—"}`}
                   </div>
                 </div>
 
@@ -994,10 +1077,10 @@ export default function GoaMap({
                     GLDAS Soil Moisture
                   </div>
                   <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#38bdf8" }}>
-                    {selectedProps.sm_gldas_percentile}th pctl
+                    {is2026 ? "June–July only" : (selectedProps.sm_gldas_percentile !== null && selectedProps.sm_gldas_percentile !== undefined ? `${selectedProps.sm_gldas_percentile}th pctl` : "—")}
                   </div>
                   <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
-                    Signal: {selectedProps.sm_gldas_signal || "—"}
+                    Signal: {is2026 ? "June–July only" : (selectedProps.sm_gldas_signal || "—")}
                   </div>
                 </div>
 
@@ -1130,14 +1213,18 @@ export default function GoaMap({
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rainfall Anom:</span>
-                    <strong style={{ color: selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
-                      {selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}{selectedProps.rainfall_anomaly_pct}%
+                    <span style={{ color: "#94a3b8" }}>{is2026 && activeMonth !== "all" ? "Monthly Rain:" : "Rainfall Anom:"}</span>
+                    <strong style={{ color: selectedProps.rainfall_signal === "dry" || selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
+                      {is2026 && activeMonth !== "all"
+                        ? (selectedProps.rainfall_display || (selectedProps.rainfall_signal === "dry" ? "Below normal" : "Near normal"))
+                        : `${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}%`}
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>GLDAS SM Pctl:</span>
-                    <span style={{ color: "#38bdf8" }}>{selectedProps.sm_gldas_percentile}th pctl ({selectedProps.sm_gldas_signal})</span>
+                    <span style={{ color: "#38bdf8" }}>
+                      {is2026 ? "June–July only" : `${selectedProps.sm_gldas_percentile}th pctl (${selectedProps.sm_gldas_signal})`}
+                    </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
@@ -1156,7 +1243,7 @@ export default function GoaMap({
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Water-Deficit Signal:</span>
                     <strong style={{ color: compareProps.water_risk_level === "High" ? "#f87171" : compareProps.water_risk_level === "Moderate" ? "#fbbf24" : "#34d399" }}>
-                      {compareProps.water_risk_level || "Low"}
+                      {compareProps.water_risk_level || (is2026 ? "Moderate" : "Low")}
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -1172,14 +1259,18 @@ export default function GoaMap({
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rainfall Anom:</span>
-                    <strong style={{ color: compareProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
-                      {compareProps.rainfall_anomaly_pct > 0 ? "+" : ""}{compareProps.rainfall_anomaly_pct}%
+                    <span style={{ color: "#94a3b8" }}>{is2026 && activeMonth !== "all" ? "Monthly Rain:" : "Rainfall Anom:"}</span>
+                    <strong style={{ color: compareProps.rainfall_signal === "dry" || compareProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
+                      {is2026 && activeMonth !== "all"
+                        ? (compareProps.rainfall_display || (compareProps.rainfall_signal === "dry" ? "Below normal" : "Near normal"))
+                        : `${compareProps.rainfall_anomaly_pct > 0 ? "+" : ""}${compareProps.rainfall_anomaly_pct}%`}
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>GLDAS SM Pctl:</span>
-                    <span style={{ color: "#38bdf8" }}>{compareProps.sm_gldas_percentile}th pctl ({compareProps.sm_gldas_signal})</span>
+                    <span style={{ color: "#38bdf8" }}>
+                      {is2026 ? "June–July only" : `${compareProps.sm_gldas_percentile}th pctl (${compareProps.sm_gldas_signal})`}
+                    </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
@@ -1192,7 +1283,11 @@ export default function GoaMap({
             {/* Differential Takeaway */}
             <div style={{ marginTop: "12px", backgroundColor: "rgba(15, 23, 42, 0.8)", border: "1px solid #1e293b", borderRadius: "8px", padding: "8px 10px", fontSize: "11px", color: "#cbd5e1" }}>
               <strong>Differential Analysis: </strong>
-              {selectedProps.district === compareProps.district ? (
+              {is2026 ? (
+                <span>
+                  Both <strong>{selectedProps.name}</strong> ({selectedProps.district}) and <strong>{compareProps.name}</strong> ({compareProps.district}) reflect Kharif 2026 preliminary IMERG Late Run conditions with water-deficit signal <strong>Moderate</strong>. Soil moisture is available for June–July only.
+                </span>
+              ) : selectedProps.district === compareProps.district ? (
                 <span>
                   Both <strong>{selectedProps.name}</strong> and <strong>{compareProps.name}</strong> are in <strong>{selectedProps.district}</strong> and share the same district-level NASA indicator values ({selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}{selectedProps.rainfall_anomaly_pct}% rainfall anomaly, {selectedProps.sm_gldas_percentile}th percentile soil moisture).
                 </span>

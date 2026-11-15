@@ -1,21 +1,19 @@
 import { useState } from "react";
 import { METRIC_CONFIGS, KHARIF_MONTHS } from "./mapStyles";
-import { ChevronDown, ChevronUp, Info, Layers, Calendar } from "lucide-react";
+import { ChevronDown, ChevronUp, Info, Layers, Calendar, Sparkles } from "lucide-react";
 
 /**
  * MapLegend Component
  * Floating legend showing color scales for the active real NASA metric,
  * active seasonal month info, and NASA spatial resolution disclosures.
  *
- * Removed: STRESS_CATEGORIES (fabricated ASI-based legend).
- * Now renders per-metric color scale derived from real NASA data ranges.
+ * Supports both Kharif 2025 and Kharif 2026 (Preliminary).
  */
 
-// Color-scale definitions for each real metric
 const METRIC_SCALE_ENTRIES = {
   water_risk: [
     { color: "#10b981", label: "Low Deficit",       range: "Zero Dry Signals (Healthy Buffer)" },
-    { color: "#f59e0b", label: "Moderate Deficit",  range: "Single Dry Signal (Moisture Buffer)" },
+    { color: "#f59e0b", label: "Moderate Deficit",  range: "Single Dry Signal (Rain dry / buffer)" },
     { color: "#ef4444", label: "High Deficit",      range: "Concurrent Dry Signals (Rain + SM)" },
   ],
   rice_suitability: [
@@ -46,13 +44,26 @@ const METRIC_SCALE_ENTRIES = {
   ],
 };
 
+const MONTHLY_2026_RAINFALL_ENTRIES = [
+  { color: "#b91c1c", label: "Below Normal (Dry)", range: "IMD Deficient" },
+  { color: "#34d399", label: "Near Normal",        range: "IMD Normal" },
+  { color: "#06b6d4", label: "Above Normal (Wet)", range: "IMD Excess" },
+];
+
 export default function MapLegend({
   activeMetric = "water_risk",
   activeMonthId = "all",
+  season = "2025",
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const is2026 = season === "2026";
+  const isMonthView = activeMonthId !== "all";
+
   const metric = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.water_risk;
-  const scaleEntries = METRIC_SCALE_ENTRIES[activeMetric] || METRIC_SCALE_ENTRIES.water_risk;
+  const scaleEntries = (is2026 && isMonthView && activeMetric === "rainfall_anomaly_pct")
+    ? MONTHLY_2026_RAINFALL_ENTRIES
+    : (METRIC_SCALE_ENTRIES[activeMetric] || METRIC_SCALE_ENTRIES.water_risk);
+
   const currentMonth = KHARIF_MONTHS.find((m) => m.id === activeMonthId) || KHARIF_MONTHS[0];
 
   return (
@@ -96,6 +107,16 @@ export default function MapLegend({
 
       {!collapsed && (
         <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          {/* Active Season Badge */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px", backgroundColor: is2026 ? "rgba(245, 158, 11, 0.15)" : "rgba(59, 130, 246, 0.15)", borderRadius: "8px", border: `1px solid ${is2026 ? "rgba(245, 158, 11, 0.3)" : "rgba(59, 130, 246, 0.3)"}` }}>
+            <span style={{ fontSize: "10px", color: is2026 ? "#fde68a" : "#93c5fd", fontWeight: 700, textTransform: "uppercase" }}>
+              {is2026 ? "Kharif 2026 (Preliminary)" : "Kharif 2025"}
+            </span>
+            <span style={{ fontSize: "9px", fontFamily: "monospace", color: "#94a3b8" }}>
+              {is2026 ? "IMERG Late Run" : "IMERG Final v07"}
+            </span>
+          </div>
+
           {/* Active Metric Info */}
           <div>
             <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 600 }}>
@@ -105,7 +126,11 @@ export default function MapLegend({
               {metric.label}
             </div>
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px", lineHeight: "1.3" }}>
-              {metric.description}
+              {is2026 && activeMetric === "sm_gldas_percentile"
+                ? "Soil moisture available for June–July only. Full-season baseline pending research GLDAS release."
+                : (is2026 && activeMetric === "rainfall_anomaly_pct" && isMonthView
+                    ? "Monthly rainfall categorized as Below Normal, Near Normal, or Above Normal."
+                    : metric.description)}
             </div>
           </div>
 
@@ -135,7 +160,7 @@ export default function MapLegend({
           {/* Color Scale Swatches — real metric ranges */}
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             {scaleEntries.map((entry) => (
-              <div key={entry.range} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div key={entry.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span
                     style={{
@@ -163,9 +188,19 @@ export default function MapLegend({
               <span>NASA Data Sources</span>
             </div>
             <ul style={{ fontSize: "10px", color: "#64748b", margin: "4px 0 0", paddingLeft: "16px", lineHeight: "1.4" }}>
-              <li><strong style={{ color: "#94a3b8" }}>GPM IMERG v07:</strong> ~11 km monthly rainfall</li>
-              <li><strong style={{ color: "#94a3b8" }}>GLDAS-2.1 Noah:</strong> ~25 km root-zone soil moisture (model assimilation)</li>
-              <li style={{ fontStyle: "italic", color: "#475569" }}>District values inherited by all talukas in that district</li>
+              <li>
+                <strong style={{ color: "#94a3b8" }}>
+                  {is2026 ? "GPM IMERG Late Run:" : "GPM IMERG v07:"}
+                </strong>{" "}
+                {is2026 ? "~11 km near-real-time daily aggregation" : "~11 km monthly rainfall"}
+              </li>
+              <li>
+                <strong style={{ color: "#94a3b8" }}>GLDAS-2.1 Noah:</strong>{" "}
+                {is2026 ? "Root-zone soil moisture (June–July only)" : "~25 km root-zone soil moisture"}
+              </li>
+              <li style={{ fontStyle: "italic", color: "#475569" }}>
+                {is2026 ? "Both districts show Moderate deficit under single dry signal rule" : "District values inherited by all talukas in that district"}
+              </li>
             </ul>
           </div>
         </div>

@@ -206,6 +206,7 @@ function AssessmentForm({
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("map");
+  const [season, setSeason] = useState("2025");
   const [district, setDistrict] = useState("North Goa");
   const [area, setArea] = useState(GOA_TALUKAS["North Goa"][0]);
   const [ecology, setEcology] = useState("morod");
@@ -331,8 +332,12 @@ export default function App() {
             />
             <StatCard
               label="Water-deficit telemetry"
-              value="Connected"
-              detail="NASA GPM IMERG Final v07 & GLDAS-2.1 Noah model assimilation"
+              value={season === "2026" ? "2026 Preliminary" : "Connected (2025)"}
+              detail={
+                season === "2026"
+                  ? "NASA GPM IMERG Late Run daily & GLDAS-2.1 (June–July only)"
+                  : "NASA GPM IMERG Final v07 & GLDAS-2.1 Noah model assimilation"
+              }
             />
           </div>
 
@@ -340,12 +345,12 @@ export default function App() {
           {activeTab === "map" && (
             <div className="space-y-4">
               <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#11141c] p-2">
-                <GoaMap height="640px" />
+                <GoaMap height="640px" season={season} onSeasonChange={setSeason} />
               </div>
               <div className="p-3.5 rounded-lg bg-[#11141c] border border-white/[0.08] flex items-start gap-2.5 text-xs text-[#a3a9b8]">
                 <CircleHelp size={16} className="text-[#a3a9b8] shrink-0 mt-0.5" />
                 <p>
-                  <strong className="text-[#eef0f5] font-medium">Map instructions:</strong> Click any of Goa's 12 talukas to inspect monthly rainfall anomalies, root-zone soil moisture percentiles, and suitable rice varieties. Use the slider to scrub through Kharif 2025 months (June through September).
+                  <strong className="text-[#eef0f5] font-medium">Map instructions:</strong> Click any of Goa's 12 talukas to inspect monthly rainfall {season === "2026" ? "signals (below/near/above normal)" : "anomalies"}, root-zone soil moisture {season === "2026" ? "(June–July only)" : "percentiles"}, and suitable rice varieties. Use the season switch on the map to toggle between 2025 and 2026 (preliminary).
                 </p>
               </div>
             </div>
