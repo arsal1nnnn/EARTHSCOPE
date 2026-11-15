@@ -4,10 +4,10 @@
  * Project: EARTHSCOPE — NASA Space Apps Challenge
  *
  * DATA SOURCES:
- *   - Water Risk: NASA GPM IMERG v07 + GLDAS-2.1 Noah indicator agreement & concurrent dry signals
+ *   - Water-deficit signal: NASA GPM IMERG v07 + GLDAS-2.1 Noah indicator agreement & concurrent dry signals
  *   - Rice Suitability: ICAR-CCARI & KVK Goa documented variety recommendations across ecologies
  *   - GPM IMERG Final monthly v07 (~11 km) for rainfall metrics
- *   - GLDAS-2.1 Noah root-zone soil moisture (~25 km, model assimilation)
+ *   - GLDAS-2.1 Noah root-zone soil moisture (~25 km, model)
  */
 
 // ---------------------------------------------------------------------------
@@ -23,11 +23,11 @@ export const METRIC_CONFIGS = {
   water_risk: {
     id: "water_risk",
     label: "Water-Deficit Signal",
-    unit: "Deficit Class (Low / Moderate / High)",
+    unit: "Signal (Low / Moderate / High)",
     description: "Evaluates dryness based on two indicators: NASA GPM IMERG rainfall departure and GLDAS-2.1 Noah model root-zone moisture",
     source: "Two indicators: GPM IMERG + GLDAS-2.1 Noah model",
     getColor: (val) => {
-      // 1: Low Deficit (No dry signals), 2: Moderate Deficit (Single dry signal with buffer), 3: High Deficit (Concurrent dry signals)
+      // 1: Low Deficit (No dry signal), 2: Moderate Deficit (Single dry signal), 3: High Deficit (Concurrent dry signals)
       if (val >= 3) return "#ef4444"; // Red (High Deficit)
       if (val >= 2) return "#f59e0b"; // Amber (Moderate Deficit)
       return "#10b981"; // Emerald (Low Deficit)
@@ -37,7 +37,7 @@ export const METRIC_CONFIGS = {
     id: "rice_suitability",
     label: "Rice Variety Suitability",
     unit: "Documented Ecologies",
-    description: "ICAR-CCARI & KVK Goa documented suitability across local land ecologies (Khazan, Kher, Morod)",
+    description: "ICAR-CCARI & KVK Goa documented suitability across local indicative land types (Khazan, Kher, Morod)",
     source: "ICAR-CCARI & KVK Goa documented recommendations with NASA water context",
     getColor: (val) => {
       // Color-coded by documented variety count / ecology coverage:
@@ -67,10 +67,10 @@ export const METRIC_CONFIGS = {
     id: "sm_gldas_percentile",
     label: "Soil Moisture Percentile (GLDAS-2.1 Noah)",
     unit: "percentile (0–100)",
-    description: "GLDAS-2.1 Noah root-zone soil moisture percentile (~25 km, model assimilation)",
-    source: "GLDAS-2.1 Noah root-zone soil moisture (~25 km, model assimilation)",
+    description: "GLDAS-2.1 Noah root-zone soil moisture percentile (~25 km, model)",
+    source: "GLDAS-2.1 Noah root-zone soil moisture (~25 km, model)",
     getColor: (val) => {
-      if (val === null || val === undefined) return "#64748b"; // Neutral slate for "June–July only"
+      if (val === null || val === undefined) return "#64748b"; // Neutral slate for "June–July only; Aug–Sep not yet released"
       if (val <= 10) return "#dc2626";
       if (val <= 25) return "#f97316";
       if (val <= 40) return "#facc15";
@@ -113,15 +113,14 @@ export const TALUKA_METADATA = {
 };
 
 // ---------------------------------------------------------------------------
-// Kharif Season Months — display metadata only
+// Kharif Season Months (June to September only — October removed)
 // ---------------------------------------------------------------------------
 export const KHARIF_MONTHS = [
-  { id: "all", label: "Full Season (Jun–Sep)", phase: "Kharif 2025 Aggregate (GPM IMERG + GLDAS-2.1)" },
+  { id: "all", label: "Full Season (Jun–Sep)", phase: "Kharif Aggregate (GPM IMERG + GLDAS-2.1)" },
   { id: "jun", label: "June", phase: "Monsoon Onset & Sowing" },
   { id: "jul", label: "July", phase: "Peak Monsoon Tillering" },
   { id: "aug", label: "August", phase: "Mid-Season Panicle Initiation" },
   { id: "sep", label: "September", phase: "Flowering & Grain Filling" },
-  { id: "oct", label: "October", phase: "Monsoon Retreat & Harvest (data pending)" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -151,8 +150,9 @@ export function getSeasonalProps(baseProps, activeMonthId = "all", season = "202
       water_risk_level: derived.level,
       rice_suitability: recCount,
       _active_month: "all",
-      sm_display: is2026 ? "June–July only" : (sourceProps.sm_gldas_percentile !== null && sourceProps.sm_gldas_percentile !== undefined ? `${sourceProps.sm_gldas_percentile}th pctl` : "—"),
-      sm_signal_display: is2026 ? "June–July only" : (sourceProps.sm_gldas_signal || "—"),
+      sm_gldas_percentile: is2026 ? null : sourceProps.sm_gldas_percentile,
+      sm_display: is2026 ? "June–July only; August–September not yet released" : (sourceProps.sm_gldas_percentile !== null && sourceProps.sm_gldas_percentile !== undefined ? `${sourceProps.sm_gldas_percentile}th pctl` : "—"),
+      sm_signal_display: is2026 ? "June–July only; August–September not yet released" : (sourceProps.sm_gldas_signal || "—"),
     };
   }
 
@@ -185,8 +185,25 @@ export function getSeasonalProps(baseProps, activeMonthId = "all", season = "202
       : "—";
   }
 
-  const smMonthDisplay = is2026 ? "June–July only" : (m.sm_gldas_month_percentile !== null && m.sm_gldas_month_percentile !== undefined ? `${m.sm_gldas_month_percentile}th pctl` : "—");
-  const smMonthSignal = is2026 ? "June–July only" : (m.sm_gldas_signal || "—");
+  let smMonthDisplay = "—";
+  let smMonthSignal = "—";
+  let smMonthPctl = null;
+
+  if (is2026) {
+    if (activeMonthId === "aug" || activeMonthId === "sep") {
+      smMonthDisplay = "August–September not yet released";
+      smMonthSignal = "Not yet released";
+      smMonthPctl = null;
+    } else {
+      smMonthPctl = m.sm_gldas_month_percentile ?? null;
+      smMonthDisplay = smMonthPctl !== null && smMonthPctl !== undefined ? `${smMonthPctl}th pctl` : "June–July only";
+      smMonthSignal = m.sm_gldas_signal || "June–July only";
+    }
+  } else {
+    smMonthPctl = m.sm_gldas_month_percentile ?? null;
+    smMonthDisplay = smMonthPctl !== null && smMonthPctl !== undefined ? `${smMonthPctl}th pctl` : "—";
+    smMonthSignal = m.sm_gldas_signal || "—";
+  }
 
   return {
     ...sourceProps,
@@ -194,8 +211,8 @@ export function getSeasonalProps(baseProps, activeMonthId = "all", season = "202
     rainfall_anomaly_pct: m.rainfall_month_anomaly_pct ?? sourceProps.rainfall_anomaly_pct,
     rainfall_signal: m.rainfall_signal ?? sourceProps.rainfall_signal,
     rainfall_display: rainDisplay,
-    sm_gldas_percentile: m.sm_gldas_month_percentile ?? (is2026 ? null : sourceProps.sm_gldas_percentile),
-    sm_gldas_signal: is2026 ? "June–July only" : (m.sm_gldas_signal ?? sourceProps.sm_gldas_signal),
+    sm_gldas_percentile: smMonthPctl,
+    sm_gldas_signal: smMonthSignal,
     sm_display: smMonthDisplay,
     sm_signal_display: smMonthSignal,
     indicator_agreement: mAgr,

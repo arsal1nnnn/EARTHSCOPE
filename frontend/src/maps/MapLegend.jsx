@@ -13,9 +13,9 @@ import { ChevronDown, ChevronUp, Layers, Calendar, Info } from "lucide-react";
 
 const METRIC_SCALE_ENTRIES = {
   water_risk: [
-    { color: "#10b981", label: "Low deficit",       range: "0 dry signals (buffer)" },
-    { color: "#f59e0b", label: "Moderate deficit",  range: "1 dry signal (rainfall)" },
-    { color: "#ef4444", label: "High deficit",      range: "2 concurrent dry signals" },
+    { color: "#10b981", label: "Low deficit",       range: "No dry signal" },
+    { color: "#f59e0b", label: "Moderate deficit",  range: "Single dry signal (rainfall)" },
+    { color: "#ef4444", label: "High deficit",      range: "Concurrent dry signals (rain + SM)" },
   ],
   rice_suitability: [
     { color: "#059669", label: "High (Khazan + Kher)", range: "8 documented varieties" },
@@ -107,7 +107,7 @@ export default function MapLegend({
             </div>
             <div className="text-[11px] text-[#8b93a7] mt-0.5 leading-relaxed">
               {is2026 && activeMetric === "sm_gldas_percentile"
-                ? "Soil moisture available for June–July only. Full-season baseline pending research GLDAS release."
+                ? "Soil moisture available for June–July only; August–September not yet released. Season value is null; full-season baseline pending research GLDAS release."
                 : is2026 && activeMetric === "rainfall_anomaly_pct" && isMonthView
                 ? "Monthly rainfall categorized as below normal, near normal, or above normal."
                 : metric.description}
@@ -162,7 +162,7 @@ export default function MapLegend({
               </li>
               <li>
                 <span className="text-[#8b93a7]">GLDAS-2.1 Noah:</span>{" "}
-                {is2026 ? "Root-zone soil moisture (June–July only)" : "~25 km root-zone soil moisture"}
+                {is2026 ? "Root-zone soil moisture model (June–July only)" : "~25 km root-zone soil moisture model"}
               </li>
               <li className="italic text-[#5a6275]">
                 {is2026

@@ -445,7 +445,7 @@ export default function GoaMap({
                 </button>
                 <button
                   onClick={() => handleSeasonChange("2026")}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer border ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer border ${
                     season === "2026"
                       ? "bg-amber-500/20 border-amber-500/30 text-amber-300"
                       : "border-transparent text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04]"
@@ -453,8 +453,8 @@ export default function GoaMap({
                   title="Kharif 2026 Preliminary (NASA IMERG Late Run)"
                 >
                   <span>2026</span>
-                  <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-200 border border-amber-500/30 font-mono">
-                    preliminary
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 border border-amber-500/30 font-medium">
+                    Preliminary (near-real-time data)
                   </span>
                 </button>
               </div>
@@ -601,7 +601,7 @@ export default function GoaMap({
                   {selectedProps.name} Taluka
                 </h3>
                 <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded border border-white/[0.08] bg-white/[0.04] text-[#a3a9b8]">
-                  {is2026 ? "Kharif 2026 (Preliminary)" : (selectedProps.season || "Kharif 2025 Domain")}
+                  {is2026 ? "Preliminary (near-real-time data) • Kharif 2026" : (selectedProps.season || "Kharif 2025 Domain")}
                 </span>
               </div>
               <button
@@ -634,7 +634,7 @@ export default function GoaMap({
               </div>
               <div className="text-[11px] text-[#cbd5e1] leading-relaxed">
                 {is2026
-                  ? `Water-deficit signal Moderate: ${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly (preliminary IMERG Late Run) with soil moisture available for June–July only.`
+                  ? `Water-deficit signal Moderate: ${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly (preliminary IMERG Late Run) with soil moisture available for June–July only; August–September not yet released.`
                   : (selectedProps.water_risk?.summary ||
                       `${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly with ${selectedProps.sm_gldas_percentile}th percentile root-zone moisture.`)}
               </div>
@@ -652,7 +652,7 @@ export default function GoaMap({
                 </span>
               </div>
               <div className="text-[11px] text-[#8b93a7] mb-1.5">
-                Recommended for {selectedProps.name} ecologies:
+                Recommended for indicative {selectedProps.name} land types:
               </div>
               <div className="flex flex-wrap gap-1.5 mb-1.5">
                 {(selectedProps.rice_suitability?.recommended_varieties || ["Karjat-3", "Naveen"]).map((v) => (
@@ -665,7 +665,7 @@ export default function GoaMap({
                 ))}
               </div>
               <div className="text-[10px] text-[#5a6275]">
-                Documented screening (ICAR-CCARI & KVK Goa)
+                Indicative land types from ICAR-CCARI & KVK Goa (no field-level soil map)
               </div>
             </div>
 
@@ -708,10 +708,22 @@ export default function GoaMap({
                   GLDAS soil moisture
                 </div>
                 <div className="text-sm font-semibold font-mono tabular-nums text-sky-400 mt-0.5">
-                  {is2026 ? "June–July only" : (selectedProps.sm_gldas_percentile !== null && selectedProps.sm_gldas_percentile !== undefined ? `${selectedProps.sm_gldas_percentile}th pctl` : "—")}
+                  {is2026
+                    ? (activeMonth === "aug" || activeMonth === "sep"
+                        ? "Not yet released"
+                        : (selectedProps.sm_gldas_percentile !== null && selectedProps.sm_gldas_percentile !== undefined
+                            ? `${selectedProps.sm_gldas_percentile}th pctl`
+                            : "June–July only"))
+                    : (selectedProps.sm_gldas_percentile !== null && selectedProps.sm_gldas_percentile !== undefined
+                        ? `${selectedProps.sm_gldas_percentile}th pctl`
+                        : "—")}
                 </div>
                 <div className="text-[10px] text-[#5a6275] mt-0.5">
-                  Signal: {is2026 ? "June–July only" : (selectedProps.sm_gldas_signal || "—")}
+                  {is2026
+                    ? (activeMonth === "aug" || activeMonth === "sep"
+                        ? "August–September not yet released"
+                        : "June–July only; August–September not yet released")
+                    : `Signal: ${selectedProps.sm_gldas_signal || "—"}`}
                 </div>
               </div>
 
@@ -830,7 +842,7 @@ export default function GoaMap({
                     </strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#8b93a7]">Top varieties:</span>
+                    <span className="text-[#8b93a7]">Indicative varieties:</span>
                     <span className="text-[#c7d2fe] text-[10px] max-w-[120px] text-right truncate">
                       {(selectedProps.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ")}
                     </span>
@@ -846,7 +858,7 @@ export default function GoaMap({
                   <div className="flex justify-between">
                     <span className="text-[#8b93a7]">GLDAS SM:</span>
                     <span className="text-sky-400 font-mono tabular-nums">
-                      {is2026 ? "June–July only" : `${selectedProps.sm_gldas_percentile}th pctl`}
+                      {is2026 ? "June–July only (season null)" : `${selectedProps.sm_gldas_percentile}th pctl`}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -876,7 +888,7 @@ export default function GoaMap({
                     </strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#8b93a7]">Top varieties:</span>
+                    <span className="text-[#8b93a7]">Indicative varieties:</span>
                     <span className="text-[#fef08a] text-[10px] max-w-[120px] text-right truncate">
                       {(compareProps.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ")}
                     </span>
@@ -892,7 +904,7 @@ export default function GoaMap({
                   <div className="flex justify-between">
                     <span className="text-[#8b93a7]">GLDAS SM:</span>
                     <span className="text-sky-400 font-mono tabular-nums">
-                      {is2026 ? "June–July only" : `${compareProps.sm_gldas_percentile}th pctl`}
+                      {is2026 ? "June–July only (season null)" : `${compareProps.sm_gldas_percentile}th pctl`}
                     </span>
                   </div>
                   <div className="flex justify-between">

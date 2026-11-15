@@ -20,7 +20,7 @@ export default function ProjectOverview() {
       stat: "0–100 cm",
       statLabel: "Root-zone profile",
       description:
-        "Land surface model assimilating observed meteorological forcing. Measures simulated moisture stored in the crop root zone, separating true soil deficit from surface runoff.",
+        "Land surface model driven by observed meteorological forcing. Measures simulated moisture stored in the crop root zone, separating true soil deficit from surface runoff.",
       provenance: "NASA Hydrological Sciences",
     },
     {
@@ -62,7 +62,7 @@ export default function ProjectOverview() {
             </h2>
           </div>
           <p className="max-w-xl text-sm text-[#a3a9b8] leading-relaxed">
-            EarthScope couples NASA satellite remote sensing with land-surface model assimilation and ICAR-CCARI varietal records to provide explainable water-deficit intelligence across Goa.
+            EarthScope couples NASA satellite remote sensing with the GLDAS land-surface model and ICAR-CCARI varietal records to provide explainable water-deficit intelligence across Goa.
           </p>
         </div>
 

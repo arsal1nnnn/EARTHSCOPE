@@ -81,7 +81,7 @@ export default function StressLayer({
           <span style="color: #8b93a7;">Rice suitability:</span>
           <strong style="color: #38bdf8; font-weight: 600;">${riceClass}</strong>
         </div>
-        ${topVarieties ? `<div style="font-size: 10px; color: #8b93a7; margin-bottom: 4px;">Top: ${topVarieties}</div>` : ""}
+        ${topVarieties ? `<div style="font-size: 10px; color: #8b93a7; margin-bottom: 4px;">Indicative varieties: ${topVarieties}</div>` : ""}
 
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px;">
           <span style="color: #8b93a7;">${is2026 && isMonthView ? "Monthly rainfall:" : "Rainfall anomaly:"}</span>
@@ -103,11 +103,11 @@ export default function StressLayer({
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
           <span style="color: #8b93a7;">GLDAS soil moisture:</span>
-          <span style="color: #38bdf8; font-family: monospace; font-variant-numeric: tabular-nums;">${is2026 ? "June–July only" : `${smDisplay} (${smSignal})`}</span>
+          <span style="color: #38bdf8; font-family: monospace; font-variant-numeric: tabular-nums;">${is2026 ? (isMonthView && (activeMonthId === "aug" || activeMonthId === "sep") ? "Aug–Sep not yet released" : "June–July only (season null)") : `${smDisplay} (${smSignal})`}</span>
         </div>
 
         <div style="font-size: 9px; color: #5a6275; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px; line-height: 1.3;">
-          ${is2026 ? "Preliminary IMERG Late Run district estimate · Soil moisture June–July only" : "District-level NASA indicators inherited by all talukas in district"}
+          ${is2026 ? "Preliminary IMERG Late Run district estimate · Soil moisture June–July only; Aug–Sep not yet released" : "District-level NASA indicators inherited by all talukas in district"}
         </div>
         <div style="font-size: 9px; color: #5a6275; margin-top: 2px; text-align: right;">
           ${isSelected ? "Selected" : isCompared ? "Compared" : "Click to inspect"}

@@ -62,7 +62,7 @@ export default function AgroEcologyShowcase() {
             Tailoring Satellite Insights to Goa's Three Agro-Ecologies
           </h2>
           <p className="mt-2 text-sm text-[#a3a9b8] leading-relaxed">
-            A single rain gauge or uniform drought metric cannot capture Goa's complex coastal-estuarine landscape. EarthScope categorizes every taluka across its real agronomic land types.
+            A single rain gauge or uniform drought metric cannot capture Goa's complex coastal-estuarine landscape. EarthScope screens documented cultivars across Goa's indicative agronomic land types.
           </p>
         </div>
 

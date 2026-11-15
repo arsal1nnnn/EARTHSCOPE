@@ -328,7 +328,7 @@ export default function App() {
             <StatCard
               label="Agro-ecologies"
               value="3 Land types"
-              detail="Khazan (saline), Kher (shallow lowlands), Morod (terraced uplands)"
+              detail="Indicative: Khazan (saline), Kher (shallow lowlands), Morod (terraced uplands)"
             />
             <StatCard
               label="Water-deficit telemetry"
@@ -336,7 +336,7 @@ export default function App() {
               detail={
                 season === "2026"
                   ? "NASA GPM IMERG Late Run daily & GLDAS-2.1 (June–July only)"
-                  : "NASA GPM IMERG Final v07 & GLDAS-2.1 Noah model assimilation"
+                  : "NASA GPM IMERG Final v07 & GLDAS-2.1 Noah land surface model"
               }
             />
           </div>
