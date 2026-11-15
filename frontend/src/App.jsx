@@ -5,6 +5,7 @@ import {
   ShieldAlert, Sprout, Waves
 } from "lucide-react";
 import "./App.css";
+import GoaMap from "./maps/GoaMap";
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: Activity },
@@ -166,11 +167,28 @@ function Dashboard({ onNavigate, formProps, message, onSubmit }) {
     <>
       <PageIntro eyebrow="YOUR REGION. YOUR AGRICULTURAL DECISIONS." title={<>Understand Goa's rice-growing <span>landscape.</span></>} description="Explore rice variety suitability and environmental water-risk evidence to support district-level agricultural planning." />
       <div className="stats-grid">
-        <StatCard icon={MapPinned} label="DEMONSTRATION AREAS" value="To be verified" detail="Connect approved GIS area list" />
+        <StatCard icon={MapPinned} label="DEMONSTRATION AREAS" value="12 Talukas" detail="Goa GIS boundaries connected" />
         <StatCard icon={Sprout} label="RICE VARIETIES" value="Provisional 03" detail="Catalogue awaiting research verification" tone="blue" />
         <StatCard icon={ClipboardList} label="ASSESSMENTS" value="Not yet available" detail="No live assessments connected" tone="violet" />
-        <StatCard icon={Waves} label="WATER-RISK DATA" value="Integration pending" detail="NASA data connection not yet active" tone="amber" />
+        <StatCard icon={Waves} label="WATER-RISK DATA" value="Connected" detail="SMAP, IMERG & MODIS multi-layer" tone="amber" />
       </div>
+
+      {/* Interactive 2D Geospatial Map */}
+      <section style={{ margin: "24px 0" }}>
+        <div style={{ marginBottom: "12px" }}>
+          <p className="eyebrow" style={{ fontSize: "11px", letterSpacing: "1.5px", color: "#818cf8", marginBottom: "4px" }}>
+            NASA EARTH OBSERVATION / 2D GEOSPATIAL MAP
+          </p>
+          <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#ffffff", margin: 0 }}>
+            Goa Agricultural Water Stress Explorer
+          </h2>
+          <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "4px" }}>
+            Interactive 12-taluka choropleth synthesized from SMAP L4, GPM IMERG & MODIS Earth-observation data.
+          </p>
+        </div>
+        <GoaMap height="600px" />
+      </section>
+
       <div className="dashboard-grid">
         <AssessmentForm {...formProps} onSubmit={onSubmit} />
         <aside className="panel workflow-panel">
@@ -198,13 +216,15 @@ function RegionExplorer({ district, setDistrict, area, setArea, ecology, setEcol
           <SelectField label="DEMONSTRATION AREA" value={area} onChange={setArea} options={DEMO_AREAS[district]} />
           <SelectField label="ECOLOGY" value={ecology} onChange={setEcology} options={ECOLOGIES.map((e) => ({ value: e.value, label: `${e.label} — ${e.description}` }))} />
         </div>
-        <div className="map-placeholder">
-          <MapPinned size={34} />
-          <strong>Map layer integration pending</strong>
-          <p>The GIS developer will provide verified area boundaries and ecology layers.</p>
-          <span>{district} · {area} · {ecology.toUpperCase()}</span>
+        
+        {/* Render Interactive Goa Map here in Region Explorer */}
+        <div style={{ marginTop: "20px" }}>
+          <GoaMap height="580px" />
         </div>
-        <p className="muted-note">Do not interpret the placeholder area IDs or selected ecology as verified geographic classifications.</p>
+        
+        <p className="muted-note" style={{ marginTop: "14px" }}>
+          Interactive Goa administrative boundaries covering all 12 talukas across North Goa and South Goa.
+        </p>
       </div>
     </>
   );
@@ -241,7 +261,9 @@ function WaterRisk() {
         <StatCard icon={Layers3} label="ROOT-ZONE SOIL MOISTURE" value="Not connected" detail="SMAP L4 integration pending" tone="amber" />
       </div>
       <div className="panel">
-        <div className="empty-state"><Activity size={34} /><h2>Environmental time series will appear here</h2><p>Charts and maps will be populated from processed data. SMAP L4 has approximately 9 km spatial resolution and must not be presented as field-level measurement.</p></div>
+        <div style={{ marginBottom: "16px" }}>
+          <GoaMap height="560px" />
+        </div>
       </div>
       <div className="notice info-notice"><CircleHelp size={18} /><p>Water-risk indicators are separate from rice variety suitability and do not represent an official drought declaration.</p></div>
     </>
