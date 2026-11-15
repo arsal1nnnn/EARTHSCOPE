@@ -18,7 +18,16 @@ from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+def _find_project_root() -> Path:
+    """Repo root = nearest parent holding .git or data/processed (works from science/ or backend/app/science/)."""
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        if (parent / ".git").exists() or (parent / "data" / "processed").is_dir():
+            return parent
+    return here.parents[1]
+
+
+PROJECT_ROOT = _find_project_root()
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 ACCESSED = "2026-11-14"
 
