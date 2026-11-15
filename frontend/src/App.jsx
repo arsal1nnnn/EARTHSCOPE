@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Globe2,
   Layers3,
@@ -10,6 +10,7 @@ import {
   CircleHelp,
   ChevronRight,
   FileText,
+  RotateCcw,
 } from "lucide-react";
 import "./App.css";
 import LandingHero from "./components/LandingHero";
@@ -18,6 +19,8 @@ import AgroEcologyShowcase from "./components/AgroEcologyShowcase";
 import ThemedFooter from "./components/ThemedFooter";
 import DitherIcon from "./components/DitherIcon";
 import GoaMap from "./maps/GoaMap";
+import AssessmentResults from "./components/AssessmentResults";
+import riceSuitabilityMatrix from "./data/rice_suitability_matrix.json";
 
 const DISTRICTS = ["North Goa", "South Goa"];
 const ECOLOGIES = [
@@ -93,6 +96,8 @@ function AssessmentForm({
   setEcology,
   varieties,
   setVarieties,
+  season,
+  setSeason,
   onSubmit,
 }) {
   const talukas = GOA_TALUKAS[district] || [];
@@ -102,9 +107,24 @@ function AssessmentForm({
     );
   };
 
+  const selectAll = () => {
+    setVarieties(VARIETIES.map((v) => v.id));
+  };
+
+  const selectEcologyMatch = () => {
+    const matched = VARIETIES.filter((v) =>
+      v.ecology.toLowerCase().includes(ecology.toLowerCase())
+    ).map((v) => v.id);
+    setVarieties(matched.length > 0 ? matched : [VARIETIES[0].id]);
+  };
+
+  const clearVarieties = () => {
+    setVarieties([]);
+  };
+
   return (
     <form className="p-6 rounded-xl bg-[#11141c] border border-white/[0.08]" onSubmit={onSubmit}>
-      <div className="flex items-center justify-between pb-4 border-b border-white/[0.06] mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/[0.06] mb-6 gap-2">
         <div>
           <h3 className="text-base font-semibold font-montserrat text-[#eef0f5]">
             Configure rice assessment
@@ -113,9 +133,11 @@ function AssessmentForm({
             Select the Goa taluka and agro-ecology context to evaluate
           </p>
         </div>
-        <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#1a1e28] border border-white/[0.08] text-[#a3a9b8]">
-          Kharif 2025
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#1a1e28] border border-white/[0.08] text-[#a3a9b8]">
+            {season === "2026" ? "Kharif 2026 (Preliminary)" : "Kharif 2025"}
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,20 +168,54 @@ function AssessmentForm({
         />
         <div className="field">
           <span className="text-xs text-[#a3a9b8] block mb-1.5">Crop season</span>
-          <div className="flex items-center justify-between bg-[#1a1e28] border border-white/[0.1] rounded-lg px-3 py-2 text-[#eef0f5] text-xs">
-            <span className="flex items-center gap-2">
-              <Leaf size={14} className="text-emerald-400" />
-              <span>Kharif</span>
-            </span>
-            <span className="text-xs font-mono text-[#7a8296]">June–Sept 2025</span>
-          </div>
+          <select
+            value={season}
+            onChange={(e) => setSeason(e.target.value)}
+            className="w-full bg-[#1a1e28] border border-white/[0.1] rounded-lg px-3 py-2 text-[#eef0f5] text-xs outline-none focus:border-white/30"
+          >
+            <option value="2025">Kharif 2025 (June–Sept 2025)</option>
+            <option value="2026">Kharif 2026 (Preliminary near-real-time)</option>
+          </select>
+          <small className="text-[11px] text-[#7a8296] mt-1 block">
+            {season === "2026"
+              ? "Preliminary: GPM daily + GLDAS June–July only"
+              : "Final Run: 20-year baseline anomaly & GLDAS soil moisture"}
+          </small>
         </div>
       </div>
 
       <div className="mt-6">
-        <span className="text-xs text-[#a3a9b8] block mb-2">
-          Documented rice varieties
-        </span>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-[#a3a9b8]">
+            Documented rice varieties ({varieties.length} selected)
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={selectAll}
+              className="text-[11px] font-mono text-[#004FF4] hover:underline cursor-pointer"
+            >
+              Select all 9
+            </button>
+            <span className="text-[#7a8296] text-[10px]">•</span>
+            <button
+              type="button"
+              onClick={selectEcologyMatch}
+              className="text-[11px] font-mono text-[#a3a9b8] hover:text-[#eef0f5] cursor-pointer"
+            >
+              Match {ecology}
+            </button>
+            <span className="text-[#7a8296] text-[10px]">•</span>
+            <button
+              type="button"
+              onClick={clearVarieties}
+              className="text-[11px] font-mono text-[#7a8296] hover:text-[#eef0f5] cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           {VARIETIES.map((variety) => (
             <label
@@ -192,14 +248,20 @@ function AssessmentForm({
         </small>
       </div>
 
-      <button
-        className="inline-flex items-center justify-center gap-2 mt-6 px-5 py-2.5 rounded-lg bg-[#004FF4] hover:bg-[#0042db] text-white font-montserrat font-medium text-xs cursor-pointer transition-colors disabled:opacity-40"
-        type="submit"
-        disabled={varieties.length === 0}
-      >
-        <span>Save assessment configuration</span>
-        <ChevronRight size={14} />
-      </button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 pt-4 border-t border-white/[0.06]">
+        <button
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#004FF4] hover:bg-[#0042db] text-white font-montserrat font-medium text-xs cursor-pointer transition-colors disabled:opacity-40"
+          type="submit"
+          disabled={varieties.length === 0}
+        >
+          <Sprout size={14} />
+          <span>Run suitability assessment</span>
+          <ChevronRight size={14} />
+        </button>
+        <span className="text-[11px] font-mono text-[#7a8296]">
+          Qualitative screening based on documented tolerances & NASA signals
+        </span>
+      </div>
     </form>
   );
 }
@@ -209,9 +271,51 @@ export default function App() {
   const [season, setSeason] = useState("2025");
   const [district, setDistrict] = useState("North Goa");
   const [area, setArea] = useState(GOA_TALUKAS["North Goa"][0]);
-  const [ecology, setEcology] = useState("morod");
-  const [varieties, setVarieties] = useState(["goa_dhan_1", "csr_27"]);
+  const [ecology, setEcology] = useState("khazan");
+  const [varieties, setVarieties] = useState(["goa_dhan_1", "csr_27", "karjat_3"]);
   const [savedMessage, setSavedMessage] = useState("");
+  const [assessmentResults, setAssessmentResults] = useState([]);
+
+  const evaluateVarieties = (
+    currentArea = area,
+    currentDistrict = district,
+    currentEcology = ecology,
+    currentVarieties = varieties,
+    currentSeason = season
+  ) => {
+    if (!currentVarieties || currentVarieties.length === 0) {
+      setAssessmentResults([]);
+      return;
+    }
+    const results = currentVarieties.map((varId) => {
+      const varietyObj = VARIETIES.find((v) => v.id === varId);
+      const varName = varietyObj?.name || varId;
+      const key = `${currentArea}__${currentEcology}__${varName}`.toLowerCase();
+      const entry = riceSuitabilityMatrix[key];
+      if (entry) {
+        return entry;
+      }
+      return {
+        taluka: currentArea,
+        district: currentDistrict,
+        ecology: currentEcology,
+        variety: varName,
+        suitability_class: "Information Pending",
+        suitability_score: 0.0,
+        supporting_factors: [],
+        limiting_factors: ["Catalogue record pending scientific verification"],
+        seasonal_water_context: "Baseline data being indexed",
+        maturity_days: "N/A",
+        source_references: "ICAR-CCARI / NASA",
+      };
+    });
+    setAssessmentResults(results);
+  };
+
+  // Re-run evaluation whenever area, district, ecology, varieties, or season change
+  useEffect(() => {
+    evaluateVarieties(area, district, ecology, varieties, season);
+  }, [area, district, ecology, varieties, season]);
 
   const formProps = {
     district,
@@ -222,18 +326,30 @@ export default function App() {
     setEcology,
     varieties,
     setVarieties,
+    season,
+    setSeason,
   };
 
   function handleAssessmentSubmit(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
+    evaluateVarieties(area, district, ecology, varieties, season);
     const ecologyName = ECOLOGIES.find((item) => item.value === ecology)?.label || ecology;
-    const varietyNames = VARIETIES.filter((item) => varieties.includes(item.id))
-      .map((item) => item.name)
-      .join(", ");
     setSavedMessage(
-      `${district} · ${area} · ${ecologyName} · Kharif 2025 · Varieties: ${varietyNames}. Saved.`
+      `Assessment evaluated: ${district} · ${area} · ${ecologyName} · ${season === "2026" ? "Kharif 2026 (Preliminary)" : "Kharif 2025"} · ${varieties.length} varieties screened.`
     );
   }
+
+  const applyPreset = (presetDistrict, presetTaluka, presetEcology, presetVarieties) => {
+    setDistrict(presetDistrict);
+    setArea(presetTaluka);
+    setEcology(presetEcology);
+    setVarieties(presetVarieties);
+    evaluateVarieties(presetTaluka, presetDistrict, presetEcology, presetVarieties, season);
+    const ecologyName = ECOLOGIES.find((item) => item.value === presetEcology)?.label || presetEcology;
+    setSavedMessage(
+      `Loaded preset: ${presetTaluka} (${presetDistrict}) · ${ecologyName} · ${presetVarieties.length} varieties screened.`
+    );
+  };
 
   const handleOpenDashboard = () => {
     setActiveTab("map");
@@ -356,64 +472,99 @@ export default function App() {
             </div>
           )}
 
-          {/* Tab 2: Assessment Setup Form */}
+          {/* Tab 2: Assessment Setup Form & Live Results */}
           {activeTab === "assessment" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <AssessmentForm {...formProps} onSubmit={handleAssessmentSubmit} />
-                {savedMessage && (
-                  <div className="mt-3 p-3 rounded-lg bg-[#11141c] border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center gap-2">
-                    <CheckCircle2 size={15} />
-                    <span>{savedMessage}</span>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <AssessmentForm {...formProps} onSubmit={handleAssessmentSubmit} />
+                  {savedMessage && (
+                    <div className="mt-3 p-3 rounded-lg bg-[#11141c] border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={15} />
+                        <span>{savedMessage}</span>
+                      </div>
+                      <span className="text-[11px] text-[#7a8296] shrink-0 font-mono">Evaluated</span>
+                    </div>
+                  )}
+                </div>
+
+                <aside className="p-6 rounded-xl bg-[#11141c] border border-white/[0.08] flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold font-montserrat text-[#eef0f5] mb-3">
+                      Decision-support workflow
+                    </h4>
+                    <div className="space-y-3.5 text-xs text-[#a3a9b8]">
+                      <div className="flex gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-[#1a1e28] text-[#eef0f5] flex items-center justify-center font-mono text-[10px] shrink-0 border border-white/[0.08]">
+                          1
+                        </span>
+                        <div>
+                          <strong className="text-[#eef0f5] block">Select taluka &amp; ecology</strong>
+                          <span className="text-[#7a8296]">Match administrative boundary with agricultural terrain.</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-[#1a1e28] text-[#eef0f5] flex items-center justify-center font-mono text-[10px] shrink-0 border border-white/[0.08]">
+                          2
+                        </span>
+                        <div>
+                          <strong className="text-[#eef0f5] block">Check cultivar tolerances</strong>
+                          <span className="text-[#7a8296]">Review ICAR-CCARI recommended saline, submergence, or drought traits.</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-[#1a1e28] text-[#eef0f5] flex items-center justify-center font-mono text-[10px] shrink-0 border border-white/[0.08]">
+                          3
+                        </span>
+                        <div>
+                          <strong className="text-[#eef0f5] block">Inspect separate NASA signals</strong>
+                          <span className="text-[#7a8296]">Evaluate GPM precipitation anomaly and GLDAS soil moisture independently.</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
+
+                  <div className="mt-6 pt-4 border-t border-white/[0.06] space-y-2">
+                    <span className="text-[11px] font-mono text-[#7a8296] block">Quick test presets:</span>
+                    <div className="flex flex-col gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => applyPreset("North Goa", "Tiswadi", "khazan", ["goa_dhan_1", "csr_27", "karjat_3"])}
+                        className="w-full py-2 px-3 rounded-lg bg-[#1a1e28] hover:bg-[#232836] border border-white/[0.08] text-[#eef0f5] text-[11px] font-mono transition-colors text-left flex items-center justify-between cursor-pointer"
+                      >
+                        <span>🌊 Khazan saline (Goa Dhan vs Karjat)</span>
+                        <ChevronRight size={12} className="text-[#7a8296]" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyPreset("South Goa", "Ponda", "kher", ["karjat_3", "naveen", "annada"])}
+                        className="w-full py-2 px-3 rounded-lg bg-[#1a1e28] hover:bg-[#232836] border border-white/[0.08] text-[#eef0f5] text-[11px] font-mono transition-colors text-left flex items-center justify-between cursor-pointer"
+                      >
+                        <span>🌾 Kher lowlands (Karjat-3 &amp; Naveen)</span>
+                        <ChevronRight size={12} className="text-[#7a8296]" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyPreset("North Goa", "Sattari", "morod", ["annada", "goa_dhan_1"])}
+                        className="w-full py-2 px-3 rounded-lg bg-[#1a1e28] hover:bg-[#232836] border border-white/[0.08] text-[#eef0f5] text-[11px] font-mono transition-colors text-left flex items-center justify-between cursor-pointer"
+                      >
+                        <span>⛰️ Morod uplands (Annada drought-hardy)</span>
+                        <ChevronRight size={12} className="text-[#7a8296]" />
+                      </button>
+                    </div>
+                  </div>
+                </aside>
               </div>
 
-              <aside className="p-6 rounded-xl bg-[#11141c] border border-white/[0.08] flex flex-col justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold font-montserrat text-[#eef0f5] mb-3">
-                    Decision-support workflow
-                  </h4>
-                  <div className="space-y-3.5 text-xs text-[#a3a9b8]">
-                    <div className="flex gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-[#1a1e28] text-[#eef0f5] flex items-center justify-center font-mono text-[10px] shrink-0 border border-white/[0.08]">
-                        1
-                      </span>
-                      <div>
-                        <strong className="text-[#eef0f5] block">Select taluka & ecology</strong>
-                        <span className="text-[#7a8296]">Match administrative boundary with agricultural terrain.</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-[#1a1e28] text-[#eef0f5] flex items-center justify-center font-mono text-[10px] shrink-0 border border-white/[0.08]">
-                        2
-                      </span>
-                      <div>
-                        <strong className="text-[#eef0f5] block">Check cultivar tolerances</strong>
-                        <span className="text-[#7a8296]">Review ICAR-CCARI recommended saline, submergence, or drought traits.</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-[#1a1e28] text-[#eef0f5] flex items-center justify-center font-mono text-[10px] shrink-0 border border-white/[0.08]">
-                        3
-                      </span>
-                      <div>
-                        <strong className="text-[#eef0f5] block">Inspect separate NASA signals</strong>
-                        <span className="text-[#7a8296]">Evaluate GPM precipitation anomaly and GLDAS soil moisture independently.</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-white/[0.06]">
-                  <button
-                    onClick={() => setActiveTab("map")}
-                    className="w-full py-2 rounded-lg bg-[#1a1e28] hover:bg-[#232836] border border-white/[0.08] text-[#eef0f5] text-xs font-mono transition-colors cursor-pointer"
-                  >
-                    View taluka map ➔
-                  </button>
-                </div>
-              </aside>
+              {/* Live Assessment Results Card Deck */}
+              <AssessmentResults
+                results={assessmentResults}
+                taluka={area}
+                district={district}
+                ecology={ecology}
+                season={season}
+              />
             </div>
           )}
 
