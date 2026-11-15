@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { GeoJSON } from "react-leaflet";
-import { getTalukaStyle, getSeasonalProps, TALUKA_METADATA } from "./mapStyles";
+import { getTalukaStyle, getSeasonalProps } from "./mapStyles";
 
 /**
  * StressLayer Component
@@ -55,14 +55,6 @@ export default function StressLayer({
     const topVarieties     = (props.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ");
     const isMonthView      = activeMonthId !== "all";
 
-    const meta = TALUKA_METADATA[regionId] || {};
-    const ecologiesBadges = (meta.ecologies || [])
-      .map(
-        (eco) =>
-          `<span style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 1px 5px; border-radius: 4px; font-size: 9px; margin-right: 4px;">${eco}</span>`
-      )
-      .join("");
-
     const isSelected = regionId === selectedRegionId;
     const isCompared = regionId === compareRegionId;
     const rainfallColor = props.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80";
@@ -73,7 +65,6 @@ export default function StressLayer({
           <span>${name}</span>
           <span style="font-size: 10px; color: #94a3b8; font-weight: normal;">${district}</span>
         </div>
-        ${ecologiesBadges ? `<div style="margin-bottom: 6px;">${ecologiesBadges}</div>` : ""}
 
         <div style="font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">
           ${isMonthView ? `${activeMonthId.charAt(0).toUpperCase() + activeMonthId.slice(1)} · ` : ""}NASA Earth Observation

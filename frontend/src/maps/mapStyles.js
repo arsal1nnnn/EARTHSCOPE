@@ -88,93 +88,21 @@ export const METRIC_CONFIGS = {
 };
 
 // ---------------------------------------------------------------------------
-// Taluka Centroids & Ecological Classifications for Goa
+// Taluka Centroids & Administrative Metadata for Goa (EPSG:4326)
 // ---------------------------------------------------------------------------
 export const TALUKA_METADATA = {
-  "GOA-N-PERNEM": {
-    name: "Pernem",
-    district: "North Goa",
-    center: [15.6981, 73.7679],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Upland plateau cashews and rainfed paddy require moisture monitoring during early monsoon dry spells.",
-  },
-  "GOA-N-BARDEZ": {
-    name: "Bardez",
-    district: "North Goa",
-    center: [15.5469, 73.7879],
-    ecologies: ["Kher", "Khazan"],
-    advisory: "Coastal lowlands facing peri-urban runoff and salinity intrusion in estuarine khazan pockets.",
-  },
-  "GOA-N-TISWADI": {
-    name: "Tiswadi",
-    district: "North Goa",
-    center: [15.4680, 73.8469],
-    ecologies: ["Khazan", "Kher"],
-    advisory: "Mandovi-Zuari tidal estuarine khazan bund maintenance vital for salinity protection.",
-  },
-  "GOA-N-BICHOLIM": {
-    name: "Bicholim",
-    district: "North Goa",
-    center: [15.5844, 73.9565],
-    ecologies: ["Kher", "Morod"],
-    advisory: "Mining watershed transition zones exhibit laterite topsoil desiccation under high thermal load.",
-  },
-  "GOA-N-SATTARI": {
-    name: "Sattari",
-    district: "North Goa",
-    center: [15.5860, 74.1499],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Dense canopy in Western Ghats foothills maintains high moisture retention; arecanut and spices thrive.",
-  },
-  "GOA-S-PONDA": {
-    name: "Ponda",
-    district: "South Goa",
-    center: [15.3810, 74.0599],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Central spice belt with deep lateritic valleys; moderate irrigation buffer from local springs.",
-  },
-  "GOA-S-MORMUGAO": {
-    name: "Mormugao",
-    district: "South Goa",
-    center: [15.3906, 73.8351],
-    ecologies: ["Khazan"],
-    advisory: "Peninsular coastal ecology with restricted agricultural acreage; localized salt-spray impact.",
-  },
-  "GOA-S-SALCETE": {
-    name: "Salcete",
-    district: "South Goa",
-    center: [15.2378, 73.9928],
-    ecologies: ["Khazan", "Kher"],
-    advisory: "Major fertile rice bowl; Kushavati river basin requires supplemental sluice management during monsoon pauses.",
-  },
-  "GOA-S-QUEPEM": {
-    name: "Quepem",
-    district: "South Goa",
-    center: [15.1697, 74.0544],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Elevated water deficit observed; rainfed sugarcane and paddy show signs of delayed vegetative tillering.",
-  },
-  "GOA-S-SANGUEM": {
-    name: "Sanguem",
-    district: "South Goa",
-    center: [15.2037, 74.1862],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Salaulim reservoir catchment provides strong hydrological buffer; favorable forest canopy protection.",
-  },
-  "GOA-S-DHARBANDORA": {
-    name: "Dharbandora",
-    district: "South Goa",
-    center: [15.3630, 74.1356],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Bhagwan Mahaveer Sanctuary transition belt; soil compaction along transport corridors reduces infiltration.",
-  },
-  "GOA-S-CANACONA": {
-    name: "Canacona",
-    district: "South Goa",
-    center: [15.0007, 74.0159],
-    ecologies: ["Kher", "Khazan"],
-    advisory: "Southern coastal and valley systems exhibit healthy soil moisture and stable micro-climate index.",
-  },
+  "GOA-N-PERNEM":      { name: "Pernem",      district: "North Goa", center: [15.6981, 73.7679] },
+  "GOA-N-BARDEZ":      { name: "Bardez",      district: "North Goa", center: [15.5469, 73.7879] },
+  "GOA-N-TISWADI":     { name: "Tiswadi",     district: "North Goa", center: [15.4680, 73.8469] },
+  "GOA-N-BICHOLIM":    { name: "Bicholim",    district: "North Goa", center: [15.5844, 73.9565] },
+  "GOA-N-SATTARI":     { name: "Sattari",     district: "North Goa", center: [15.5860, 74.1499] },
+  "GOA-S-PONDA":       { name: "Ponda",       district: "South Goa", center: [15.3810, 74.0599] },
+  "GOA-S-MORMUGAO":    { name: "Mormugao",    district: "South Goa", center: [15.3906, 73.8351] },
+  "GOA-S-SALCETE":     { name: "Salcete",     district: "South Goa", center: [15.2378, 73.9928] },
+  "GOA-S-QUEPEM":      { name: "Quepem",      district: "South Goa", center: [15.1697, 74.0544] },
+  "GOA-S-SANGUEM":     { name: "Sanguem",     district: "South Goa", center: [15.2037, 74.1862] },
+  "GOA-S-DHARBANDORA": { name: "Dharbandora", district: "South Goa", center: [15.3630, 74.1356] },
+  "GOA-S-CANACONA":    { name: "Canacona",    district: "South Goa", center: [15.0007, 74.0159] },
 };
 
 // ---------------------------------------------------------------------------

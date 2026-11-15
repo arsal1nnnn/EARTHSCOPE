@@ -170,7 +170,7 @@ function Dashboard({ onNavigate, formProps, message, onSubmit }) {
         <StatCard icon={MapPinned} label="DEMONSTRATION AREAS" value="12 Talukas" detail="Goa GIS boundaries connected" />
         <StatCard icon={Sprout} label="RICE VARIETIES" value="Provisional 03" detail="Catalogue awaiting research verification" tone="blue" />
         <StatCard icon={ClipboardList} label="ASSESSMENTS" value="Not yet available" detail="No live assessments connected" tone="violet" />
-        <StatCard icon={Waves} label="WATER-RISK DATA" value="Connected" detail="SMAP, IMERG & MODIS multi-layer" tone="amber" />
+        <StatCard icon={Waves} label="WATER-RISK DATA" value="Connected" detail="GPM IMERG & GLDAS-2.1 Noah" tone="amber" />
       </div>
 
       {/* Interactive 2D Geospatial Map */}
@@ -183,7 +183,7 @@ function Dashboard({ onNavigate, formProps, message, onSubmit }) {
             Goa Agricultural Water Stress Explorer
           </h2>
           <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "4px" }}>
-            Interactive 12-taluka choropleth synthesized from SMAP L4, GPM IMERG & MODIS Earth-observation data.
+            Interactive 12-taluka choropleth synthesized from NASA GPM IMERG & GLDAS-2.1 Earth-observation data.
           </p>
         </div>
         <GoaMap height="600px" />
@@ -257,8 +257,8 @@ function WaterRisk() {
     <>
       <PageIntro eyebrow="NASA EARTH OBSERVATION EVIDENCE" title="Water-Risk Monitor" description="Review environmental indicators that may help characterize changing water conditions across selected areas." />
       <div className="stats-grid two-stats">
-        <StatCard icon={Waves} label="RAINFALL INDICATOR" value="Not connected" detail="GPM IMERG integration pending" tone="blue" />
-        <StatCard icon={Layers3} label="ROOT-ZONE SOIL MOISTURE" value="Not connected" detail="SMAP L4 integration pending" tone="amber" />
+        <StatCard icon={Waves} label="RAINFALL INDICATOR" value="Connected" detail="GPM IMERG Final monthly v07 (~11 km)" tone="blue" />
+        <StatCard icon={Layers3} label="ROOT-ZONE SOIL MOISTURE" value="Connected" detail="GLDAS-2.1 Noah (~25 km, model assimilation)" tone="amber" />
       </div>
       <div className="panel">
         <div style={{ marginBottom: "16px" }}>

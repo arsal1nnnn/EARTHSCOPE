@@ -292,7 +292,6 @@ export default function GoaMap({
   // Selected feature metrics (with active month simulation)
   const selectedRawProps = selectedFeature?.properties;
   const selectedProps = selectedRawProps ? getSeasonalProps(selectedRawProps, activeMonth) : null;
-  const selectedMeta = selectedProps ? TALUKA_METADATA[selectedProps.region_id] || {} : {};
 
   // Comparison feature metrics
   const compareRawProps = compareFeature?.properties;
@@ -826,24 +825,20 @@ export default function GoaMap({
                 <h3 style={{ fontSize: "18px", fontWeight: "bold", margin: "2px 0 4px", color: "#ffffff" }}>
                   {selectedProps.name} Taluka
                 </h3>
-                {/* Ecology Badges */}
                 <div style={{ display: "flex", gap: "4px" }}>
-                  {(selectedMeta.ecologies || []).map((eco) => (
-                    <span
-                      key={eco}
-                      style={{
-                        background: "rgba(56, 189, 248, 0.12)",
-                        color: "#38bdf8",
-                        border: "1px solid rgba(56, 189, 248, 0.25)",
-                        padding: "1px 6px",
-                        borderRadius: "4px",
-                        fontSize: "9px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {eco} Ecology
-                    </span>
-                  ))}
+                  <span
+                    style={{
+                      background: "rgba(56, 189, 248, 0.12)",
+                      color: "#38bdf8",
+                      border: "1px solid rgba(56, 189, 248, 0.25)",
+                      padding: "1px 6px",
+                      borderRadius: "4px",
+                      fontSize: "9px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Kharif 2025 Domain
+                  </span>
                 </div>
               </div>
               <button
@@ -1028,11 +1023,11 @@ export default function GoaMap({
                 </span>
               </div>
 
-              {/* Scientific Advisory Note */}
-              {selectedMeta.advisory && (
+              {/* Scientific Interpretation Limits */}
+              {selectedProps.interpretation_limit && (
                 <div style={{ backgroundColor: "rgba(30, 41, 59, 0.5)", border: "1px solid #334155", borderRadius: "8px", padding: "8px", fontSize: "11px", color: "#cbd5e1", lineHeight: 1.35 }}>
-                  <strong style={{ color: "#94a3b8" }}>Advisory: </strong>
-                  {selectedMeta.advisory}
+                  <strong style={{ color: "#94a3b8" }}>Scientific Limitation: </strong>
+                  {selectedProps.interpretation_limit}
                 </div>
               )}
 
