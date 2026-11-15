@@ -1,246 +1,173 @@
 /**
  * mapStyles.js
- * Color scales, styling functions, seasonal simulation, and geospatial metadata for Goa Talukas.
+ * Color scales, styling functions, and geospatial metadata for Goa Talukas.
  * Project: EARTHSCOPE — NASA Space Apps Challenge
+ *
+ * DATA SOURCES:
+ *   - Water Risk: NASA GPM IMERG v07 + GLDAS-2.1 Noah indicator agreement & concurrent dry signals
+ *   - Rice Suitability: ICAR-CCARI & KVK Goa documented variety recommendations across ecologies
+ *   - GPM IMERG Final monthly v07 (~11 km) for rainfall metrics
+ *   - GLDAS-2.1 Noah root-zone soil moisture (~25 km, model assimilation)
  */
 
-export const STRESS_CATEGORIES = {
-  Severe: {
-    label: "Severe Stress",
-    min: 70,
-    max: 100,
-    color: "#dc2626",
-    fillColor: "#ef4444",
-    badge: "bg-red-500/20 text-red-400 border-red-500/40",
-  },
-  Elevated: {
-    label: "Elevated Stress",
-    min: 50,
-    max: 69,
-    color: "#ea580c",
-    fillColor: "#f97316",
-    badge: "bg-orange-500/20 text-orange-400 border-orange-500/40",
-  },
-  Moderate: {
-    label: "Moderate Stress",
-    min: 30,
-    max: 49,
-    color: "#d97706",
-    fillColor: "#f59e0b",
-    badge: "bg-amber-500/20 text-amber-400 border-amber-500/40",
-  },
-  Low: {
-    label: "Low Stress",
-    min: 15,
-    max: 29,
-    color: "#65a30d",
-    fillColor: "#84cc16",
-    badge: "bg-lime-500/20 text-lime-400 border-lime-500/40",
-  },
-  Normal: {
-    label: "Normal / Healthy",
-    min: 0,
-    max: 14,
-    color: "#059669",
-    fillColor: "#10b981",
-    badge: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
-  },
-};
-
+// ---------------------------------------------------------------------------
+// Confirmed Real Scientific Metric Configurations
+// ---------------------------------------------------------------------------
 export const METRIC_CONFIGS = {
-  asi_score: {
-    id: "asi_score",
-    label: "Agricultural Stress Index (ASI)",
-    unit: "/ 100",
-    description: "Multi-sensor index synthesized from SMAP, MODIS NDVI/LST & IMERG",
+  water_risk: {
+    id: "water_risk",
+    label: "Agricultural Water Risk",
+    unit: "Risk Class",
+    description: "Multi-indicator water stress based on concurrent NASA GPM rain & GLDAS moisture signals",
+    source: "NASA GPM IMERG + GLDAS-2.1 Noah indicator agreement",
     getColor: (val) => {
-      if (val >= 70) return "#ef4444";
-      if (val >= 50) return "#f97316";
-      if (val >= 30) return "#f59e0b";
-      if (val >= 15) return "#84cc16";
-      return "#10b981";
+      // 1: Low Risk (Healthy Water Buffer), 2: Moderate Risk (Deficit / Transition), 3: High Risk
+      if (val >= 3) return "#ef4444"; // Red
+      if (val >= 2) return "#f59e0b"; // Amber
+      return "#10b981"; // Emerald
     },
   },
-  soil_moisture_pct: {
-    id: "soil_moisture_pct",
-    label: "Soil Moisture (SMAP L4)",
-    unit: "% volumetric",
-    description: "Root-zone soil moisture anomaly from NASA SMAP L4 V007",
+  rice_suitability: {
+    id: "rice_suitability",
+    label: "Rice Variety Suitability",
+    unit: "% Suitability",
+    description: "ICAR-CCARI & KVK Goa documented suitability across local land ecologies (Khazan, Kher, Morod)",
+    source: "ICAR-CCARI & KVK Goa documented recommendations with NASA water context",
     getColor: (val) => {
-      if (val < 15) return "#dc2626";
-      if (val < 20) return "#f97316";
-      if (val < 25) return "#facc15";
-      if (val < 30) return "#38bdf8";
-      return "#0284c7";
+      // 100%: Deep Emerald (Khazan & Kher lowlands with 6-8 varieties)
+      // 96%: Teal (Kher lowlands & Morod uplands)
+      // < 90%: Blue / Amber
+      if (val >= 98) return "#059669";
+      if (val >= 90) return "#0d9488";
+      if (val >= 75) return "#3b82f6";
+      return "#f59e0b";
     },
   },
-  rainfall_anomaly: {
-    id: "rainfall_anomaly",
-    label: "Precipitation Anomaly (GPM IMERG)",
-    unit: "% departure",
-    description: "GPM IMERG V07 departure from 10-year seasonal baseline",
+  rainfall_anomaly_pct: {
+    id: "rainfall_anomaly_pct",
+    label: "Precipitation Anomaly (GPM IMERG v07)",
+    unit: "% departure from 2001–2020 baseline",
+    description: "GPM IMERG Final monthly v07 (~11 km) departure from 20-year seasonal baseline",
+    source: "GPM IMERG Final monthly v07 (~11 km)",
     getColor: (val) => {
-      if (val <= -30) return "#b91c1c";
-      if (val <= -15) return "#f97316";
-      if (val < 0) return "#fbbf24";
-      if (val < 20) return "#34d399";
+      if (val <= -20) return "#b91c1c";
+      if (val <= -10) return "#f97316";
+      if (val < 0)   return "#fbbf24";
+      if (val < 15)  return "#34d399";
       return "#06b6d4";
     },
   },
-  predicted_30d_prob: {
-    id: "predicted_30d_prob",
-    label: "30-Day Stress Probability",
-    unit: "Probability",
-    description: "Predictive model likelihood of severe water stress in next 30 days",
+  sm_gldas_percentile: {
+    id: "sm_gldas_percentile",
+    label: "Soil Moisture Percentile (GLDAS-2.1 Noah)",
+    unit: "percentile (0–100)",
+    description: "GLDAS-2.1 Noah root-zone soil moisture percentile (~25 km, model assimilation)",
+    source: "GLDAS-2.1 Noah root-zone soil moisture (~25 km, model assimilation)",
     getColor: (val) => {
-      if (val >= 0.7) return "#dc2626";
-      if (val >= 0.5) return "#f97316";
-      if (val >= 0.3) return "#f59e0b";
-      if (val >= 0.15) return "#84cc16";
-      return "#10b981";
+      if (val <= 10) return "#dc2626";
+      if (val <= 25) return "#f97316";
+      if (val <= 40) return "#facc15";
+      if (val <= 70) return "#38bdf8";
+      return "#0284c7";
+    },
+  },
+  rainfall_percentile: {
+    id: "rainfall_percentile",
+    label: "Rainfall Percentile (GPM IMERG v07)",
+    unit: "percentile (0–100)",
+    description: "GPM IMERG Final monthly v07 rainfall percentile relative to 2001–2020 baseline",
+    source: "GPM IMERG Final monthly v07 (~11 km)",
+    getColor: (val) => {
+      if (val <= 10) return "#b91c1c";
+      if (val <= 25) return "#f97316";
+      if (val <= 40) return "#fbbf24";
+      if (val <= 65) return "#34d399";
+      return "#06b6d4";
     },
   },
 };
 
-// Taluka Centroids & Ecological Classifications for Goa
+// ---------------------------------------------------------------------------
+// Taluka Centroids & Administrative Metadata for Goa (EPSG:4326)
+// ---------------------------------------------------------------------------
 export const TALUKA_METADATA = {
-  "GOA-N-PERNEM": {
-    name: "Pernem",
-    district: "North Goa",
-    center: [15.6981, 73.7679],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Upland plateau cashews and rainfed paddy require moisture monitoring during early monsoon dry spells.",
-  },
-  "GOA-N-BARDEZ": {
-    name: "Bardez",
-    district: "North Goa",
-    center: [15.5469, 73.7879],
-    ecologies: ["Kher", "Khazan"],
-    advisory: "Coastal lowlands facing peri-urban runoff and salinity intrusion in estuarine khazan pockets.",
-  },
-  "GOA-N-TISWADI": {
-    name: "Tiswadi",
-    district: "North Goa",
-    center: [15.4680, 73.8469],
-    ecologies: ["Khazan", "Kher"],
-    advisory: "Mandovi-Zuari tidal estuarine khazan bund maintenance vital for salinity protection.",
-  },
-  "GOA-N-BICHOLIM": {
-    name: "Bicholim",
-    district: "North Goa",
-    center: [15.5844, 73.9565],
-    ecologies: ["Kher", "Morod"],
-    advisory: "Mining watershed transition zones exhibit laterite topsoil desiccation under high thermal load.",
-  },
-  "GOA-N-SATTARI": {
-    name: "Sattari",
-    district: "North Goa",
-    center: [15.5860, 74.1499],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Dense canopy in Western Ghats foothills maintains high moisture retention; arecanut and spices thrive.",
-  },
-  "GOA-S-PONDA": {
-    name: "Ponda",
-    district: "South Goa",
-    center: [15.3810, 74.0599],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Central spice belt with deep lateritic valleys; moderate irrigation buffer from local springs.",
-  },
-  "GOA-S-MORMUGAO": {
-    name: "Mormugao",
-    district: "South Goa",
-    center: [15.3906, 73.8351],
-    ecologies: ["Khazan"],
-    advisory: "Peninsular coastal ecology with restricted agricultural acreage; localized salt-spray impact.",
-  },
-  "GOA-S-SALCETE": {
-    name: "Salcete",
-    district: "South Goa",
-    center: [15.2378, 73.9928],
-    ecologies: ["Khazan", "Kher"],
-    advisory: "Major fertile rice bowl; Kushavati river basin requires supplemental sluice management during monsoon pauses.",
-  },
-  "GOA-S-QUEPEM": {
-    name: "Quepem",
-    district: "South Goa",
-    center: [15.1697, 74.0544],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Elevated water deficit observed; rainfed sugarcane and paddy show signs of delayed vegetative tillering.",
-  },
-  "GOA-S-SANGUEM": {
-    name: "Sanguem",
-    district: "South Goa",
-    center: [15.2037, 74.1862],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Salaulim reservoir catchment provides strong hydrological buffer; favorable forest canopy protection.",
-  },
-  "GOA-S-DHARBANDORA": {
-    name: "Dharbandora",
-    district: "South Goa",
-    center: [15.3630, 74.1356],
-    ecologies: ["Morod", "Kher"],
-    advisory: "Bhagwan Mahaveer Sanctuary transition belt; soil compaction along transport corridors reduces infiltration.",
-  },
-  "GOA-S-CANACONA": {
-    name: "Canacona",
-    district: "South Goa",
-    center: [15.0007, 74.0159],
-    ecologies: ["Kher", "Khazan"],
-    advisory: "Southern coastal and valley systems exhibit healthy soil moisture and stable micro-climate index.",
-  },
+  "GOA-N-PERNEM":      { name: "Pernem",      district: "North Goa", center: [15.6981, 73.7679] },
+  "GOA-N-BARDEZ":      { name: "Bardez",      district: "North Goa", center: [15.5469, 73.7879] },
+  "GOA-N-TISWADI":     { name: "Tiswadi",     district: "North Goa", center: [15.4680, 73.8469] },
+  "GOA-N-BICHOLIM":    { name: "Bicholim",    district: "North Goa", center: [15.5844, 73.9565] },
+  "GOA-N-SATTARI":     { name: "Sattari",     district: "North Goa", center: [15.5860, 74.1499] },
+  "GOA-S-PONDA":       { name: "Ponda",       district: "South Goa", center: [15.3810, 74.0599] },
+  "GOA-S-MORMUGAO":    { name: "Mormugao",    district: "South Goa", center: [15.3906, 73.8351] },
+  "GOA-S-SALCETE":     { name: "Salcete",     district: "South Goa", center: [15.2378, 73.9928] },
+  "GOA-S-QUEPEM":      { name: "Quepem",      district: "South Goa", center: [15.1697, 74.0544] },
+  "GOA-S-SANGUEM":     { name: "Sanguem",     district: "South Goa", center: [15.2037, 74.1862] },
+  "GOA-S-DHARBANDORA": { name: "Dharbandora", district: "South Goa", center: [15.3630, 74.1356] },
+  "GOA-S-CANACONA":    { name: "Canacona",    district: "South Goa", center: [15.0007, 74.0159] },
 };
 
-// Kharif Season Months (Calibrated to Real NASA GPM IMERG 2025 Observations)
+// ---------------------------------------------------------------------------
+// Kharif Season Months — display metadata only
+// ---------------------------------------------------------------------------
 export const KHARIF_MONTHS = [
-  { id: "all", label: "Full Season (Aggregate)", phase: "Full Kharif 2025 Overview (GPM IMERG +5.6% Mean)", rainMod: 0, smMod: 0, asiMod: 0 },
-  { id: "jun", label: "June", phase: "Monsoon Onset & Sowing (GPM IMERG -5.7% Deficit)", rainMod: -10.5, smMod: -6, asiMod: +12 },
-  { id: "jul", label: "July", phase: "Peak Monsoon Tillering (GPM IMERG +14.4% Surplus)", rainMod: +14.5, smMod: +10, asiMod: -16 },
-  { id: "aug", label: "August", phase: "Mid-Season Panicle Initiation (GPM IMERG +22.6% Surplus)", rainMod: +18.0, smMod: +8, asiMod: -10 },
-  { id: "sep", label: "September", phase: "Flowering & Grain Filling (GPM IMERG -22.8% Deficit)", rainMod: -26.0, smMod: -5, asiMod: +8 },
-  { id: "oct", label: "October", phase: "Monsoon Retreat & Harvest Dry-Down", rainMod: -38.0, smMod: -12, asiMod: +18 },
+  { id: "all", label: "Full Season (Jun–Sep)", phase: "Kharif 2025 Aggregate (GPM IMERG + GLDAS-2.1)" },
+  { id: "jun", label: "June", phase: "Monsoon Onset & Sowing" },
+  { id: "jul", label: "July", phase: "Peak Monsoon Tillering" },
+  { id: "aug", label: "August", phase: "Mid-Season Panicle Initiation" },
+  { id: "sep", label: "September", phase: "Flowering & Grain Filling" },
+  { id: "oct", label: "October", phase: "Monsoon Retreat & Harvest (data pending)" },
 ];
 
-/**
- * Computes seasonal metric values for a taluka feature based on the active month.
- */
+// ---------------------------------------------------------------------------
+// getSeasonalProps
+// Returns real monthly sub-data from the `monthly` nested object when a specific
+// month is active, otherwise returns the full-season aggregated props.
+// ---------------------------------------------------------------------------
 export function getSeasonalProps(baseProps, activeMonthId = "all") {
   if (!baseProps) return {};
-  if (activeMonthId === "all") return baseProps;
+  
+  const baseWaterRisk = baseProps.water_risk_score ?? (baseProps.water_risk?.score ?? 1);
+  const baseSuitability = baseProps.rice_suitability_score ?? (baseProps.rice_suitability?.score_pct ?? 96);
 
-  const month = KHARIF_MONTHS.find((m) => m.id === activeMonthId) || KHARIF_MONTHS[0];
+  if (activeMonthId === "all") {
+    return {
+      ...baseProps,
+      water_risk: baseWaterRisk,
+      rice_suitability: baseSuitability,
+    };
+  }
 
-  const baseAsi = baseProps.asi_score ?? 40;
-  const baseSm = baseProps.soil_moisture_pct ?? 20;
-  const baseRain = baseProps.rainfall_anomaly ?? -10;
-  const baseProb = baseProps.predicted_30d_prob ?? 0.35;
+  const monthly = baseProps.monthly;
+  if (!monthly || !monthly[activeMonthId]) {
+    return {
+      ...baseProps,
+      water_risk: baseWaterRisk,
+      rice_suitability: baseSuitability,
+    };
+  }
 
-  const adjustedAsi = Math.max(5, Math.min(95, Math.round(baseAsi + month.asiMod)));
-  const adjustedSm = Math.max(8, Math.min(48, Math.round(baseSm + month.smMod)));
-  const adjustedRain = Math.round((baseRain + month.rainMod) * 10) / 10;
-  const adjustedProb = Math.max(0.05, Math.min(0.95, Math.round((baseProb + (month.asiMod / 100)) * 100) / 100));
-
-  let category = "Normal";
-  if (adjustedAsi >= 70) category = "Severe";
-  else if (adjustedAsi >= 50) category = "Elevated";
-  else if (adjustedAsi >= 30) category = "Moderate";
-  else if (adjustedAsi >= 15) category = "Low";
-
+  const m = monthly[activeMonthId];
   return {
     ...baseProps,
-    asi_score: adjustedAsi,
-    stress_category: category,
-    soil_moisture_pct: adjustedSm,
-    rainfall_anomaly: adjustedRain,
-    predicted_30d_prob: adjustedProb,
+    rainfall_anomaly_pct:  m.rainfall_month_anomaly_pct  ?? baseProps.rainfall_anomaly_pct,
+    rainfall_signal:       m.rainfall_signal               ?? baseProps.rainfall_signal,
+    sm_gldas_percentile:   m.sm_gldas_month_percentile    ?? baseProps.sm_gldas_percentile,
+    sm_gldas_signal:       m.sm_gldas_signal               ?? baseProps.sm_gldas_signal,
+    indicator_agreement:   m.indicator_agreement           ?? baseProps.indicator_agreement,
+    kharif_rainfall_mm:    m.rainfall_mm                   ?? baseProps.kharif_rainfall_mm,
+    water_risk:            m.water_risk_score              ?? baseWaterRisk,
+    water_risk_score:      m.water_risk_score              ?? baseWaterRisk,
+    water_risk_level:      m.water_risk_level              ?? (baseProps.water_risk?.level ?? "Low"),
+    rice_suitability:      baseSuitability,
+    _active_month:         activeMonthId,
   };
 }
 
-/**
- * Returns polygon styling options for a taluka feature.
- */
+// ---------------------------------------------------------------------------
+// getTalukaStyle — polygon styling for the choropleth layer
+// ---------------------------------------------------------------------------
 export function getTalukaStyle(
   feature,
-  activeMetric = "asi_score",
+  activeMetric = "water_risk",
   isSelected = false,
   isHovered = false,
   isCompared = false,
@@ -248,66 +175,37 @@ export function getTalukaStyle(
 ) {
   const rawProps = feature?.properties || {};
   const props = getSeasonalProps(rawProps, activeMonthId);
-  const metricCfg = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.asi_score;
-  const rawValue = props[activeMetric] ?? props.asi_score ?? 0;
+  const metricCfg = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.water_risk;
+  const rawValue = props[activeMetric] ?? 0;
   const fillColor = metricCfg.getColor(rawValue);
 
-  // Primary Selected Taluka
   if (isSelected) {
-    return {
-      fillColor: fillColor,
-      fillOpacity: 0.88,
-      color: "#ffffff",
-      weight: 3.5,
-      dashArray: "",
-    };
+    return { fillColor, fillOpacity: 0.88, color: "#ffffff", weight: 3.5, dashArray: "" };
   }
-
-  // Compared Taluka (Secondary Pin)
   if (isCompared) {
-    return {
-      fillColor: fillColor,
-      fillOpacity: 0.85,
-      color: "#fbbf24", // Amber-gold comparison outline
-      weight: 3.5,
-      dashArray: "4, 4",
-    };
+    return { fillColor, fillOpacity: 0.85, color: "#fbbf24", weight: 3.5, dashArray: "4, 4" };
   }
-
-  // Hover Highlight
   if (isHovered) {
-    return {
-      fillColor: fillColor,
-      fillOpacity: 0.78,
-      color: "#38bdf8", // Sky blue highlight
-      weight: 2.5,
-      dashArray: "",
-    };
+    return { fillColor, fillOpacity: 0.78, color: "#38bdf8", weight: 2.5, dashArray: "" };
   }
-
-  // Default Resting State
-  return {
-    fillColor: fillColor,
-    fillOpacity: 0.58,
-    color: "#0f172a",
-    weight: 1.5,
-    dashArray: "",
-  };
+  return { fillColor, fillOpacity: 0.58, color: "#0f172a", weight: 1.5, dashArray: "" };
 }
 
+// ---------------------------------------------------------------------------
 // Exact Bounding Box of all 12 Goa Talukas (WGS84 EPSG:4326)
+// ---------------------------------------------------------------------------
 export const GOA_BOUNDS = [
   [14.7529, 73.6756], // South-West corner (Canacona coastline)
   [15.8008, 74.3361], // North-East corner (Pernem / Sattari Western Ghats)
 ];
 
 export const GOA_MAP_CONFIG = {
-  center: [15.28, 73.98], // True geographic center of Goa
+  center: [15.28, 73.98],
   zoom: 10,
   minZoom: 8,
   maxZoom: 15,
   maxBounds: [
-    [13.8, 72.0], // Generous regional SW bounds
-    [16.8, 76.0], // Generous regional NE bounds
+    [13.8, 72.0],
+    [16.8, 76.0],
   ],
 };

@@ -131,7 +131,10 @@ def main() -> None:
     text = json.dumps(layer, ensure_ascii=False, allow_nan=False)
     OUT_SHARED.write_text(text, encoding="utf-8")
     print(f"Wrote {OUT_SHARED}  ({len(layer['features'])} talukas)")
-    if (ROOT / "frontend" / "src").is_dir():
+    if OUT_FRONTEND.is_file():
+        # M5 adds suitability / water-risk fields to this file; overwriting would erase them.
+        print(f"Kept existing {OUT_FRONTEND} (not overwritten). Use rainfall_taluka.py to refresh rainfall fields.")
+    elif (ROOT / "frontend" / "src").is_dir():
         OUT_FRONTEND.parent.mkdir(parents=True, exist_ok=True)
         OUT_FRONTEND.write_text(text, encoding="utf-8")
         print(f"Wrote {OUT_FRONTEND}")
