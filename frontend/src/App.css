@@ -117,6 +117,13 @@ h2 { margin: 0 0 8px; color: #edf3f6; font-size: 20px; font-weight: 600; }
   background-color: #004FF4;
 }
 
+.hero-headline {
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif !important;
+  hyphens: none !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
 .hero-cta-btn {
   background-color: #004FF4;
   box-shadow: 0 8px 30px rgba(0, 79, 244, 0.45);

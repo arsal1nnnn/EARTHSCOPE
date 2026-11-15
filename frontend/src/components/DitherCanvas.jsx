@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import defaultLandscape from "../assets/goa_landscape.jpg";
-import fallbackDashboard from "../assets/dashboard_reference.png";
 
 // Generate 16x16 Bayer matrix threshold values [-0.5, 0.5]
 function createBayer16Thresholds() {
@@ -41,21 +40,20 @@ const BAYER_16_THRESHOLDS = createBayer16Thresholds();
 
 /**
  * High-performance Bayer 16x16 Dither Canvas component
- * Faithfully reproduces the Figma Dither plugin settings:
+ * Refined and toned down for a clean, non-noisy aesthetic:
  * - Style: Bayer 16x16
- * - Size: 3 (3px dither cell)
- * - Levels: 4 (4 quantization levels per color channel: 0, 85, 170, 255)
- * - Brightness: 100%
- * - Contrast: 1
- * - Mono: off (full color channels)
- * - Gradient overlay: #004FF4 at top to #86A6D9 at bottom
+ * - Size: 2 (finer, crisper 2px dither cell)
+ * - Levels: 4
+ * - Dither Strength: 0.65 (softened blend to prevent harsh speckles)
+ * - Gradient overlay: #004FF4 at top to #86A6D9 at mid-sky
  */
 export default function DitherCanvas({
   imageSrc = defaultLandscape,
-  size = 3,
+  size = 2,
   levels = 4,
   brightness = 1.0,
   contrast = 1.0,
+  ditherStrength = 0.62,
   gradientTop = "#004FF4",
   gradientBottom = "#86A6D9",
   className = "",
@@ -76,7 +74,6 @@ export default function DitherCanvas({
     img.onload = () => {
       if (isCancelled) return;
 
-      // Use standard 1920x1080 artboard coordinate space matching Figma
       const targetWidth = 1920;
       const targetHeight = 1080;
 
@@ -86,15 +83,14 @@ export default function DitherCanvas({
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (!ctx) return;
 
-      // 1. Draw source landscape scaled to cover the 1920x1080 canvas
+      // 1. Draw pure source landscape scaled to 1920x1080
       ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
       // 2. Apply smooth linear gradient overlay on top: #004FF4 -> #86A6D9
-      // In Figma, the gradient overlays the sky and blends into the horizon
-      const grad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.58);
-      grad.addColorStop(0, "rgba(0, 79, 244, 0.78)");      // #004FF4 at top
-      grad.addColorStop(0.55, "rgba(134, 166, 217, 0.52)"); // #86A6D9 mid-sky
-      grad.addColorStop(1, "rgba(134, 166, 217, 0.0)");    // feather into field
+      const grad = ctx.createLinearGradient(0, 0, 0, targetHeight * 0.52);
+      grad.addColorStop(0, "rgba(0, 79, 244, 0.72)");        // #004FF4 at top
+      grad.addColorStop(0.55, "rgba(134, 166, 217, 0.45)");   // #86A6D9 mid-sky
+      grad.addColorStop(1, "rgba(134, 166, 217, 0.0)");      // feather into horizon
 
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, targetWidth, targetHeight);
@@ -105,8 +101,10 @@ export default function DitherCanvas({
       const step = 255 / (levels - 1); // 85 for 4 levels
       const bayer = BAYER_16_THRESHOLDS;
       const ditherSize = Math.max(1, Math.round(size));
+      const str = Math.min(1.0, Math.max(0.0, ditherStrength));
+      const invStr = 1.0 - str;
 
-      // Fast integer loop through all pixels
+      // Fast loop through all pixels with softened dither strength
       for (let y = 0; y < targetHeight; y++) {
         const cellY = Math.floor(y / ditherSize) & 15;
         const rowOffset = y * targetWidth;
@@ -116,26 +114,29 @@ export default function DitherCanvas({
           const threshold = bayer[cellY * 16 + cellX];
           const idx = (rowOffset + x) * 4;
 
-          // Process Red channel
+          // Red channel
           let r = data[idx];
           if (contrast !== 1.0) r = ((r / 255 - 0.5) * contrast + 0.5) * 255;
           if (brightness !== 1.0) r *= brightness;
           const rQuant = Math.round((r + threshold * step) / step) * step;
-          data[idx] = rQuant < 0 ? 0 : rQuant > 255 ? 255 : rQuant;
+          const rClamped = rQuant < 0 ? 0 : rQuant > 255 ? 255 : rQuant;
+          data[idx] = Math.round(r * invStr + rClamped * str);
 
-          // Process Green channel
+          // Green channel
           let g = data[idx + 1];
           if (contrast !== 1.0) g = ((g / 255 - 0.5) * contrast + 0.5) * 255;
           if (brightness !== 1.0) g *= brightness;
           const gQuant = Math.round((g + threshold * step) / step) * step;
-          data[idx + 1] = gQuant < 0 ? 0 : gQuant > 255 ? 255 : gQuant;
+          const gClamped = gQuant < 0 ? 0 : gQuant > 255 ? 255 : gQuant;
+          data[idx + 1] = Math.round(g * invStr + gClamped * str);
 
-          // Process Blue channel
+          // Blue channel
           let b = data[idx + 2];
           if (contrast !== 1.0) b = ((b / 255 - 0.5) * contrast + 0.5) * 255;
           if (brightness !== 1.0) b *= brightness;
           const bQuant = Math.round((b + threshold * step) / step) * step;
-          data[idx + 2] = bQuant < 0 ? 0 : bQuant > 255 ? 255 : bQuant;
+          const bClamped = bQuant < 0 ? 0 : bQuant > 255 ? 255 : bQuant;
+          data[idx + 2] = Math.round(b * invStr + bClamped * str);
 
           // Alpha remains 255
         }
@@ -149,7 +150,7 @@ export default function DitherCanvas({
     return () => {
       isCancelled = true;
     };
-  }, [imageSrc, size, levels, brightness, contrast, gradientTop, gradientBottom]);
+  }, [imageSrc, size, levels, brightness, contrast, ditherStrength, gradientTop, gradientBottom]);
 
   return (
     <div
@@ -159,7 +160,7 @@ export default function DitherCanvas({
         inset: 0,
         overflow: "hidden",
         backgroundColor: "#004FF4",
-        backgroundImage: `url(${fallbackDashboard})`,
+        backgroundImage: `url(${defaultLandscape})`,
         backgroundSize: "cover",
         backgroundPosition: "center top",
         ...style,
@@ -172,8 +173,8 @@ export default function DitherCanvas({
           height: "100%",
           objectFit: "cover",
           display: "block",
-          opacity: rendered ? 1 : 0.85,
-          transition: "opacity 0.3s ease-in-out",
+          opacity: rendered ? 1 : 0.9,
+          transition: "opacity 0.25s ease-in-out",
         }}
       />
     </div>
