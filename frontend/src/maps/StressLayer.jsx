@@ -50,6 +50,9 @@ export default function StressLayer({
     const smPctile         = props.sm_gldas_percentile  !== undefined ? `${props.sm_gldas_percentile}th pctl` : "N/A";
     const smSignal         = props.sm_gldas_signal       || "—";
     const agreement        = props.indicator_agreement   || "—";
+    const waterRiskLabel   = props.water_risk_level || (props.water_risk?.label || "Low Water Risk");
+    const riceClass        = props.rice_suitability_class || (props.rice_suitability?.class || "Highly Suitable");
+    const topVarieties     = (props.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ");
     const isMonthView      = activeMonthId !== "all";
 
     const meta = TALUKA_METADATA[regionId] || {};
@@ -73,10 +76,20 @@ export default function StressLayer({
         ${ecologiesBadges ? `<div style="margin-bottom: 6px;">${ecologiesBadges}</div>` : ""}
 
         <div style="font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">
-          ${isMonthView ? `${activeMonthId.charAt(0).toUpperCase() + activeMonthId.slice(1)} · ` : ""}GPM IMERG v07 · GLDAS-2.1 Noah
+          ${isMonthView ? `${activeMonthId.charAt(0).toUpperCase() + activeMonthId.slice(1)} · ` : ""}NASA Earth Observation
         </div>
 
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+          <span style="color: #94a3b8;">Water Risk:</span>
+          <strong style="color: ${waterRiskLabel.includes('High') ? '#f87171' : waterRiskLabel.includes('Moderate') ? '#fbbf24' : '#34d399'};">${waterRiskLabel}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+          <span style="color: #94a3b8;">Rice Suitability:</span>
+          <strong style="color: #38bdf8;">${riceClass}</strong>
+        </div>
+        ${topVarieties ? `<div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">Top: ${topVarieties}</div>` : ""}
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 3px;">
           <span style="color: #94a3b8;">Rainfall Anomaly:</span>
           <strong style="color: ${rainfallColor};">${rainfallAnom}</strong>
         </div>

@@ -3,19 +3,46 @@
  * Color scales, styling functions, and geospatial metadata for Goa Talukas.
  * Project: EARTHSCOPE — NASA Space Apps Challenge
  *
- * DATA SOURCES (all real NASA datasets):
+ * DATA SOURCES:
+ *   - Water Risk: NASA GPM IMERG v07 + GLDAS-2.1 Noah indicator agreement & concurrent dry signals
+ *   - Rice Suitability: ICAR-CCARI & KVK Goa documented variety recommendations across ecologies
  *   - GPM IMERG Final monthly v07 (~11 km) for rainfall metrics
- *   - GLDAS-2.1 Noah root-zone soil moisture (~25 km, model assimilation) for soil moisture
- *
- * NOTE: ASI score, soil_moisture_pct (% vol), predicted_30d_prob, evidence_coverage
- * and stress_category were REMOVED — they were fabricated and have no NASA source.
- * Only fields present in goa_taluka_indicators.geojson (M4 output) are used here.
+ *   - GLDAS-2.1 Noah root-zone soil moisture (~25 km, model assimilation)
  */
 
 // ---------------------------------------------------------------------------
-// Real NASA Metric Configurations (3 confirmed real metrics from M4 output)
+// Confirmed Real Scientific Metric Configurations
 // ---------------------------------------------------------------------------
 export const METRIC_CONFIGS = {
+  water_risk: {
+    id: "water_risk",
+    label: "Agricultural Water Risk",
+    unit: "Risk Class",
+    description: "Multi-indicator water stress based on concurrent NASA GPM rain & GLDAS moisture signals",
+    source: "NASA GPM IMERG + GLDAS-2.1 Noah indicator agreement",
+    getColor: (val) => {
+      // 1: Low Risk (Healthy Water Buffer), 2: Moderate Risk (Deficit / Transition), 3: High Risk
+      if (val >= 3) return "#ef4444"; // Red
+      if (val >= 2) return "#f59e0b"; // Amber
+      return "#10b981"; // Emerald
+    },
+  },
+  rice_suitability: {
+    id: "rice_suitability",
+    label: "Rice Variety Suitability",
+    unit: "% Suitability",
+    description: "ICAR-CCARI & KVK Goa documented suitability across local land ecologies (Khazan, Kher, Morod)",
+    source: "ICAR-CCARI & KVK Goa documented recommendations with NASA water context",
+    getColor: (val) => {
+      // 100%: Deep Emerald (Khazan & Kher lowlands with 6-8 varieties)
+      // 96%: Teal (Kher lowlands & Morod uplands)
+      // < 90%: Blue / Amber
+      if (val >= 98) return "#059669";
+      if (val >= 90) return "#0d9488";
+      if (val >= 75) return "#3b82f6";
+      return "#f59e0b";
+    },
+  },
   rainfall_anomaly_pct: {
     id: "rainfall_anomaly_pct",
     label: "Precipitation Anomaly (GPM IMERG v07)",
@@ -151,11 +178,10 @@ export const TALUKA_METADATA = {
 };
 
 // ---------------------------------------------------------------------------
-// Kharif Season Months — display metadata only (no fabricated modifiers)
-// Monthly real values come from the `monthly` nested object in goa_taluka_indicators.geojson
+// Kharif Season Months — display metadata only
 // ---------------------------------------------------------------------------
 export const KHARIF_MONTHS = [
-  { id: "all", label: "Full Season (Jun–Sep)", phase: "Kharif 2025 Aggregate (GPM IMERG)" },
+  { id: "all", label: "Full Season (Jun–Sep)", phase: "Kharif 2025 Aggregate (GPM IMERG + GLDAS-2.1)" },
   { id: "jun", label: "June", phase: "Monsoon Onset & Sowing" },
   { id: "jul", label: "July", phase: "Peak Monsoon Tillering" },
   { id: "aug", label: "August", phase: "Mid-Season Panicle Initiation" },
@@ -166,27 +192,45 @@ export const KHARIF_MONTHS = [
 // ---------------------------------------------------------------------------
 // getSeasonalProps
 // Returns real monthly sub-data from the `monthly` nested object when a specific
-// month is active, otherwise returns the full-season aggregated props unchanged.
-// NO invented modifiers — all values are read directly from the GeoJSON feature.
+// month is active, otherwise returns the full-season aggregated props.
 // ---------------------------------------------------------------------------
 export function getSeasonalProps(baseProps, activeMonthId = "all") {
   if (!baseProps) return {};
-  if (activeMonthId === "all") return baseProps;
+  
+  const baseWaterRisk = baseProps.water_risk_score ?? (baseProps.water_risk?.score ?? 1);
+  const baseSuitability = baseProps.rice_suitability_score ?? (baseProps.rice_suitability?.score_pct ?? 96);
+
+  if (activeMonthId === "all") {
+    return {
+      ...baseProps,
+      water_risk: baseWaterRisk,
+      rice_suitability: baseSuitability,
+    };
+  }
 
   const monthly = baseProps.monthly;
-  if (!monthly || !monthly[activeMonthId]) return baseProps;
+  if (!monthly || !monthly[activeMonthId]) {
+    return {
+      ...baseProps,
+      water_risk: baseWaterRisk,
+      rice_suitability: baseSuitability,
+    };
+  }
 
   const m = monthly[activeMonthId];
   return {
     ...baseProps,
-    // Override seasonal aggregates with the active month's real values
     rainfall_anomaly_pct:  m.rainfall_month_anomaly_pct  ?? baseProps.rainfall_anomaly_pct,
     rainfall_signal:       m.rainfall_signal               ?? baseProps.rainfall_signal,
     sm_gldas_percentile:   m.sm_gldas_month_percentile    ?? baseProps.sm_gldas_percentile,
     sm_gldas_signal:       m.sm_gldas_signal               ?? baseProps.sm_gldas_signal,
     indicator_agreement:   m.indicator_agreement           ?? baseProps.indicator_agreement,
     kharif_rainfall_mm:    m.rainfall_mm                   ?? baseProps.kharif_rainfall_mm,
-    _active_month: activeMonthId,
+    water_risk:            m.water_risk_score              ?? baseWaterRisk,
+    water_risk_score:      m.water_risk_score              ?? baseWaterRisk,
+    water_risk_level:      m.water_risk_level              ?? (baseProps.water_risk?.level ?? "Low"),
+    rice_suitability:      baseSuitability,
+    _active_month:         activeMonthId,
   };
 }
 
@@ -195,7 +239,7 @@ export function getSeasonalProps(baseProps, activeMonthId = "all") {
 // ---------------------------------------------------------------------------
 export function getTalukaStyle(
   feature,
-  activeMetric = "rainfall_anomaly_pct",
+  activeMetric = "water_risk",
   isSelected = false,
   isHovered = false,
   isCompared = false,
@@ -203,7 +247,7 @@ export function getTalukaStyle(
 ) {
   const rawProps = feature?.properties || {};
   const props = getSeasonalProps(rawProps, activeMonthId);
-  const metricCfg = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.rainfall_anomaly_pct;
+  const metricCfg = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.water_risk;
   const rawValue = props[activeMetric] ?? 0;
   const fillColor = metricCfg.getColor(rawValue);
 

@@ -13,6 +13,17 @@ import { ChevronDown, ChevronUp, Info, Layers, Calendar } from "lucide-react";
 
 // Color-scale definitions for each real metric
 const METRIC_SCALE_ENTRIES = {
+  water_risk: [
+    { color: "#10b981", label: "Low Water Risk",       range: "Healthy Buffer" },
+    { color: "#f59e0b", label: "Moderate Risk",        range: "Dry Deficit Signal" },
+    { color: "#ef4444", label: "High Water Stress",    range: "Concurrent Dry" },
+  ],
+  rice_suitability: [
+    { color: "#059669", label: "Highly Suitable",      range: "100% (Khazan/Kher Lowlands)" },
+    { color: "#0d9488", label: "Highly Suitable",      range: "96% (Kher/Morod Uplands)" },
+    { color: "#3b82f6", label: "Moderately Suitable",  range: "75–89% Match" },
+    { color: "#f59e0b", label: "Constrained",          range: "< 75% Match" },
+  ],
   rainfall_anomaly_pct: [
     { color: "#b91c1c", label: "Severe Deficit",   range: "≤ −20%" },
     { color: "#f97316", label: "Moderate Deficit",  range: "−10% to −20%" },
@@ -37,12 +48,12 @@ const METRIC_SCALE_ENTRIES = {
 };
 
 export default function MapLegend({
-  activeMetric = "rainfall_anomaly_pct",
+  activeMetric = "water_risk",
   activeMonthId = "all",
 }) {
   const [collapsed, setCollapsed] = useState(false);
-  const metric = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.rainfall_anomaly_pct;
-  const scaleEntries = METRIC_SCALE_ENTRIES[activeMetric] || METRIC_SCALE_ENTRIES.rainfall_anomaly_pct;
+  const metric = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.water_risk;
+  const scaleEntries = METRIC_SCALE_ENTRIES[activeMetric] || METRIC_SCALE_ENTRIES.water_risk;
   const currentMonth = KHARIF_MONTHS.find((m) => m.id === activeMonthId) || KHARIF_MONTHS[0];
 
   return (

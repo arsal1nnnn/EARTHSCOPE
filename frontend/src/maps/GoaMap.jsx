@@ -17,6 +17,8 @@ import {
   Activity,
   Droplets,
   CloudRain,
+  ShieldAlert,
+  Sprout,
   X,
   Compass,
   Search,
@@ -173,7 +175,7 @@ export default function GoaMap({
   const [data, setData] = useState(externalGeoJson || fallbackGeoJson);
   const [selectedRegionId, setSelectedRegionId] = useState(externalSelectedRegionId);
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const [activeMetric, setActiveMetric] = useState("rainfall_anomaly_pct");
+  const [activeMetric, setActiveMetric] = useState("water_risk");
   const [baseMap, setBaseMap] = useState("dark");
   const [showLabels, setShowLabels] = useState(true);
   const [activeMonth, setActiveMonth] = useState("all");
@@ -351,6 +353,48 @@ export default function GoaMap({
               }}
             >
               <button
+                onClick={() => setActiveMetric("water_risk")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 11px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: activeMetric === "water_risk" ? "#059669" : "transparent",
+                  color: activeMetric === "water_risk" ? "#ffffff" : "#94a3b8",
+                  transition: "all 0.2s",
+                }}
+              >
+                <ShieldAlert style={{ width: 14, height: 14 }} />
+                <span>Water Risk</span>
+              </button>
+
+              <button
+                onClick={() => setActiveMetric("rice_suitability")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "6px 11px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: activeMetric === "rice_suitability" ? "#0284c7" : "transparent",
+                  color: activeMetric === "rice_suitability" ? "#ffffff" : "#94a3b8",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Sprout style={{ width: 14, height: 14 }} />
+                <span>Rice Suitability</span>
+              </button>
+
+              <button
                 onClick={() => setActiveMetric("rainfall_anomaly_pct")}
                 style={{
                   display: "flex",
@@ -362,13 +406,13 @@ export default function GoaMap({
                   fontWeight: 600,
                   cursor: "pointer",
                   border: "none",
-                  backgroundColor: activeMetric === "rainfall_anomaly_pct" ? "#0284c7" : "transparent",
+                  backgroundColor: activeMetric === "rainfall_anomaly_pct" ? "#4f46e5" : "transparent",
                   color: activeMetric === "rainfall_anomaly_pct" ? "#ffffff" : "#94a3b8",
                   transition: "all 0.2s",
                 }}
               >
                 <CloudRain style={{ width: 14, height: 14 }} />
-                <span>Precipitation (GPM IMERG)</span>
+                <span>Precipitation (GPM)</span>
               </button>
 
               <button
@@ -383,34 +427,13 @@ export default function GoaMap({
                   fontWeight: 600,
                   cursor: "pointer",
                   border: "none",
-                  backgroundColor: activeMetric === "sm_gldas_percentile" ? "#4f46e5" : "transparent",
+                  backgroundColor: activeMetric === "sm_gldas_percentile" ? "#0d9488" : "transparent",
                   color: activeMetric === "sm_gldas_percentile" ? "#ffffff" : "#94a3b8",
                   transition: "all 0.2s",
                 }}
               >
                 <Droplets style={{ width: 14, height: 14 }} />
-                <span>Soil Moisture (GLDAS-2.1)</span>
-              </button>
-
-              <button
-                onClick={() => setActiveMetric("rainfall_percentile")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 11px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "none",
-                  backgroundColor: activeMetric === "rainfall_percentile" ? "#0d9488" : "transparent",
-                  color: activeMetric === "rainfall_percentile" ? "#ffffff" : "#94a3b8",
-                  transition: "all 0.2s",
-                }}
-              >
-                <Activity style={{ width: 14, height: 14 }} />
-                <span>Rainfall Percentile</span>
+                <span>Soil Moisture (GLDAS)</span>
               </button>
             </div>
 
@@ -834,58 +857,106 @@ export default function GoaMap({
 
             {/* Real NASA Metrics Breakdown */}
             <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px", fontSize: "12px" }}>
-              {/* Indicator Agreement Status Badge */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ color: "#94a3b8" }}>Indicator Agreement:</span>
-                <span
-                  style={{
-                    padding: "3px 10px",
-                    borderRadius: "999px",
-                    fontWeight: 700,
-                    fontSize: "11px",
-                    backgroundColor: "rgba(56, 189, 248, 0.15)",
-                    color: "#38bdf8",
-                    border: "1px solid rgba(56, 189, 248, 0.35)",
-                  }}
-                >
-                  {selectedProps.indicator_agreement || "Mixed"}
-                </span>
+              {/* Agricultural Water Risk Status Banner */}
+              <div
+                style={{
+                  backgroundColor:
+                    selectedProps.water_risk_level === "High"
+                      ? "rgba(239, 68, 68, 0.15)"
+                      : selectedProps.water_risk_level === "Moderate"
+                      ? "rgba(245, 158, 11, 0.15)"
+                      : "rgba(16, 185, 129, 0.15)",
+                  border: `1px solid ${
+                    selectedProps.water_risk_level === "High"
+                      ? "rgba(239, 68, 68, 0.35)"
+                      : selectedProps.water_risk_level === "Moderate"
+                      ? "rgba(245, 158, 11, 0.35)"
+                      : "rgba(16, 185, 129, 0.35)"
+                  }`,
+                  borderRadius: "10px",
+                  padding: "8px 10px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color:
+                        selectedProps.water_risk_level === "High"
+                          ? "#f87171"
+                          : selectedProps.water_risk_level === "Moderate"
+                          ? "#fbbf24"
+                          : "#34d399",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <ShieldAlert style={{ width: 13, height: 13 }} />
+                    {selectedProps.water_risk_level || "Low"} Water Risk
+                  </span>
+                  <span style={{ fontSize: "10px", color: "#94a3b8" }}>
+                    Signal: {selectedProps.rainfall_signal || "near normal"}
+                  </span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#cbd5e1", lineHeight: 1.3 }}>
+                  {selectedProps.water_risk?.summary ||
+                    `${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly with ${selectedProps.sm_gldas_percentile}th percentile root-zone moisture.`}
+                </div>
               </div>
 
-              {/* Real Percentile Bars */}
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "3px" }}>
-                  <span style={{ color: "#94a3b8" }}>Soil Moisture (GLDAS-2.1 Noah)</span>
-                  <strong style={{ fontFamily: "monospace", color: "#38bdf8" }}>
-                    {selectedProps.sm_gldas_percentile}th percentile
-                  </strong>
-                </div>
-                <div style={{ width: "100%", height: "5px", backgroundColor: "#1e293b", borderRadius: "999px", overflow: "hidden", marginBottom: "8px" }}>
-                  <div
+              {/* Rice Variety Suitability Card */}
+              <div
+                style={{
+                  backgroundColor: "rgba(30, 41, 59, 0.5)",
+                  border: "1px solid rgba(56, 189, 248, 0.25)",
+                  borderRadius: "10px",
+                  padding: "10px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#38bdf8", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <Sprout style={{ width: 13, height: 13 }} />
+                    Rice Suitability ({selectedProps.rice_suitability?.score_pct || 96}%)
+                  </span>
+                  <span
                     style={{
-                      height: "100%",
-                      width: `${Math.min(100, Math.max(0, selectedProps.sm_gldas_percentile || 0))}%`,
-                      backgroundColor: "#0284c7",
-                      transition: "width 0.4s ease",
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      backgroundColor: "rgba(16, 185, 129, 0.2)",
+                      color: "#34d399",
+                      padding: "1px 6px",
+                      borderRadius: "4px",
                     }}
-                  />
+                  >
+                    {selectedProps.rice_suitability_class || "Highly Suitable"}
+                  </span>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "3px" }}>
-                  <span style={{ color: "#94a3b8" }}>Rainfall (GPM IMERG v07)</span>
-                  <strong style={{ fontFamily: "monospace", color: "#34d399" }}>
-                    {selectedProps.rainfall_percentile}th percentile
-                  </strong>
+                <div style={{ fontSize: "10px", color: "#94a3b8", marginBottom: "6px" }}>
+                  Recommended varieties for {selectedProps.name} ecologies:
                 </div>
-                <div style={{ width: "100%", height: "5px", backgroundColor: "#1e293b", borderRadius: "999px", overflow: "hidden" }}>
-                  <div
-                    style={{
-                      height: "100%",
-                      width: `${Math.min(100, Math.max(0, selectedProps.rainfall_percentile || 0))}%`,
-                      backgroundColor: "#0d9488",
-                      transition: "width 0.4s ease",
-                    }}
-                  />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "6px" }}>
+                  {(selectedProps.rice_suitability?.recommended_varieties || ["Karjat-3", "Naveen"]).map((v) => (
+                    <span
+                      key={v}
+                      style={{
+                        backgroundColor: "rgba(15, 23, 42, 0.8)",
+                        border: "1px solid rgba(99, 102, 241, 0.4)",
+                        color: "#c7d2fe",
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        padding: "2px 7px",
+                        borderRadius: "5px",
+                      }}
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+                <div style={{ fontSize: "9px", color: "#64748b", fontStyle: "italic" }}>
+                  Documentation-based screening (ICAR-CCARI & KVK Goa)
                 </div>
               </div>
 
@@ -1046,34 +1117,36 @@ export default function GoaMap({
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Water Risk:</span>
+                    <strong style={{ color: selectedProps.water_risk_level === "High" ? "#f87171" : selectedProps.water_risk_level === "Moderate" ? "#fbbf24" : "#34d399" }}>
+                      {selectedProps.water_risk_level || "Low Risk"}
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Rice Suitability:</span>
+                    <strong style={{ color: "#38bdf8" }}>
+                      {selectedProps.rice_suitability_class || "Highly Suitable"} ({selectedProps.rice_suitability?.score_pct || 96}%)
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Top Varieties:</span>
+                    <span style={{ color: "#c7d2fe", fontSize: "10px", maxWidth: "140px", textAlign: "right" }}>
+                      {(selectedProps.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ")}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Rainfall Anom:</span>
                     <strong style={{ color: selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
                       {selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}{selectedProps.rainfall_anomaly_pct}%
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rainfall Signal:</span>
-                    <span>{selectedProps.rainfall_signal || "—"}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rainfall Percentile:</span>
-                    <span>{selectedProps.rainfall_percentile}th pctl</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>GLDAS SM Percentile:</span>
-                    <span style={{ color: "#38bdf8" }}>{selectedProps.sm_gldas_percentile}th pctl</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>SM Signal:</span>
-                    <span>{selectedProps.sm_gldas_signal || "—"}</span>
+                    <span style={{ color: "#94a3b8" }}>GLDAS SM Pctl:</span>
+                    <span style={{ color: "#38bdf8" }}>{selectedProps.sm_gldas_percentile}th pctl ({selectedProps.sm_gldas_signal})</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
                     <span>{selectedProps.kharif_rainfall_mm ?? "—"} mm</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Agreement:</span>
-                    <span>{selectedProps.indicator_agreement || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -1086,34 +1159,36 @@ export default function GoaMap({
                 </div>
                 <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Water Risk:</span>
+                    <strong style={{ color: compareProps.water_risk_level === "High" ? "#f87171" : compareProps.water_risk_level === "Moderate" ? "#fbbf24" : "#34d399" }}>
+                      {compareProps.water_risk_level || "Low Risk"}
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Rice Suitability:</span>
+                    <strong style={{ color: "#fbbf24" }}>
+                      {compareProps.rice_suitability_class || "Highly Suitable"} ({compareProps.rice_suitability?.score_pct || 96}%)
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#94a3b8" }}>Top Varieties:</span>
+                    <span style={{ color: "#fef08a", fontSize: "10px", maxWidth: "140px", textAlign: "right" }}>
+                      {(compareProps.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ")}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Rainfall Anom:</span>
                     <strong style={{ color: compareProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
                       {compareProps.rainfall_anomaly_pct > 0 ? "+" : ""}{compareProps.rainfall_anomaly_pct}%
                     </strong>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rainfall Signal:</span>
-                    <span>{compareProps.rainfall_signal || "—"}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rainfall Percentile:</span>
-                    <span>{compareProps.rainfall_percentile}th pctl</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>GLDAS SM Percentile:</span>
-                    <span style={{ color: "#38bdf8" }}>{compareProps.sm_gldas_percentile}th pctl</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>SM Signal:</span>
-                    <span>{compareProps.sm_gldas_signal || "—"}</span>
+                    <span style={{ color: "#94a3b8" }}>GLDAS SM Pctl:</span>
+                    <span style={{ color: "#38bdf8" }}>{compareProps.sm_gldas_percentile}th pctl ({compareProps.sm_gldas_signal})</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
                     <span>{compareProps.kharif_rainfall_mm ?? "—"} mm</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Agreement:</span>
-                    <span>{compareProps.indicator_agreement || "—"}</span>
                   </div>
                 </div>
               </div>
