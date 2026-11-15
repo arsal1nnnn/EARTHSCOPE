@@ -1,53 +1,54 @@
 import { useState } from "react";
 import { METRIC_CONFIGS, KHARIF_MONTHS } from "./mapStyles";
-import { ChevronDown, ChevronUp, Info, Layers, Calendar, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Layers, Calendar, Info } from "lucide-react";
 
 /**
  * MapLegend Component
  * Floating legend showing color scales for the active real NASA metric,
  * active seasonal month info, and NASA spatial resolution disclosures.
  *
- * Supports both Kharif 2025 and Kharif 2026 (Preliminary).
+ * Adheres to unslopped UI standards: quiet chrome, calm neutral palette,
+ * sentence-case typography, and precise scientific provenance.
  */
 
 const METRIC_SCALE_ENTRIES = {
   water_risk: [
-    { color: "#10b981", label: "Low Deficit",       range: "Zero Dry Signals (Healthy Buffer)" },
-    { color: "#f59e0b", label: "Moderate Deficit",  range: "Single Dry Signal (Rain dry / buffer)" },
-    { color: "#ef4444", label: "High Deficit",      range: "Concurrent Dry Signals (Rain + SM)" },
+    { color: "#10b981", label: "Low deficit",       range: "0 dry signals (buffer)" },
+    { color: "#f59e0b", label: "Moderate deficit",  range: "1 dry signal (rainfall)" },
+    { color: "#ef4444", label: "High deficit",      range: "2 concurrent dry signals" },
   ],
   rice_suitability: [
-    { color: "#059669", label: "Highly Suitable (Khazan + Kher)", range: "8 Varieties (Saline + Lowlands)" },
-    { color: "#0284c7", label: "Highly Suitable (Khazan)",        range: "6 Varieties (Coastal Saline)" },
-    { color: "#0d9488", label: "Highly Suitable (Kher + Morod)",  range: "2–3 Varieties (Lowland + Upland)" },
+    { color: "#059669", label: "High (Khazan + Kher)", range: "8 documented varieties" },
+    { color: "#0284c7", label: "High (Khazan saline)", range: "6 documented varieties" },
+    { color: "#0d9488", label: "High (Kher + Morod)",  range: "2–3 documented varieties" },
   ],
   rainfall_anomaly_pct: [
-    { color: "#b91c1c", label: "Severe Deficit",   range: "≤ −20%" },
-    { color: "#f97316", label: "Moderate Deficit",  range: "−10% to −20%" },
-    { color: "#fbbf24", label: "Slight Deficit",    range: "−10% to 0%" },
-    { color: "#34d399", label: "Near Normal",        range: "0% to +15%" },
-    { color: "#06b6d4", label: "Surplus",            range: "> +15%" },
+    { color: "#b91c1c", label: "Severe deficit",    range: "≤ −20%" },
+    { color: "#f97316", label: "Moderate deficit",  range: "−10% to −20%" },
+    { color: "#fbbf24", label: "Slight deficit",    range: "−10% to 0%" },
+    { color: "#34d399", label: "Near normal",       range: "0% to +15%" },
+    { color: "#06b6d4", label: "Surplus",           range: "> +15%" },
   ],
   sm_gldas_percentile: [
-    { color: "#dc2626", label: "Extremely Dry",     range: "≤ 10th pctl" },
-    { color: "#f97316", label: "Very Dry",           range: "11–25th pctl" },
-    { color: "#facc15", label: "Moderately Dry",     range: "26–40th pctl" },
-    { color: "#38bdf8", label: "Moist",              range: "41–70th pctl" },
-    { color: "#0284c7", label: "Very Wet",           range: "> 70th pctl" },
+    { color: "#dc2626", label: "Extremely dry",     range: "≤ 10th pctl" },
+    { color: "#f97316", label: "Very dry",          range: "11–25th pctl" },
+    { color: "#facc15", label: "Moderately dry",    range: "26–40th pctl" },
+    { color: "#38bdf8", label: "Moist",             range: "41–70th pctl" },
+    { color: "#0284c7", label: "Very wet",          range: "> 70th pctl" },
   ],
   rainfall_percentile: [
-    { color: "#b91c1c", label: "Extremely Low",     range: "≤ 10th pctl" },
-    { color: "#f97316", label: "Below Normal",       range: "11–25th pctl" },
-    { color: "#fbbf24", label: "Slightly Below",     range: "26–40th pctl" },
-    { color: "#34d399", label: "Near Normal",        range: "41–65th pctl" },
-    { color: "#06b6d4", label: "Above Normal",       range: "> 65th pctl" },
+    { color: "#b91c1c", label: "Extremely low",     range: "≤ 10th pctl" },
+    { color: "#f97316", label: "Below normal",      range: "11–25th pctl" },
+    { color: "#fbbf24", label: "Slightly below",    range: "26–40th pctl" },
+    { color: "#34d399", label: "Near normal",       range: "41–65th pctl" },
+    { color: "#06b6d4", label: "Above normal",      range: "> 65th pctl" },
   ],
 };
 
 const MONTHLY_2026_RAINFALL_ENTRIES = [
-  { color: "#b91c1c", label: "Below Normal (Dry)", range: "IMD Deficient" },
-  { color: "#34d399", label: "Near Normal",        range: "IMD Normal" },
-  { color: "#06b6d4", label: "Above Normal (Wet)", range: "IMD Excess" },
+  { color: "#b91c1c", label: "Below normal (dry)", range: "IMD Deficient" },
+  { color: "#34d399", label: "Near normal",        range: "IMD Normal" },
+  { color: "#06b6d4", label: "Above normal (wet)", range: "IMD Excess" },
 ];
 
 export default function MapLegend({
@@ -60,121 +61,86 @@ export default function MapLegend({
   const isMonthView = activeMonthId !== "all";
 
   const metric = METRIC_CONFIGS[activeMetric] || METRIC_CONFIGS.water_risk;
-  const scaleEntries = (is2026 && isMonthView && activeMetric === "rainfall_anomaly_pct")
-    ? MONTHLY_2026_RAINFALL_ENTRIES
-    : (METRIC_SCALE_ENTRIES[activeMetric] || METRIC_SCALE_ENTRIES.water_risk);
+  const scaleEntries =
+    is2026 && isMonthView && activeMetric === "rainfall_anomaly_pct"
+      ? MONTHLY_2026_RAINFALL_ENTRIES
+      : METRIC_SCALE_ENTRIES[activeMetric] || METRIC_SCALE_ENTRIES.water_risk;
 
   const currentMonth = KHARIF_MONTHS.find((m) => m.id === activeMonthId) || KHARIF_MONTHS[0];
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        bottom: 16,
-        right: 16,
-        zIndex: 999,
-        width: "270px",
-        maxWidth: "min(270px, calc(100% - 32px))",
-        maxHeight: "calc(100% - 135px)",
-        overflowY: "auto",
-        backgroundColor: "rgba(15, 23, 42, 0.95)",
-        backdropFilter: "blur(16px)",
-        border: "1px solid #1e293b",
-        borderRadius: "16px",
-        padding: "14px",
-        boxShadow: "0 20px 40px -10px rgba(0,0,0,0.6)",
-        fontSize: "12px",
-        color: "#e2e8f0",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "8px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Layers style={{ width: 14, height: 14, color: "#818cf8" }} />
-          <span style={{ fontWeight: 600, color: "#f8fafc", fontSize: "13px" }}>
-            Map Legend
-          </span>
+    <div className="absolute bottom-4 right-4 z-[999] w-[260px] max-w-[calc(100%-2rem)] max-h-[calc(100%-7.5rem)] overflow-y-auto bg-[#0b0d14]/95 backdrop-blur-md border border-white/[0.08] rounded-xl p-3.5 shadow-xl text-xs text-[#eef0f5] flex flex-col gap-2.5">
+      {/* Legend Header */}
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+        <div className="flex items-center gap-1.5 font-semibold text-[#f8fafc]">
+          <Layers className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Map legend</span>
         </div>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", padding: "2px" }}
-          title={collapsed ? "Expand Legend" : "Collapse Legend"}
+          className="p-1 rounded-md text-[#8b93a7] hover:text-[#f8fafc] hover:bg-white/[0.06] transition cursor-pointer"
+          title={collapsed ? "Expand legend" : "Collapse legend"}
         >
-          {collapsed ? <ChevronUp style={{ width: 14, height: 14 }} /> : <ChevronDown style={{ width: 14, height: 14 }} />}
+          {collapsed ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
       </div>
 
       {!collapsed && (
-        <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div className="flex flex-col gap-2.5">
           {/* Active Season Badge */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px", backgroundColor: is2026 ? "rgba(245, 158, 11, 0.15)" : "rgba(59, 130, 246, 0.15)", borderRadius: "8px", border: `1px solid ${is2026 ? "rgba(245, 158, 11, 0.3)" : "rgba(59, 130, 246, 0.3)"}` }}>
-            <span style={{ fontSize: "10px", color: is2026 ? "#fde68a" : "#93c5fd", fontWeight: 700, textTransform: "uppercase" }}>
-              {is2026 ? "Kharif 2026 (Preliminary)" : "Kharif 2025"}
+          <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+            <span className="text-[10px] font-semibold text-[#cbd5e1]">
+              {is2026 ? "Kharif 2026 (preliminary)" : "Kharif 2025"}
             </span>
-            <span style={{ fontSize: "9px", fontFamily: "monospace", color: "#94a3b8" }}>
+            <span className="text-[9px] font-mono text-[#8b93a7]">
               {is2026 ? "IMERG Late Run" : "IMERG Final v07"}
             </span>
           </div>
 
-          {/* Active Metric Info */}
+          {/* Active Layer Details */}
           <div>
-            <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 600 }}>
-              Active Layer
+            <div className="text-[10px] uppercase tracking-wider text-[#5a6275] font-semibold">
+              Active layer
             </div>
-            <div style={{ fontWeight: 600, color: "#ffffff", marginTop: "2px" }}>
+            <div className="font-semibold text-[#f8fafc] mt-0.5">
               {metric.label}
             </div>
-            <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px", lineHeight: "1.3" }}>
+            <div className="text-[11px] text-[#8b93a7] mt-0.5 leading-relaxed">
               {is2026 && activeMetric === "sm_gldas_percentile"
                 ? "Soil moisture available for June–July only. Full-season baseline pending research GLDAS release."
-                : (is2026 && activeMetric === "rainfall_anomaly_pct" && isMonthView
-                    ? "Monthly rainfall categorized as Below Normal, Near Normal, or Above Normal."
-                    : metric.description)}
+                : is2026 && activeMetric === "rainfall_anomaly_pct" && isMonthView
+                ? "Monthly rainfall categorized as below normal, near normal, or above normal."
+                : metric.description}
             </div>
           </div>
 
           {/* Active Seasonal Month Info */}
           {activeMonthId !== "all" && (
-            <div
-              style={{
-                backgroundColor: "rgba(99, 102, 241, 0.1)",
-                border: "1px solid rgba(99, 102, 241, 0.3)",
-                borderRadius: "8px",
-                padding: "6px 8px",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <Calendar style={{ width: 13, height: 13, color: "#818cf8", flexShrink: 0 }} />
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg p-2 flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
               <div>
-                <div style={{ fontSize: "11px", fontWeight: 600, color: "#c7d2fe" }}>
+                <div className="text-xs font-semibold text-[#c7d2fe]">
                   {currentMonth.label}
                 </div>
-                <div style={{ fontSize: "10px", color: "#94a3b8" }}>{currentMonth.phase}</div>
+                <div className="text-[10px] text-[#8b93a7] leading-tight">
+                  {currentMonth.phase}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Color Scale Swatches — real metric ranges */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+          {/* Color Scale Swatches */}
+          <div className="flex flex-col gap-1.5">
             {scaleEntries.map((entry) => (
-              <div key={entry.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div key={entry.label} className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-2">
                   <span
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: "3px",
-                      backgroundColor: entry.color,
-                      border: "1px solid rgba(0,0,0,0.4)",
-                      display: "inline-block",
-                    }}
+                    className="w-2.5 h-2.5 rounded-[2px] shrink-0 border border-black/30"
+                    style={{ backgroundColor: entry.color }}
                   />
-                  <span style={{ color: "#cbd5e1" }}>{entry.label}</span>
+                  <span className="text-[#cbd5e1]">{entry.label}</span>
                 </div>
-                <span style={{ fontFamily: "monospace", color: "#94a3b8", fontSize: "11px" }}>
+                <span className="font-mono tabular-nums text-[#8b93a7] text-[10px]">
                   {entry.range}
                 </span>
               </div>
@@ -182,24 +148,26 @@ export default function MapLegend({
           </div>
 
           {/* NASA Spatial Resolution Disclosure */}
-          <div style={{ borderTop: "1px solid #1e293b", paddingTop: "8px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#94a3b8", fontWeight: 600, fontSize: "10px" }}>
-              <Info style={{ width: 12, height: 12, color: "#38bdf8", flexShrink: 0 }} />
-              <span>NASA Data Sources</span>
+          <div className="border-t border-white/[0.08] pt-2">
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-[#8b93a7]">
+              <Info className="w-3 h-3 text-sky-400 shrink-0" />
+              <span>NASA data sources</span>
             </div>
-            <ul style={{ fontSize: "10px", color: "#64748b", margin: "4px 0 0", paddingLeft: "16px", lineHeight: "1.4" }}>
+            <ul className="text-[10px] text-[#5a6275] mt-1 pl-3.5 list-disc space-y-0.5 leading-normal">
               <li>
-                <strong style={{ color: "#94a3b8" }}>
+                <span className="text-[#8b93a7]">
                   {is2026 ? "GPM IMERG Late Run:" : "GPM IMERG v07:"}
-                </strong>{" "}
-                {is2026 ? "~11 km near-real-time daily aggregation" : "~11 km monthly rainfall"}
+                </span>{" "}
+                {is2026 ? "~11 km daily near-real-time aggregation" : "~11 km monthly precipitation"}
               </li>
               <li>
-                <strong style={{ color: "#94a3b8" }}>GLDAS-2.1 Noah:</strong>{" "}
+                <span className="text-[#8b93a7]">GLDAS-2.1 Noah:</span>{" "}
                 {is2026 ? "Root-zone soil moisture (June–July only)" : "~25 km root-zone soil moisture"}
               </li>
-              <li style={{ fontStyle: "italic", color: "#475569" }}>
-                {is2026 ? "Both districts show Moderate deficit under single dry signal rule" : "District values inherited by all talukas in that district"}
+              <li className="italic text-[#5a6275]">
+                {is2026
+                  ? "Both districts show Moderate deficit under single dry signal rule"
+                  : "District values inherited by all talukas in that district"}
               </li>
             </ul>
           </div>

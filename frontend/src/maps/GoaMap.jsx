@@ -14,7 +14,6 @@ import {
 } from "./mapStyles";
 import rawFallbackGeoJson from "../data/goa_taluka_indicators.geojson";
 import {
-  Activity,
   Droplets,
   CloudRain,
   ShieldAlert,
@@ -30,18 +29,50 @@ import {
 
 const fallbackGeoJson = rawFallbackGeoJson?.default || rawFallbackGeoJson;
 
+// OpenStreetMap as the single clean base layer
+const OSM_TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+// Metric navigation definitions
+const METRIC_TABS = [
+  {
+    id: "water_risk",
+    label: "Water-deficit signal",
+    icon: ShieldAlert,
+    activeCls: "bg-emerald-500/15 border-emerald-500/30 text-emerald-300",
+  },
+  {
+    id: "rice_suitability",
+    label: "Rice suitability",
+    icon: Sprout,
+    activeCls: "bg-sky-500/15 border-sky-500/30 text-sky-300",
+  },
+  {
+    id: "rainfall_anomaly_pct",
+    label: "Precipitation",
+    icon: CloudRain,
+    activeCls: "bg-indigo-500/15 border-indigo-500/30 text-indigo-300",
+  },
+  {
+    id: "sm_gldas_percentile",
+    label: "Soil moisture",
+    icon: Droplets,
+    activeCls: "bg-teal-500/15 border-teal-500/30 text-teal-300",
+  },
+];
+
 // Helper to create clean text badge DivIcons
 function createTalukaLabelIcon(name, isSelected = false, isCompared = false) {
   const bg = isSelected
-    ? "rgba(59, 130, 246, 0.95)"
+    ? "rgba(37, 99, 235, 0.92)"
     : isCompared
-    ? "rgba(245, 158, 11, 0.95)"
-    : "rgba(15, 23, 42, 0.85)";
+    ? "rgba(217, 119, 6, 0.92)"
+    : "rgba(11, 13, 20, 0.88)";
   const border = isSelected
-    ? "#93c5fd"
+    ? "rgba(147, 197, 253, 0.8)"
     : isCompared
-    ? "#fde68a"
-    : "rgba(255, 255, 255, 0.2)";
+    ? "rgba(253, 230, 138, 0.8)"
+    : "rgba(255, 255, 255, 0.12)";
 
   return L.divIcon({
     className: "custom-taluka-label",
@@ -50,14 +81,15 @@ function createTalukaLabelIcon(name, isSelected = false, isCompared = false) {
         background: ${bg};
         border: 1px solid ${border};
         border-radius: 6px;
-        color: #ffffff;
+        color: #f1f5f9;
+        font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
         font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.3px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
         padding: 2px 7px;
         white-space: nowrap;
         pointer-events: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
         transform: translate(-50%, -50%);
         display: inline-block;
       ">
@@ -81,7 +113,7 @@ function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
     const timer1 = setTimeout(() => {
       map.invalidateSize();
       map.fitBounds(goaLatLngBounds, {
-        padding: [30, 30],
+        padding: [24, 24],
         maxZoom: 10,
         animate: false,
       });
@@ -90,7 +122,7 @@ function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
     const timer2 = setTimeout(() => {
       map.invalidateSize();
       map.fitBounds(goaLatLngBounds, {
-        padding: [30, 30],
+        padding: [24, 24],
         maxZoom: 10,
         animate: false,
       });
@@ -105,7 +137,7 @@ function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
   useEffect(() => {
     if (map && targetCenter) {
       map.flyTo(targetCenter, targetZoom || 11, {
-        duration: 1.2,
+        duration: 1.0,
         easeLinearity: 0.25,
       });
     }
@@ -115,10 +147,10 @@ function MapCameraController({ targetCenter, targetZoom, resetTrigger }) {
     if (map && resetTrigger > 0) {
       const goaLatLngBounds = L.latLngBounds(GOA_BOUNDS[0], GOA_BOUNDS[1]);
       map.fitBounds(goaLatLngBounds, {
-        padding: [30, 30],
+        padding: [24, 24],
         maxZoom: 10,
         animate: true,
-        duration: 1.2,
+        duration: 1.0,
       });
     }
   }, [map, resetTrigger]);
@@ -141,28 +173,11 @@ function MapInstanceCapture({ setMap }) {
   return null;
 }
 
-const BASE_MAPS = {
-  dark: {
-    name: "Dark Matter (NASA)",
-    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> & NASA Earth Science',
-  },
-  satellite: {
-    name: "Satellite Imagery",
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{x}/{y}",
-    attribution: '&copy; <a href="https://www.esri.com/">Esri</a> & Earthstar Geographics',
-  },
-  osm: {
-    name: "OpenStreetMap",
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  },
-};
-
 /**
  * GoaMap Component
  * Interactive 2D Leaflet geospatial map focused on Goa's 12 talukas.
  * Visualizes verified NASA GPM IMERG and GLDAS-2.1 indicator datasets.
+ * Features OpenStreetMap basemap, quiet chrome, and responsive controls.
  */
 export default function GoaMap({
   selectedRegionId: externalSelectedRegionId = null,
@@ -171,14 +186,13 @@ export default function GoaMap({
   season: externalSeason = "2025",
   onSeasonChange: externalOnSeasonChange = null,
   className = "",
-  height = "650px",
+  height = "640px",
 }) {
   const [clientMounted, setClientMounted] = useState(false);
   const [data, setData] = useState(externalGeoJson || fallbackGeoJson);
   const [selectedRegionId, setSelectedRegionId] = useState(externalSelectedRegionId);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [activeMetric, setActiveMetric] = useState("water_risk");
-  const [baseMap, setBaseMap] = useState("dark");
   const [showLabels, setShowLabels] = useState(true);
   const [activeMonth, setActiveMonth] = useState("all");
   const [season, setSeason] = useState(externalSeason || "2025");
@@ -318,196 +332,62 @@ export default function GoaMap({
   return (
     <MapErrorBoundary height={height}>
       <div
-        className={`relative w-full rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl ${className}`}
-        style={{
-          height,
-          minHeight: "550px",
-          position: "relative",
-          width: "100%",
-          borderRadius: "16px",
-          overflow: "hidden",
-          border: "1px solid #1e293b",
-          backgroundColor: "#090d16",
-        }}
+        className={`relative w-full rounded-2xl overflow-hidden border border-white/[0.08] bg-[#07080d] shadow-xl ${className}`}
+        style={{ height, minHeight: "550px" }}
       >
-        {/* Unified Top Controls Header - Single Flex Container */}
-        <div
-          style={{
-            position: "absolute",
-            top: 12,
-            left: 12,
-            right: 12,
-            zIndex: 1000,
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            pointerEvents: "none",
-          }}
-        >
+        {/* Unified Top Controls Header */}
+        <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-col gap-2 pointer-events-none">
           {/* Row 1: Layer Switcher (Left) & Map Utilities (Right) */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "8px",
-            }}
-          >
-            {/* Left Group: Real NASA Metric Layer Switcher */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                padding: "4px",
-                backgroundColor: "rgba(15, 23, 42, 0.94)",
-                backdropFilter: "blur(14px)",
-                borderRadius: "12px",
-                border: "1px solid #1e293b",
-                pointerEvents: "auto",
-                boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)",
-              }}
-            >
-              <button
-                onClick={() => setActiveMetric("water_risk")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 11px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "none",
-                  backgroundColor: activeMetric === "water_risk" ? "#059669" : "transparent",
-                  color: activeMetric === "water_risk" ? "#ffffff" : "#94a3b8",
-                  transition: "all 0.2s",
-                }}
-              >
-                <ShieldAlert style={{ width: 14, height: 14 }} />
-                <span>Water-Deficit Signal</span>
-              </button>
-
-              <button
-                onClick={() => setActiveMetric("rice_suitability")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 11px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "none",
-                  backgroundColor: activeMetric === "rice_suitability" ? "#0284c7" : "transparent",
-                  color: activeMetric === "rice_suitability" ? "#ffffff" : "#94a3b8",
-                  transition: "all 0.2s",
-                }}
-              >
-                <Sprout style={{ width: 14, height: 14 }} />
-                <span>Rice Suitability</span>
-              </button>
-
-              <button
-                onClick={() => setActiveMetric("rainfall_anomaly_pct")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 11px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "none",
-                  backgroundColor: activeMetric === "rainfall_anomaly_pct" ? "#4f46e5" : "transparent",
-                  color: activeMetric === "rainfall_anomaly_pct" ? "#ffffff" : "#94a3b8",
-                  transition: "all 0.2s",
-                }}
-              >
-                <CloudRain style={{ width: 14, height: 14 }} />
-                <span>Precipitation (GPM)</span>
-              </button>
-
-              <button
-                onClick={() => setActiveMetric("sm_gldas_percentile")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 11px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  border: "none",
-                  backgroundColor: activeMetric === "sm_gldas_percentile" ? "#0d9488" : "transparent",
-                  color: activeMetric === "sm_gldas_percentile" ? "#ffffff" : "#94a3b8",
-                  transition: "all 0.2s",
-                }}
-              >
-                <Droplets style={{ width: 14, height: 14 }} />
-                <span>Soil Moisture (GLDAS)</span>
-              </button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Left: Metric Layer Switcher */}
+            <div className="flex items-center gap-1 p-1 bg-[#0b0d14]/92 backdrop-blur-md border border-white/[0.08] rounded-xl shadow-lg pointer-events-auto">
+              {METRIC_TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeMetric === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveMetric(tab.id)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer border ${
+                      isActive
+                        ? tab.activeCls
+                        : "border-transparent text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Right Group: Search, Labels, BaseMap & Camera Reset */}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                gap: "6px",
-                pointerEvents: "auto",
-              }}
-            >
+            {/* Right: Taluka Jump, Labels Toggle, Reset View */}
+            <div className="flex items-center gap-1.5 pointer-events-auto">
               {/* Quick Taluka Jump Dropdown */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  backgroundColor: "rgba(15, 23, 42, 0.94)",
-                  backdropFilter: "blur(14px)",
-                  border: "1px solid #1e293b",
-                  borderRadius: "10px",
-                  padding: "4px 8px",
-                }}
-              >
-                <Search style={{ width: 13, height: 13, color: "#64748b" }} />
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#0b0d14]/92 backdrop-blur-md border border-white/[0.08] rounded-xl shadow-lg">
+                <Search className="w-3.5 h-3.5 text-[#8b93a7] shrink-0" />
                 <select
                   value={selectedRegionId || ""}
                   onChange={(e) => handleSearchSelect(e.target.value)}
-                  style={{
-                    background: "transparent",
-                    color: "#e2e8f0",
-                    border: "none",
-                    fontSize: "11px",
-                    fontWeight: 500,
-                    outline: "none",
-                    cursor: "pointer",
-                  }}
+                  className="bg-transparent text-xs text-[#eef0f5] font-medium outline-none cursor-pointer pr-1"
                 >
-                  <option value="" style={{ background: "#0f172a", color: "#94a3b8" }}>
-                    Jump to Taluka...
+                  <option value="" className="bg-[#0b0d14] text-[#8b93a7]">
+                    Jump to taluka...
                   </option>
-                  <optgroup label="North Goa" style={{ background: "#0f172a" }}>
+                  <optgroup label="North Goa" className="bg-[#0b0d14] text-[#eef0f5]">
                     {Object.entries(TALUKA_METADATA)
                       .filter(([, t]) => t.district === "North Goa")
                       .map(([rid, t]) => (
-                        <option key={rid} value={rid} style={{ background: "#0f172a" }}>
+                        <option key={rid} value={rid} className="bg-[#0b0d14] text-[#eef0f5]">
                           {t.name}
                         </option>
                       ))}
                   </optgroup>
-                  <optgroup label="South Goa" style={{ background: "#0f172a" }}>
+                  <optgroup label="South Goa" className="bg-[#0b0d14] text-[#eef0f5]">
                     {Object.entries(TALUKA_METADATA)
                       .filter(([, t]) => t.district === "South Goa")
                       .map(([rid, t]) => (
-                        <option key={rid} value={rid} style={{ background: "#0f172a" }}>
+                        <option key={rid} value={rid} className="bg-[#0b0d14] text-[#eef0f5]">
                           {t.name}
                         </option>
                       ))}
@@ -518,277 +398,117 @@ export default function GoaMap({
               {/* Labels Toggle */}
               <button
                 onClick={() => setShowLabels(!showLabels)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 10px",
-                  backgroundColor: showLabels ? "rgba(99, 102, 241, 0.2)" : "rgba(15, 23, 42, 0.94)",
-                  border: `1px solid ${showLabels ? "#6366f1" : "#1e293b"}`,
-                  borderRadius: "10px",
-                  color: showLabels ? "#a5b4fc" : "#94a3b8",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  backdropFilter: "blur(14px)",
-                }}
-                title="Toggle Taluka Map Labels"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer border backdrop-blur-md shadow-lg ${
+                  showLabels
+                    ? "bg-white/[0.08] border-white/20 text-[#eef0f5]"
+                    : "bg-[#0b0d14]/92 border-white/[0.08] text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04]"
+                }`}
+                title="Toggle taluka map labels"
               >
-                <Tag style={{ width: 12, height: 12 }} />
+                <Tag className="w-3.5 h-3.5 shrink-0" />
                 <span>Labels</span>
               </button>
-
-              {/* Base Map Switcher */}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "3px",
-                  padding: "3px",
-                  backgroundColor: "rgba(15, 23, 42, 0.94)",
-                  backdropFilter: "blur(14px)",
-                  borderRadius: "10px",
-                  border: "1px solid #1e293b",
-                }}
-              >
-                {Object.entries(BASE_MAPS).map(([key, bm]) => (
-                  <button
-                    key={key}
-                    onClick={() => setBaseMap(key)}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "6px",
-                      fontSize: "11px",
-                      fontWeight: 500,
-                      cursor: "pointer",
-                      border: baseMap === key ? "1px solid #334155" : "none",
-                      backgroundColor: baseMap === key ? "#1e293b" : "transparent",
-                      color: baseMap === key ? "#ffffff" : "#94a3b8",
-                    }}
-                  >
-                    {bm.name.split(" ")[0]}
-                  </button>
-                ))}
-              </div>
 
               {/* Reset View Button */}
               <button
                 onClick={handleResetCamera}
-                style={{
-                  padding: "6px 9px",
-                  backgroundColor: "rgba(15, 23, 42, 0.94)",
-                  border: "1px solid #1e293b",
-                  borderRadius: "10px",
-                  color: "#94a3b8",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  backdropFilter: "blur(14px)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-                title="Reset Camera to All of Goa"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer border border-white/[0.08] bg-[#0b0d14]/92 text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04] backdrop-blur-md shadow-lg"
+                title="Reset view to entire state of Goa"
               >
-                <Compass style={{ width: 13, height: 13 }} />
+                <Compass className="w-3.5 h-3.5 shrink-0" />
                 <span>Reset</span>
               </button>
             </div>
           </div>
 
-          {/* Row 2: Season Switcher & Kharif Monsoon Scrubber (Left) & Map Zoom / Sensor Tools (Right) */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "8px",
-            }}
-          >
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px" }}>
-              {/* Season Switcher: 2025 vs 2026 (preliminary) */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  backgroundColor: "rgba(15, 23, 42, 0.94)",
-                  backdropFilter: "blur(14px)",
-                  borderRadius: "10px",
-                  border: "1px solid #1e293b",
-                  padding: "3px 6px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                  pointerEvents: "auto",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingRight: "6px", borderRight: "1px solid #1e293b", fontSize: "10px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
-                  <span>Season</span>
-                </div>
+          {/* Row 2: Season Switcher & Kharif Scrubber (Left) + Zoom (Right) */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
+              {/* Season Switcher: 2025 vs 2026 preliminary */}
+              <div className="flex items-center gap-1 p-1 bg-[#0b0d14]/92 backdrop-blur-md border border-white/[0.08] rounded-xl shadow-lg">
+                <span className="text-[10px] text-[#5a6275] font-semibold px-1.5 border-r border-white/[0.08] uppercase tracking-wider">
+                  Season
+                </span>
                 <button
                   onClick={() => handleSeasonChange("2025")}
-                  style={{
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    border: season === "2025" ? "1px solid #3b82f6" : "1px solid transparent",
-                    backgroundColor: season === "2025" ? "#1d4ed8" : "transparent",
-                    color: season === "2025" ? "#ffffff" : "#94a3b8",
-                    transition: "all 0.15s",
-                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer border ${
+                    season === "2025"
+                      ? "bg-blue-600/20 border-blue-500/30 text-blue-300"
+                      : "border-transparent text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04]"
+                  }`}
                 >
                   2025
                 </button>
                 <button
                   onClick={() => handleSeasonChange("2026")}
-                  style={{
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    border: season === "2026" ? "1px solid #f59e0b" : "1px solid transparent",
-                    backgroundColor: season === "2026" ? "rgba(245, 158, 11, 0.25)" : "transparent",
-                    color: season === "2026" ? "#fbbf24" : "#94a3b8",
-                    transition: "all 0.15s",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                  title="Kharif 2026 Preliminary (IMERG Late Run)"
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer border ${
+                    season === "2026"
+                      ? "bg-amber-500/20 border-amber-500/30 text-amber-300"
+                      : "border-transparent text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04]"
+                  }`}
+                  title="Kharif 2026 Preliminary (NASA IMERG Late Run)"
                 >
                   <span>2026</span>
-                  <span style={{ fontSize: "9px", padding: "1px 4px", borderRadius: "4px", backgroundColor: "rgba(245, 158, 11, 0.3)", color: "#fde68a" }}>
+                  <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-200 border border-amber-500/30 font-mono">
                     preliminary
                   </span>
                 </button>
               </div>
 
               {/* Kharif Monsoon Timeline Scrubber */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  backgroundColor: "rgba(15, 23, 42, 0.94)",
-                  backdropFilter: "blur(14px)",
-                  borderRadius: "10px",
-                  border: "1px solid #1e293b",
-                  padding: "3px 6px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                  pointerEvents: "auto",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingRight: "6px", borderRight: "1px solid #1e293b", fontSize: "10px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>
-                  <Calendar style={{ width: 12, height: 12, color: "#818cf8" }} />
-                  <span>Kharif Cycle</span>
+              <div className="flex items-center gap-1 p-1 bg-[#0b0d14]/92 backdrop-blur-md border border-white/[0.08] rounded-xl shadow-lg">
+                <div className="flex items-center gap-1 px-1.5 border-r border-white/[0.08] text-[10px] text-[#5a6275] font-semibold uppercase tracking-wider">
+                  <Calendar className="w-3 h-3 text-[#8b93a7]" />
+                  <span>Kharif</span>
                 </div>
-                {KHARIF_MONTHS.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => setActiveMonth(m.id)}
-                    style={{
-                      padding: "3px 8px",
-                      borderRadius: "6px",
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      border: activeMonth === m.id ? "1px solid #4f46e5" : "1px solid transparent",
-                      backgroundColor: activeMonth === m.id ? "#312e81" : "transparent",
-                      color: activeMonth === m.id ? "#c7d2fe" : "#94a3b8",
-                      transition: "all 0.15s",
-                    }}
-                    title={m.phase}
-                  >
-                    {m.label.split(" ")[0]}
-                  </button>
-                ))}
+                {KHARIF_MONTHS.map((m) => {
+                  const isCurrent = activeMonth === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => setActiveMonth(m.id)}
+                      className={`px-2 py-1 rounded-lg text-xs font-medium transition cursor-pointer border ${
+                        isCurrent
+                          ? "bg-white/[0.1] border-white/20 text-[#f8fafc]"
+                          : "border-transparent text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04]"
+                      }`}
+                      title={m.phase}
+                    >
+                      {m.label.split(" ")[0]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Right Tools: Glassmorphic Zoom Controls */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                pointerEvents: "auto",
-              }}
-            >
-              {/* Glassmorphic Zoom (+ / -) */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  backgroundColor: "rgba(15, 23, 42, 0.94)",
-                  backdropFilter: "blur(14px)",
-                  borderRadius: "8px",
-                  border: "1px solid #1e293b",
-                  overflow: "hidden",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                }}
+            {/* Right: Map Zoom Controls */}
+            <div className="flex items-center bg-[#0b0d14]/92 backdrop-blur-md border border-white/[0.08] rounded-lg overflow-hidden shadow-lg pointer-events-auto">
+              <button
+                onClick={() => mapInstance?.zoomIn()}
+                className="px-2.5 py-1 text-xs font-semibold text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04] transition border-r border-white/[0.08] cursor-pointer"
+                title="Zoom in"
               >
-                <button
-                  onClick={() => mapInstance?.zoomIn()}
-                  style={{
-                    padding: "4px 10px",
-                    background: "transparent",
-                    border: "none",
-                    borderRight: "1px solid #1e293b",
-                    color: "#e2e8f0",
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    lineHeight: 1,
-                  }}
-                  title="Zoom In"
-                >
-                  +
-                </button>
-                <button
-                  onClick={() => mapInstance?.zoomOut()}
-                  style={{
-                    padding: "4px 10px",
-                    background: "transparent",
-                    border: "none",
-                    color: "#e2e8f0",
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    lineHeight: 1,
-                  }}
-                  title="Zoom Out"
-                >
-                  −
-                </button>
-              </div>
+                +
+              </button>
+              <button
+                onClick={() => mapInstance?.zoomOut()}
+                className="px-2.5 py-1 text-xs font-semibold text-[#8b93a7] hover:text-[#eef0f5] hover:bg-white/[0.04] transition cursor-pointer"
+                title="Zoom out"
+              >
+                −
+              </button>
             </div>
           </div>
 
           {/* Row 3: Active Comparison Prompt Banner */}
           {comparisonMode && selectedProps && !compareProps && (
-            <div
-              style={{
-                alignSelf: "center",
-                pointerEvents: "auto",
-                backgroundColor: "rgba(245, 158, 11, 0.95)",
-                color: "#0f172a",
-                fontWeight: 700,
-                fontSize: "12px",
-                padding: "6px 16px",
-                borderRadius: "999px",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginTop: "2px",
-              }}
-            >
-              <span>Click any second taluka on the map to compare with <strong>{selectedProps.name}</strong></span>
+            <div className="self-center flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0b0d14]/95 backdrop-blur-md border border-amber-500/30 text-amber-200 text-xs shadow-lg pointer-events-auto mt-0.5">
+              <span>
+                Click a second taluka on the map to compare with <strong>{selectedProps.name}</strong>
+              </span>
               <button
                 onClick={() => setComparisonMode(false)}
-                style={{ background: "transparent", border: "none", color: "#0f172a", cursor: "pointer", fontWeight: 800, padding: 0 }}
+                className="text-amber-200 hover:text-white transition cursor-pointer ml-1 font-bold"
                 title="Cancel comparison"
               >
                 ✕
@@ -804,13 +524,13 @@ export default function GoaMap({
             center={GOA_MAP_CONFIG.center}
             zoom={GOA_MAP_CONFIG.zoom}
             bounds={GOA_BOUNDS}
-            boundsOptions={{ padding: [30, 30] }}
+            boundsOptions={{ padding: [24, 24] }}
             minZoom={GOA_MAP_CONFIG.minZoom}
             maxZoom={GOA_MAP_CONFIG.maxZoom}
             zoomControl={false}
             scrollWheelZoom={true}
             className="w-full h-full z-0"
-            style={{ height: "100%", width: "100%", background: "#0b0f19" }}
+            style={{ height: "100%", width: "100%", background: "#0b0d14" }}
           >
             <MapInstanceCapture setMap={setMapInstance} />
             <MapCameraController
@@ -819,9 +539,10 @@ export default function GoaMap({
               resetTrigger={resetTrigger}
             />
 
+            {/* Standard OpenStreetMap TileLayer as sole basemap */}
             <TileLayer
-              url={BASE_MAPS[baseMap].url}
-              attribution={BASE_MAPS[baseMap].attribution}
+              url={OSM_TILE_URL}
+              attribution={OSM_ATTRIBUTION}
             />
 
             {data?.features?.length > 0 && (
@@ -852,325 +573,194 @@ export default function GoaMap({
               })}
           </MapContainer>
         ) : (
-          <div
-            style={{
-              height: "100%",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#0b0f19",
-              color: "#94a3b8",
-              fontSize: "13px",
-            }}
-          >
-            Initializing Goa Geospatial Map...
+          <div className="w-full h-full flex items-center justify-center bg-[#07080d] text-[#8b93a7] text-xs">
+            Initializing Goa geospatial map...
           </div>
         )}
 
-        {/* Primary Selected Taluka Detail Card */}
+        {/* Primary Selected Taluka Detail Drawer */}
         {selectedProps && !compareProps && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: 16,
-              left: 16,
-              zIndex: 1000,
-              width: "360px",
-              maxWidth: "min(360px, calc(100% - 32px))",
-              maxHeight: "calc(100% - 135px)",
-              overflowY: "auto",
-              backgroundColor: "rgba(15, 23, 42, 0.95)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid #1e293b",
-              borderRadius: "16px",
-              padding: "16px",
-              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.75)",
-              color: "#ffffff",
-              fontFamily: "system-ui, sans-serif",
-            }}
-          >
-            {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid #1e293b", paddingBottom: "10px" }}>
+          <div className="absolute bottom-4 left-4 z-[1000] w-[350px] max-w-[calc(100%-2rem)] max-h-[calc(100%-7.5rem)] overflow-y-auto bg-[#0b0d14]/95 backdrop-blur-md border border-white/[0.08] rounded-xl p-4 shadow-xl text-[#eef0f5] flex flex-col gap-3">
+            {/* Drawer Header */}
+            <div className="flex items-start justify-between border-b border-white/[0.08] pb-2.5">
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontSize: "11px", color: "#38bdf8", fontWeight: 700 }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-medium text-sky-400">
                     {selectedProps.district}
                   </span>
-                  <span style={{ color: "#475569" }}>•</span>
-                  <span style={{ fontSize: "10px", color: "#64748b", fontFamily: "monospace" }}>
+                  <span className="text-[#5a6275]">•</span>
+                  <span className="text-[10px] font-mono text-[#8b93a7]">
                     {selectedProps.region_id}
                   </span>
                 </div>
-                <h3 style={{ fontSize: "18px", fontWeight: "bold", margin: "2px 0 4px", color: "#ffffff" }}>
+                <h3 className="text-base font-bold text-[#f8fafc] mt-0.5 mb-1">
                   {selectedProps.name} Taluka
                 </h3>
-                <div style={{ display: "flex", gap: "4px" }}>
-                  <span
-                    style={{
-                      background: is2026 ? "rgba(245, 158, 11, 0.12)" : "rgba(56, 189, 248, 0.12)",
-                      color: is2026 ? "#fbbf24" : "#38bdf8",
-                      border: `1px solid ${is2026 ? "rgba(245, 158, 11, 0.3)" : "rgba(56, 189, 248, 0.25)"}`,
-                      padding: "1px 6px",
-                      borderRadius: "4px",
-                      fontSize: "9px",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {is2026 ? "Kharif 2026 (Preliminary)" : (selectedProps.season || "Kharif 2025 Domain")}
-                  </span>
-                </div>
+                <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded border border-white/[0.08] bg-white/[0.04] text-[#a3a9b8]">
+                  {is2026 ? "Kharif 2026 (Preliminary)" : (selectedProps.season || "Kharif 2025 Domain")}
+                </span>
               </div>
               <button
                 onClick={handleClearSelection}
-                style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", padding: "4px" }}
-                title="Close"
+                className="p-1 rounded-md text-[#8b93a7] hover:text-[#f8fafc] hover:bg-white/[0.06] transition cursor-pointer"
+                title="Close taluka details"
               >
-                <X style={{ width: 16, height: 16 }} />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Real NASA Metrics Breakdown */}
-            <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px", fontSize: "12px" }}>
-              {/* Agricultural Water Risk Status Banner */}
-              <div
-                style={{
-                  backgroundColor:
-                    selectedProps.water_risk_level === "High"
-                      ? "rgba(239, 68, 68, 0.15)"
-                      : selectedProps.water_risk_level === "Moderate"
-                      ? "rgba(245, 158, 11, 0.15)"
-                      : "rgba(16, 185, 129, 0.15)",
-                  border: `1px solid ${
-                    selectedProps.water_risk_level === "High"
-                      ? "rgba(239, 68, 68, 0.35)"
-                      : selectedProps.water_risk_level === "Moderate"
-                      ? "rgba(245, 158, 11, 0.35)"
-                      : "rgba(16, 185, 129, 0.35)"
-                  }`,
-                  borderRadius: "10px",
-                  padding: "8px 10px",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      color:
-                        selectedProps.water_risk_level === "High"
-                          ? "#f87171"
-                          : selectedProps.water_risk_level === "Moderate"
-                          ? "#fbbf24"
-                          : "#34d399",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <ShieldAlert style={{ width: 13, height: 13 }} />
-                    Water-deficit signal: {selectedProps.water_risk_level || (is2026 ? "Moderate" : "Low")}
-                  </span>
-                  <span style={{ fontSize: "10px", color: "#94a3b8" }}>
-                    Signal: {selectedProps.rainfall_signal || "near normal"}
-                  </span>
-                </div>
-                <div style={{ fontSize: "11px", color: "#cbd5e1", lineHeight: 1.3 }}>
-                  {is2026
-                    ? `Water-deficit signal Moderate: ${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly (preliminary IMERG Late Run) with soil moisture available for June–July only.`
-                    : (selectedProps.water_risk?.summary ||
-                        `${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly with ${selectedProps.sm_gldas_percentile}th percentile root-zone moisture.`)}
-                </div>
-              </div>
-
-              {/* Rice Variety Suitability Card */}
-              <div
-                style={{
-                  backgroundColor: "rgba(30, 41, 59, 0.5)",
-                  border: "1px solid rgba(56, 189, 248, 0.25)",
-                  borderRadius: "10px",
-                  padding: "10px",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#38bdf8", display: "flex", alignItems: "center", gap: "4px" }}>
-                    <Sprout style={{ width: 13, height: 13 }} />
-                    Rice Variety Suitability
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      backgroundColor: "rgba(16, 185, 129, 0.2)",
-                      color: "#34d399",
-                      padding: "1px 6px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    {selectedProps.rice_suitability_class || "Highly Suitable"}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: "10px", color: "#94a3b8", marginBottom: "6px" }}>
-                  Recommended varieties for {selectedProps.name} ecologies:
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "6px" }}>
-                  {(selectedProps.rice_suitability?.recommended_varieties || ["Karjat-3", "Naveen"]).map((v) => (
-                    <span
-                      key={v}
-                      style={{
-                        backgroundColor: "rgba(15, 23, 42, 0.8)",
-                        border: "1px solid rgba(99, 102, 241, 0.4)",
-                        color: "#c7d2fe",
-                        fontSize: "10px",
-                        fontWeight: 600,
-                        padding: "2px 7px",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      {v}
-                    </span>
-                  ))}
-                </div>
-                <div style={{ fontSize: "9px", color: "#64748b", fontStyle: "italic" }}>
-                  Documentation-based screening (ICAR-CCARI & KVK Goa)
-                </div>
-              </div>
-
-              {/* NASA Observation Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", paddingTop: "8px", borderTop: "1px solid #1e293b" }}>
-                <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
-                  <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    {is2026 && activeMonth !== "all" ? "Monthly Rain" : "Precip Anomaly"}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: "bold",
-                      marginTop: "2px",
-                      color: selectedProps.rainfall_signal === "dry" || selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80",
-                    }}
-                  >
-                    {is2026 && activeMonth !== "all"
-                      ? (selectedProps.rainfall_display || (selectedProps.rainfall_signal === "dry" ? "Below normal" : "Near normal"))
-                      : `${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}%`}
-                  </div>
-                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
-                    {is2026 && activeMonth !== "all" ? "IMD Departure category" : `Signal: ${selectedProps.rainfall_signal || "—"}`}
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
-                  <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    Kharif Rainfall
-                  </div>
-                  <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#e2e8f0" }}>
-                    {selectedProps.kharif_rainfall_mm ?? "—"} <small style={{ fontSize: "9px", color: "#64748b" }}>mm</small>
-                  </div>
-                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
-                    {selectedProps.rainfall_category_imd || "Normal"} (IMD)
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
-                  <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    GLDAS Soil Moisture
-                  </div>
-                  <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#38bdf8" }}>
-                    {is2026 ? "June–July only" : (selectedProps.sm_gldas_percentile !== null && selectedProps.sm_gldas_percentile !== undefined ? `${selectedProps.sm_gldas_percentile}th pctl` : "—")}
-                  </div>
-                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
-                    Signal: {is2026 ? "June–July only" : (selectedProps.sm_gldas_signal || "—")}
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: "rgba(2, 6, 23, 0.55)", padding: "8px", borderRadius: "8px", border: "1px solid #1e293b" }}>
-                  <div style={{ fontSize: "9px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                    Dry Months
-                  </div>
-                  <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2px", color: "#fb7185" }}>
-                    {selectedProps.months_with_concurrent_dry_signals ?? 0} mo
-                  </div>
-                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
-                    {selectedProps.indicators_with_data ?? 2} active sources
-                  </div>
-                </div>
-              </div>
-
-              {/* Spatial Basis Disclosure Badge */}
-              <div style={{ backgroundColor: "rgba(15, 23, 42, 0.7)", border: "1px solid #334155", borderRadius: "8px", padding: "6px 8px", fontSize: "10px", color: "#94a3b8", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                <Info style={{ width: 13, height: 13, color: "#38bdf8", flexShrink: 0, marginTop: "1px" }} />
-                <span>
-                  <strong>District aggregation: </strong>
-                  {selectedProps.spatial_note || "Talukas inherit district-level values from NASA GPM IMERG and GLDAS-2.1."}
+            {/* Water-Deficit Status Banner */}
+            <div
+              className={`p-2.5 rounded-lg border text-xs leading-relaxed ${
+                selectedProps.water_risk_level === "High"
+                  ? "bg-rose-500/10 border-rose-500/25 text-rose-200"
+                  : selectedProps.water_risk_level === "Moderate"
+                  ? "bg-amber-500/10 border-amber-500/25 text-amber-200"
+                  : "bg-emerald-500/10 border-emerald-500/25 text-emerald-200"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                  <span>Water-deficit signal: {selectedProps.water_risk_level || (is2026 ? "Moderate" : "Low")}</span>
+                </span>
+                <span className="text-[10px] opacity-75">
+                  {selectedProps.rainfall_signal || "near normal"}
                 </span>
               </div>
-
-              {/* Scientific Interpretation Limits */}
-              {selectedProps.interpretation_limit && (
-                <div style={{ backgroundColor: "rgba(30, 41, 59, 0.5)", border: "1px solid #334155", borderRadius: "8px", padding: "8px", fontSize: "11px", color: "#cbd5e1", lineHeight: 1.35 }}>
-                  <strong style={{ color: "#94a3b8" }}>Scientific Limitation: </strong>
-                  {selectedProps.interpretation_limit}
-                </div>
-              )}
-
-              {/* Action Toolbar */}
-              <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
-                <button
-                  onClick={() => setComparisonMode(true)}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    padding: "7px 12px",
-                    backgroundColor: "rgba(99, 102, 241, 0.2)",
-                    border: "1px solid #6366f1",
-                    borderRadius: "8px",
-                    color: "#c7d2fe",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  <Scale style={{ width: 13, height: 13 }} />
-                  <span>Compare with another Taluka</span>
-                </button>
+              <div className="text-[11px] text-[#cbd5e1] leading-relaxed">
+                {is2026
+                  ? `Water-deficit signal Moderate: ${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly (preliminary IMERG Late Run) with soil moisture available for June–July only.`
+                  : (selectedProps.water_risk?.summary ||
+                      `${selectedProps.district} recorded ${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}% rainfall anomaly with ${selectedProps.sm_gldas_percentile}th percentile root-zone moisture.`)}
               </div>
             </div>
+
+            {/* Rice Variety Suitability Card */}
+            <div className="bg-[#11141c] border border-white/[0.06] rounded-lg p-2.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-semibold text-sky-400 flex items-center gap-1.5">
+                  <Sprout className="w-3.5 h-3.5" />
+                  <span>Rice variety suitability</span>
+                </span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/25 text-emerald-300">
+                  {selectedProps.rice_suitability_class || "Highly Suitable"}
+                </span>
+              </div>
+              <div className="text-[11px] text-[#8b93a7] mb-1.5">
+                Recommended for {selectedProps.name} ecologies:
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                {(selectedProps.rice_suitability?.recommended_varieties || ["Karjat-3", "Naveen"]).map((v) => (
+                  <span
+                    key={v}
+                    className="bg-white/[0.04] border border-white/[0.08] text-[#c7d2fe] text-[10px] font-medium px-2 py-0.5 rounded"
+                  >
+                    {v}
+                  </span>
+                ))}
+              </div>
+              <div className="text-[10px] text-[#5a6275]">
+                Documented screening (ICAR-CCARI & KVK Goa)
+              </div>
+            </div>
+
+            {/* NASA Observation 2x2 Grid */}
+            <div className="grid grid-cols-2 gap-2 border-t border-white/[0.08] pt-2.5">
+              <div className="bg-[#11141c] border border-white/[0.06] rounded-lg p-2.5">
+                <div className="text-[10px] uppercase tracking-wider text-[#8b93a7] font-medium">
+                  {is2026 && activeMonth !== "all" ? "Monthly rain" : "Precip anomaly"}
+                </div>
+                <div
+                  className={`text-sm font-semibold font-mono tabular-nums mt-0.5 ${
+                    selectedProps.rainfall_signal === "dry" || selectedProps.rainfall_anomaly_pct < 0
+                      ? "text-rose-400"
+                      : "text-emerald-400"
+                  }`}
+                >
+                  {is2026 && activeMonth !== "all"
+                    ? (selectedProps.rainfall_display || (selectedProps.rainfall_signal === "dry" ? "Below normal" : "Near normal"))
+                    : `${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}%`}
+                </div>
+                <div className="text-[10px] text-[#5a6275] mt-0.5">
+                  {is2026 && activeMonth !== "all" ? "IMD departure category" : `Signal: ${selectedProps.rainfall_signal || "—"}`}
+                </div>
+              </div>
+
+              <div className="bg-[#11141c] border border-white/[0.06] rounded-lg p-2.5">
+                <div className="text-[10px] uppercase tracking-wider text-[#8b93a7] font-medium">
+                  Kharif rainfall
+                </div>
+                <div className="text-sm font-semibold font-mono tabular-nums text-[#eef0f5] mt-0.5">
+                  {selectedProps.kharif_rainfall_mm ?? "—"} <span className="text-[10px] text-[#5a6275] font-normal">mm</span>
+                </div>
+                <div className="text-[10px] text-[#5a6275] mt-0.5">
+                  {selectedProps.rainfall_category_imd || "Normal"} (IMD)
+                </div>
+              </div>
+
+              <div className="bg-[#11141c] border border-white/[0.06] rounded-lg p-2.5">
+                <div className="text-[10px] uppercase tracking-wider text-[#8b93a7] font-medium">
+                  GLDAS soil moisture
+                </div>
+                <div className="text-sm font-semibold font-mono tabular-nums text-sky-400 mt-0.5">
+                  {is2026 ? "June–July only" : (selectedProps.sm_gldas_percentile !== null && selectedProps.sm_gldas_percentile !== undefined ? `${selectedProps.sm_gldas_percentile}th pctl` : "—")}
+                </div>
+                <div className="text-[10px] text-[#5a6275] mt-0.5">
+                  Signal: {is2026 ? "June–July only" : (selectedProps.sm_gldas_signal || "—")}
+                </div>
+              </div>
+
+              <div className="bg-[#11141c] border border-white/[0.06] rounded-lg p-2.5">
+                <div className="text-[10px] uppercase tracking-wider text-[#8b93a7] font-medium">
+                  Dry months
+                </div>
+                <div className="text-sm font-semibold font-mono tabular-nums text-rose-300 mt-0.5">
+                  {selectedProps.months_with_concurrent_dry_signals ?? 0} mo
+                </div>
+                <div className="text-[10px] text-[#5a6275] mt-0.5">
+                  {selectedProps.indicators_with_data ?? 2} active sources
+                </div>
+              </div>
+            </div>
+
+            {/* Spatial Basis Disclosure */}
+            <div className="bg-[#11141c]/60 border border-white/[0.06] rounded-lg p-2 flex items-start gap-2 text-[11px] text-[#8b93a7] leading-relaxed">
+              <Info className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-[#cbd5e1]">District aggregation: </strong>
+                {selectedProps.spatial_note || "Talukas inherit district-level values from NASA GPM IMERG and GLDAS-2.1."}
+              </span>
+            </div>
+
+            {/* Scientific Interpretation Limits */}
+            {selectedProps.interpretation_limit && (
+              <div className="bg-[#11141c]/60 border border-white/[0.06] rounded-lg p-2 text-[11px] text-[#8b93a7] leading-relaxed">
+                <strong className="text-[#cbd5e1]">Scientific limitation: </strong>
+                {selectedProps.interpretation_limit}
+              </div>
+            )}
+
+            {/* Action Button: Compare */}
+            <button
+              onClick={() => setComparisonMode(true)}
+              className="w-full py-2 px-3 rounded-lg text-xs font-medium border border-white/[0.08] bg-white/[0.04] text-[#eef0f5] hover:bg-white/[0.08] transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Scale className="w-3.5 h-3.5 shrink-0 text-amber-300" />
+              <span>Compare with another taluka</span>
+            </button>
           </div>
         )}
 
         {/* Side-by-Side Comparison Drawer */}
         {selectedProps && compareProps && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: 16,
-              left: 16,
-              zIndex: 1000,
-              width: "540px",
-              maxWidth: "min(540px, calc(100% - 32px))",
-              maxHeight: "calc(100% - 135px)",
-              overflowY: "auto",
-              backgroundColor: "rgba(15, 23, 42, 0.96)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid #334155",
-              borderRadius: "16px",
-              padding: "16px",
-              boxShadow: "0 25px 60px -15px rgba(0,0,0,0.85)",
-              color: "#ffffff",
-              fontFamily: "system-ui, sans-serif",
-            }}
-          >
+          <div className="absolute bottom-4 left-4 z-[1000] w-[520px] max-w-[calc(100%-2rem)] max-h-[calc(100%-7.5rem)] overflow-y-auto bg-[#0b0d14]/95 backdrop-blur-md border border-white/[0.08] rounded-xl p-4 shadow-xl text-[#eef0f5] flex flex-col gap-3">
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "10px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <Scale style={{ width: 16, height: 16, color: "#fbbf24" }} />
-                <h3 style={{ fontSize: "15px", fontWeight: "bold", margin: 0 }}>
-                  Taluka NASA Earth Observation Comparison
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
+              <div className="flex items-center gap-2">
+                <Scale className="w-4 h-4 text-amber-300" />
+                <h3 className="text-sm font-semibold text-[#f8fafc]">
+                  Taluka NASA Earth observation comparison
                 </h3>
               </div>
               <button
@@ -1179,110 +769,111 @@ export default function GoaMap({
                   setCompareRegionId(null);
                   setCompareFeature(null);
                 }}
-                style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", padding: "4px" }}
+                className="p-1 rounded-md text-[#8b93a7] hover:text-[#f8fafc] hover:bg-white/[0.06] transition cursor-pointer"
+                title="Close comparison"
               >
-                <X style={{ width: 16, height: 16 }} />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Split Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "12px", fontSize: "12px" }}>
+            <div className="grid grid-cols-2 gap-3 text-xs">
               {/* Taluka A */}
-              <div style={{ backgroundColor: "rgba(30, 41, 59, 0.5)", border: "1px solid rgba(59, 130, 246, 0.3)", borderRadius: "10px", padding: "10px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <strong style={{ fontSize: "14px", color: "#60a5fa" }}>{selectedProps.name}</strong>
-                  <span style={{ fontSize: "10px", color: "#94a3b8" }}>{selectedProps.district}</span>
+              <div className="bg-[#11141c] border border-sky-500/20 rounded-lg p-3 flex flex-col gap-2">
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-sm font-bold text-sky-400">{selectedProps.name}</strong>
+                  <span className="text-[10px] text-[#8b93a7]">{selectedProps.district}</span>
                 </div>
-                <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Water-Deficit Signal:</span>
-                    <strong style={{ color: selectedProps.water_risk_level === "High" ? "#f87171" : selectedProps.water_risk_level === "Moderate" ? "#fbbf24" : "#34d399" }}>
+                <div className="flex flex-col gap-1.5 text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Water-deficit signal:</span>
+                    <strong className={selectedProps.water_risk_level === "High" ? "text-rose-400" : selectedProps.water_risk_level === "Moderate" ? "text-amber-300" : "text-emerald-400"}>
                       {selectedProps.water_risk_level || "Low"}
                     </strong>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rice Suitability:</span>
-                    <strong style={{ color: "#38bdf8" }}>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Rice suitability:</span>
+                    <strong className="text-sky-300">
                       {selectedProps.rice_suitability_class || "Highly Suitable"}
                     </strong>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Top Varieties:</span>
-                    <span style={{ color: "#c7d2fe", fontSize: "10px", maxWidth: "140px", textAlign: "right" }}>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Top varieties:</span>
+                    <span className="text-[#c7d2fe] text-[10px] max-w-[120px] text-right truncate">
                       {(selectedProps.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ")}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>{is2026 && activeMonth !== "all" ? "Monthly Rain:" : "Rainfall Anom:"}</span>
-                    <strong style={{ color: selectedProps.rainfall_signal === "dry" || selectedProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">{is2026 && activeMonth !== "all" ? "Monthly rain:" : "Rainfall anom:"}</span>
+                    <strong className={`font-mono tabular-nums ${selectedProps.rainfall_signal === "dry" || selectedProps.rainfall_anomaly_pct < 0 ? "text-rose-400" : "text-emerald-400"}`}>
                       {is2026 && activeMonth !== "all"
                         ? (selectedProps.rainfall_display || (selectedProps.rainfall_signal === "dry" ? "Below normal" : "Near normal"))
                         : `${selectedProps.rainfall_anomaly_pct > 0 ? "+" : ""}${selectedProps.rainfall_anomaly_pct}%`}
                     </strong>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>GLDAS SM Pctl:</span>
-                    <span style={{ color: "#38bdf8" }}>
-                      {is2026 ? "June–July only" : `${selectedProps.sm_gldas_percentile}th pctl (${selectedProps.sm_gldas_signal})`}
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">GLDAS SM:</span>
+                    <span className="text-sky-400 font-mono tabular-nums">
+                      {is2026 ? "June–July only" : `${selectedProps.sm_gldas_percentile}th pctl`}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
-                    <span>{selectedProps.kharif_rainfall_mm ?? "—"} mm</span>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Kharif rain:</span>
+                    <span className="font-mono tabular-nums">{selectedProps.kharif_rainfall_mm ?? "—"} mm</span>
                   </div>
                 </div>
               </div>
 
               {/* Taluka B */}
-              <div style={{ backgroundColor: "rgba(30, 41, 59, 0.5)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: "10px", padding: "10px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <strong style={{ fontSize: "14px", color: "#fbbf24" }}>{compareProps.name}</strong>
-                  <span style={{ fontSize: "10px", color: "#94a3b8" }}>{compareProps.district}</span>
+              <div className="bg-[#11141c] border border-amber-500/20 rounded-lg p-3 flex flex-col gap-2">
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-sm font-bold text-amber-300">{compareProps.name}</strong>
+                  <span className="text-[10px] text-[#8b93a7]">{compareProps.district}</span>
                 </div>
-                <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Water-Deficit Signal:</span>
-                    <strong style={{ color: compareProps.water_risk_level === "High" ? "#f87171" : compareProps.water_risk_level === "Moderate" ? "#fbbf24" : "#34d399" }}>
+                <div className="flex flex-col gap-1.5 text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Water-deficit signal:</span>
+                    <strong className={compareProps.water_risk_level === "High" ? "text-rose-400" : compareProps.water_risk_level === "Moderate" ? "text-amber-300" : "text-emerald-400"}>
                       {compareProps.water_risk_level || (is2026 ? "Moderate" : "Low")}
                     </strong>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Rice Suitability:</span>
-                    <strong style={{ color: "#fbbf24" }}>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Rice suitability:</span>
+                    <strong className="text-amber-300">
                       {compareProps.rice_suitability_class || "Highly Suitable"}
                     </strong>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Top Varieties:</span>
-                    <span style={{ color: "#fef08a", fontSize: "10px", maxWidth: "140px", textAlign: "right" }}>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Top varieties:</span>
+                    <span className="text-[#fef08a] text-[10px] max-w-[120px] text-right truncate">
                       {(compareProps.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ")}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>{is2026 && activeMonth !== "all" ? "Monthly Rain:" : "Rainfall Anom:"}</span>
-                    <strong style={{ color: compareProps.rainfall_signal === "dry" || compareProps.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80" }}>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">{is2026 && activeMonth !== "all" ? "Monthly rain:" : "Rainfall anom:"}</span>
+                    <strong className={`font-mono tabular-nums ${compareProps.rainfall_signal === "dry" || compareProps.rainfall_anomaly_pct < 0 ? "text-rose-400" : "text-emerald-400"}`}>
                       {is2026 && activeMonth !== "all"
                         ? (compareProps.rainfall_display || (compareProps.rainfall_signal === "dry" ? "Below normal" : "Near normal"))
                         : `${compareProps.rainfall_anomaly_pct > 0 ? "+" : ""}${compareProps.rainfall_anomaly_pct}%`}
                     </strong>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>GLDAS SM Pctl:</span>
-                    <span style={{ color: "#38bdf8" }}>
-                      {is2026 ? "June–July only" : `${compareProps.sm_gldas_percentile}th pctl (${compareProps.sm_gldas_signal})`}
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">GLDAS SM:</span>
+                    <span className="text-sky-400 font-mono tabular-nums">
+                      {is2026 ? "June–July only" : `${compareProps.sm_gldas_percentile}th pctl`}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#94a3b8" }}>Kharif Rainfall:</span>
-                    <span>{compareProps.kharif_rainfall_mm ?? "—"} mm</span>
+                  <div className="flex justify-between">
+                    <span className="text-[#8b93a7]">Kharif rain:</span>
+                    <span className="font-mono tabular-nums">{compareProps.kharif_rainfall_mm ?? "—"} mm</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Differential Takeaway */}
-            <div style={{ marginTop: "12px", backgroundColor: "rgba(15, 23, 42, 0.8)", border: "1px solid #1e293b", borderRadius: "8px", padding: "8px 10px", fontSize: "11px", color: "#cbd5e1" }}>
-              <strong>Differential Analysis: </strong>
+            <div className="bg-[#11141c] border border-white/[0.06] rounded-lg p-2.5 text-xs text-[#a3a9b8] leading-relaxed">
+              <strong className="text-[#eef0f5]">Differential analysis: </strong>
               {is2026 ? (
                 <span>
                   Both <strong>{selectedProps.name}</strong> ({selectedProps.district}) and <strong>{compareProps.name}</strong> ({compareProps.district}) reflect Kharif 2026 preliminary IMERG Late Run conditions with water-deficit signal <strong>Moderate</strong>. Soil moisture is available for June–July only.
@@ -1304,25 +895,41 @@ export default function GoaMap({
         <MapLegend
           activeMetric={activeMetric}
           activeMonthId={activeMonth}
+          season={season}
         />
 
-        {/* CSS Fixes for Leaflet */}
+        {/* Clean CSS rules for Leaflet and custom overlays */}
         <style>{`
           .leaflet-container {
-            background-color: #090d16 !important;
-            font-family: inherit;
+            background-color: #0b0d14 !important;
+            font-family: 'Montserrat', system-ui, -apple-system, sans-serif !important;
             height: 100% !important;
             width: 100% !important;
           }
+          .leaflet-control-attribution {
+            background: rgba(11, 13, 20, 0.75) !important;
+            color: #8b93a7 !important;
+            font-size: 10px !important;
+            padding: 2px 6px !important;
+            border-top-left-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-bottom: none !important;
+            border-right: none !important;
+          }
+          .leaflet-control-attribution a {
+            color: #8b93a7 !important;
+            text-decoration: underline;
+          }
           .earthscope-map-tooltip {
-            background: rgba(15, 23, 42, 0.95) !important;
-            border: 1px solid rgba(51, 65, 85, 0.8) !important;
+            background: rgba(11, 13, 20, 0.95) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             border-radius: 8px !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
-            backdrop-filter: blur(8px) !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(12px) !important;
+            padding: 0 !important;
           }
           .earthscope-map-tooltip::before {
-            border-top-color: rgba(15, 23, 42, 0.95) !important;
+            border-top-color: rgba(11, 13, 20, 0.95) !important;
           }
           .custom-taluka-label {
             background: transparent !important;

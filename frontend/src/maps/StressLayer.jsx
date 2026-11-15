@@ -37,82 +37,80 @@ export default function StressLayer({
     const district = props.district || "Goa";
     const isMonthView = activeMonthId !== "all";
 
-    // ── Real NASA values only ────────────────────────────────────────────────
     // In 2026, monthly rainfall is displayed as below/above/near normal, not percentages
-    let rainfallAnom = "N/A";
+    let rainfallAnom = "—";
     if (is2026 && isMonthView) {
       rainfallAnom = props.rainfall_display || (props.rainfall_signal === "dry" ? "Below normal" : props.rainfall_signal === "wet" ? "Above normal" : "Near normal");
     } else if (props.rainfall_anomaly_pct !== undefined && props.rainfall_anomaly_pct !== null) {
       rainfallAnom = `${props.rainfall_anomaly_pct > 0 ? "+" : ""}${props.rainfall_anomaly_pct}%`;
     }
 
-    const rainfallSignal   = props.rainfall_signal      || "—";
-    const rainfallPctile   = props.rainfall_percentile  !== undefined && props.rainfall_percentile !== null ? `${props.rainfall_percentile}th pctl` : "N/A";
-    const imdCat           = props.rainfall_category_imd || "—";
-    const smDisplay        = is2026 ? "June–July only" : (props.sm_gldas_percentile !== undefined && props.sm_gldas_percentile !== null ? `${props.sm_gldas_percentile}th pctl` : "N/A");
-    const smSignal         = is2026 ? "June–July only" : (props.sm_gldas_signal || "—");
-    const agreement        = props.indicator_agreement   || "—";
-    const deficitSignal    = props.water_risk_level      || (is2026 ? "Moderate" : "Low");
-    const riceClass        = props.rice_suitability_class || (props.rice_suitability?.class || "Highly Suitable");
-    const topVarieties     = (props.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ");
+    const rainfallSignal = props.rainfall_signal || "—";
+    const rainfallPctile = props.rainfall_percentile !== undefined && props.rainfall_percentile !== null ? `${props.rainfall_percentile}th pctl` : "—";
+    const imdCat         = props.rainfall_category_imd || "—";
+    const smDisplay      = is2026 ? "June–July only" : (props.sm_gldas_percentile !== undefined && props.sm_gldas_percentile !== null ? `${props.sm_gldas_percentile}th pctl` : "—");
+    const smSignal       = is2026 ? "June–July only" : (props.sm_gldas_signal || "—");
+    const deficitSignal  = props.water_risk_level || (is2026 ? "Moderate" : "Low");
+    const riceClass      = props.rice_suitability_class || (props.rice_suitability?.class || "Highly Suitable");
+    const topVarieties   = (props.rice_suitability?.recommended_varieties || []).slice(0, 3).join(", ");
 
     const isSelected = regionId === selectedRegionId;
     const isCompared = regionId === compareRegionId;
-    const rainfallColor = props.rainfall_signal === "dry" || props.rainfall_anomaly_pct < 0 ? "#f87171" : "#4ade80";
+    const rainfallColor = props.rainfall_signal === "dry" || props.rainfall_anomaly_pct < 0 ? "#f87171" : "#34d399";
+    const deficitColor  = deficitSignal === "High" ? "#f87171" : deficitSignal === "Moderate" ? "#fbbf24" : "#34d399";
 
     const tooltipContent = `
-      <div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.4; color: #f1f5f9; padding: 6px 8px; min-width: 210px;">
-        <div style="font-weight: 700; font-size: 13px; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 4px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: baseline;">
-          <span>${name}</span>
-          <span style="font-size: 10px; color: #94a3b8; font-weight: normal;">${district}</span>
+      <div style="font-family: 'Montserrat', system-ui, -apple-system, sans-serif; font-size: 11px; line-height: 1.4; color: #f1f5f9; padding: 8px 10px; min-width: 220px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; margin-bottom: 6px;">
+          <div>
+            <span style="font-weight: 700; font-size: 13px; color: #f8fafc;">${name}</span>
+            <span style="font-size: 10px; color: #8b93a7; margin-left: 4px;">${district}</span>
+          </div>
+          <span style="font-size: 9px; font-family: monospace; color: #8b93a7;">${regionId}</span>
         </div>
 
-        <div style="font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px;">
-          ${isMonthView ? `${activeMonthId.charAt(0).toUpperCase() + activeMonthId.slice(1)} · ` : ""}${is2026 ? "Kharif 2026 (Preliminary)" : "Kharif 2025"} · NASA Earth Observation
+        <div style="font-size: 9px; color: #5a6275; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px;">
+          ${isMonthView ? `${activeMonthId.charAt(0).toUpperCase() + activeMonthId.slice(1)} · ` : ""}${is2026 ? "Kharif 2026 (preliminary)" : "Kharif 2025"} · NASA Earth observation
         </div>
 
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-          <span style="color: #94a3b8;">Water-Deficit Signal:</span>
-          <strong style="color: ${deficitSignal === 'High' ? '#f87171' : deficitSignal === 'Moderate' ? '#fbbf24' : '#34d399'};">${deficitSignal}</strong>
+          <span style="color: #8b93a7;">Water-deficit signal:</span>
+          <strong style="color: ${deficitColor}; font-weight: 600;">${deficitSignal}</strong>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-          <span style="color: #94a3b8;">Rice Suitability:</span>
-          <strong style="color: #38bdf8;">${riceClass}</strong>
+          <span style="color: #8b93a7;">Rice suitability:</span>
+          <strong style="color: #38bdf8; font-weight: 600;">${riceClass}</strong>
         </div>
-        ${topVarieties ? `<div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">Top: ${topVarieties}</div>` : ""}
+        ${topVarieties ? `<div style="font-size: 10px; color: #8b93a7; margin-bottom: 4px;">Top: ${topVarieties}</div>` : ""}
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 3px;">
-          <span style="color: #94a3b8;">${is2026 && isMonthView ? "Monthly Rainfall:" : "Rainfall Anomaly:"}</span>
-          <strong style="color: ${rainfallColor};">${rainfallAnom}</strong>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 3px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px;">
+          <span style="color: #8b93a7;">${is2026 && isMonthView ? "Monthly rainfall:" : "Rainfall anomaly:"}</span>
+          <strong style="color: ${rainfallColor}; font-family: monospace; font-variant-numeric: tabular-nums;">${rainfallAnom}</strong>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-          <span style="color: #94a3b8;">Rainfall Signal:</span>
-          <span style="color: #f8fafc;">${rainfallSignal}</span>
+          <span style="color: #8b93a7;">Rainfall signal:</span>
+          <span style="color: #cbd5e1;">${rainfallSignal}</span>
         </div>
         ${!is2026 ? `
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-          <span style="color: #94a3b8;">Rainfall Percentile:</span>
-          <span style="color: #f8fafc;">${rainfallPctile}</span>
+          <span style="color: #8b93a7;">Rainfall percentile:</span>
+          <span style="color: #cbd5e1; font-family: monospace; font-variant-numeric: tabular-nums;">${rainfallPctile}</span>
         </div>
         ` : ""}
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-          <span style="color: #94a3b8;">IMD Category:</span>
-          <span style="color: #f8fafc;">${imdCat}</span>
+          <span style="color: #8b93a7;">IMD category:</span>
+          <span style="color: #cbd5e1;">${imdCat}</span>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-          <span style="color: #94a3b8;">GLDAS Soil Moisture:</span>
-          <span style="color: #38bdf8;">${is2026 ? "June–July only" : `${smDisplay} · ${smSignal}`}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span style="color: #94a3b8;">Agreement:</span>
-          <span style="color: #f8fafc;">${agreement}</span>
+          <span style="color: #8b93a7;">GLDAS soil moisture:</span>
+          <span style="color: #38bdf8; font-family: monospace; font-variant-numeric: tabular-nums;">${is2026 ? "June–July only" : `${smDisplay} (${smSignal})`}</span>
         </div>
 
-        <div style="font-size: 9px; color: #64748b; margin-top: 5px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; line-height: 1.3;">
-          ${is2026 ? "Preliminary IMERG Late Run district estimate · Soil moisture June–July only" : "District-level values — same for all talukas in this district"}
+        <div style="font-size: 9px; color: #5a6275; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px; line-height: 1.3;">
+          ${is2026 ? "Preliminary IMERG Late Run district estimate · Soil moisture June–July only" : "District-level NASA indicators inherited by all talukas in district"}
         </div>
-        <div style="font-size: 9px; color: #475569; margin-top: 2px; text-align: right; font-style: italic;">
-          ID: ${regionId} ${isSelected ? "• [Selected]" : isCompared ? "• [Compared]" : "• Click to inspect"}
+        <div style="font-size: 9px; color: #5a6275; margin-top: 2px; text-align: right;">
+          ${isSelected ? "Selected" : isCompared ? "Compared" : "Click to inspect"}
         </div>
       </div>
     `;
@@ -121,7 +119,7 @@ export default function StressLayer({
       sticky: true,
       direction: "auto",
       className: "earthscope-map-tooltip",
-      opacity: 0.95,
+      opacity: 0.98,
     });
 
     layer.on({
