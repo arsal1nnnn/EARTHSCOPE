@@ -110,3 +110,38 @@ h2 { margin: 0 0 8px; color: #edf3f6; font-size: 20px; font-weight: 600; }
   .app-footer { flex-direction: column; }
 }
 @media (max-width: 430px) { .stats-grid, .two-stats { grid-template-columns: 1fr; } .panel-heading { flex-direction: column; } h1 { letter-spacing: -1px; } }
+
+/* Figma Hero and Dither Themed Enhancements */
+.hero-landing-section {
+  position: relative;
+  background-color: #004FF4;
+}
+
+.hero-cta-btn {
+  background-color: #004FF4;
+  box-shadow: 0 8px 30px rgba(0, 79, 244, 0.45);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-cta-btn:hover {
+  background-color: #0045d8;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0, 79, 244, 0.6);
+}
+
+.hero-cta-btn:active {
+  transform: translateY(0);
+}
+
+/* Bayer 16x16 Dither Pattern texture utility */
+.bayer-dither-pattern {
+  background-image: radial-gradient(#004FF4 1.5px, transparent 1.5px),
+                    radial-gradient(#86A6D9 1.5px, transparent 1.5px);
+  background-size: 6px 6px, 12px 12px;
+  background-position: 0 0, 3px 3px;
+}
+
+/* Smooth anchor offset for fixed or sticky navigation */
+#stress-dashboard, #project-overview {
+  scroll-margin-top: 20px;
+}

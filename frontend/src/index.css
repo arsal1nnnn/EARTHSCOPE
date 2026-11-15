@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
-/* Global reset. App-specific styling lives in App.css. */
+/* Global reset with Montserrat font from Figma design */
 :root {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Montserrat', 'DM Sans', system-ui, -apple-system, sans-serif;
   color: #eaf0f5;
   background: #080f18;
   font-synthesis: none;
@@ -10,7 +10,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
 * { box-sizing: border-box; }
 html, body, #root { min-width: 320px; min-height: 100%; margin: 0; }
-body { min-height: 100vh; }
+body { min-height: 100vh; background-color: #080f18; }
 button, input, select, textarea { font: inherit; }
+
+.font-montserrat {
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+}
