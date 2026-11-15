@@ -3,9 +3,9 @@
 
 **Transforming NASA Earth Observation Data into Smarter Agricultural Decisions for Goa, India.**
 
-EARTHSCOPE is an agricultural intelligence and decision-support platform designed to help understand agricultural water stress and identify suitable rice varieties across different ecological regions of Goa. By combining NASA satellite observations, geospatial analysis, and agricultural data, EARTHSCOPE provides insights into environmental conditions, water availability, and rice variety suitability.
+EARTHSCOPE is an agricultural intelligence and decision-support platform designed to help understand agricultural water stress and identify suitable rice varieties across different ecological regions of Goa.
 
-The platform aims to make complex Earth observation data easier to understand through interactive maps, data visualizations, and location-specific agricultural insights.
+By combining NASA satellite observations, geospatial analysis, and agricultural data, EARTHSCOPE provides insights into rainfall anomalies, soil moisture conditions, and rice variety suitability to support informed agricultural planning and decision-making.
 
 ---
 
@@ -17,6 +17,7 @@ The platform aims to make complex Earth observation data easier to understand th
 - [Key Features](#-key-features)
 - [Agricultural Regions of Goa](#-agricultural-regions-of-goa)
 - [NASA Data Integration](#-nasa-data-integration)
+- [Dataset Summary](#-dataset-summary)
 - [How EARTHSCOPE Works](#-how-earthscope-works)
 - [Technology Stack](#-technology-stack)
 - [System Architecture](#-system-architecture)
@@ -25,7 +26,7 @@ The platform aims to make complex Earth observation data easier to understand th
 - [Applications and Benefits](#-applications-and-benefits)
 - [Future Enhancements](#-future-enhancements)
 - [Limitations](#-limitations)
-- [Contributing](#-contributing)
+- [References and Data Sources](#-references-and-data-sources)
 - [Acknowledgements](#-acknowledgements)
 
 ---
@@ -36,7 +37,7 @@ Agriculture is highly dependent on environmental conditions such as rainfall, so
 
 In Goa, rice cultivation takes place across different ecological environments, each having different soil and water characteristics.
 
-EARTHSCOPE addresses this challenge by providing two major intelligence systems:
+EARTHSCOPE addresses this challenge through two major intelligence systems:
 
 **1. Rice Variety Suitability Intelligence**
 
@@ -44,7 +45,7 @@ Helps identify and compare rice varieties based on the ecological and environmen
 
 **2. Agricultural Water-Risk Intelligence**
 
-Uses NASA Earth observation data to investigate environmental indicators associated with agricultural water stress and identify areas that may require attention.
+Uses NASA Earth observation and land-surface model data to investigate rainfall anomalies and soil moisture conditions associated with agricultural water stress.
 
 By combining these two systems, EARTHSCOPE aims to support more informed agricultural planning and decision-making.
 
@@ -76,7 +77,7 @@ The system allows users to:
 - Explore agricultural regions through interactive maps.
 - Identify the ecological characteristics of selected regions.
 - Compare rice varieties based on their suitability.
-- Examine rainfall and soil moisture conditions.
+- Examine rainfall anomalies and soil moisture conditions.
 - Visualize environmental indicators using charts and maps.
 - Identify areas showing unusual water-related environmental conditions.
 - Generate useful insights to support agricultural planning.
@@ -96,8 +97,8 @@ The goal is to convert complex environmental datasets into meaningful and unders
 
 ### 2. Agricultural Water-Risk Assessment
 
-- Examines satellite-derived rainfall and soil moisture information.
-- Identifies unusual environmental conditions.
+- Examines NASA rainfall and root-zone soil moisture datasets.
+- Identifies unusual rainfall patterns and soil moisture conditions.
 - Helps investigate areas potentially experiencing agricultural water stress.
 - Combines multiple environmental indicators for a broader assessment.
 
@@ -110,8 +111,8 @@ The goal is to convert complex environmental datasets into meaningful and unders
 
 ### 4. Environmental Data Visualization
 
-- Presents environmental information through charts and graphical representations.
-- Helps users understand changes in rainfall and soil moisture.
+- Presents rainfall and soil moisture information through charts and graphical representations.
+- Helps users understand changes in environmental conditions.
 - Makes complex datasets easier to interpret.
 - Supports comparison between geographical regions.
 
@@ -142,53 +143,107 @@ EARTHSCOPE uses these ecological differences to support more relevant rice varie
 
 ## 🛰️ NASA Data Integration
 
-NASA Earth observation data is a central component of EARTHSCOPE.
+NASA Earth observation and land-surface model data are central components of EARTHSCOPE.
 
-Satellite observations provide valuable information about environmental conditions that influence agriculture.
+The project uses **three NASA data products from two major NASA sources:**
 
-The project uses the following NASA data sources:
+1. Global Precipitation Measurement (GPM) – Rainfall analysis.
+2. Global Land Data Assimilation System (GLDAS) – Soil moisture analysis.
 
-### 1. NASA GPM IMERG
+These datasets are accessed through **NASA Giovanni**, which provides tools for accessing, processing, analyzing, and visualizing Earth science data.
 
-**Global Precipitation Measurement – Integrated Multi-satellitE Retrievals for GPM**
+### 1. GPM IMERG Final Run – Monthly (GPM_3IMERGM v07)
 
-Used for:
-- Monitoring rainfall patterns.
-- Examining precipitation distribution.
-- Identifying rainfall deficits and unusual precipitation conditions.
-- Understanding changes in water availability.
+**Purpose: Kharif 2025 Rainfall Anomaly Analysis**
 
-### 2. NASA SMAP L4
+This dataset is used to analyze rainfall anomalies across Goa's districts and 12 talukas during the Kharif 2025 season.
 
-**Soil Moisture Active Passive – Level 4 Soil Moisture**
+**Applications:**
+- Analyze monthly rainfall patterns.
+- Identify areas receiving unusually high or low rainfall.
+- Compare rainfall against historical conditions.
+- Support district-level and taluka-level rainfall assessment.
 
-Used for:
-- Monitoring surface and root-zone soil moisture.
-- Understanding changes in soil water availability.
-- Identifying potentially dry agricultural conditions.
-- Supporting agricultural water-risk assessment.
+| Parameter | Details |
+|---|---|
+| Dataset | GPM_3IMERGM v07 |
+| Product | GPM IMERG Final Run – Monthly |
+| Resolution | 0.1° (approximately 11 km) |
+| Data Period | 2001 – September 2025 |
+| Accessed Through | NASA Giovanni |
+| Application | Kharif 2025 rainfall anomaly analysis |
 
-### 3. NASA MODIS (Optional)
+### 2. GPM IMERG Late Run – Daily (GPM_3IMERGDL v07)
 
-**Moderate Resolution Imaging Spectroradiometer**
+**Purpose: Preliminary Kharif 2026 Rainfall Anomaly Analysis**
 
-Can be used for:
-- Monitoring vegetation conditions.
-- Examining vegetation health indicators.
-- Understanding changes in land surface conditions.
+This dataset is used to examine daily rainfall patterns and preliminary rainfall anomalies across Goa's districts during Kharif 2026.
 
-### How NASA Data Is Used
+**Applications:**
+- Examine daily rainfall patterns.
+- Identify preliminary rainfall anomalies.
+- Monitor recent rainfall conditions.
+- Support district-level rainfall assessment for Kharif 2026.
 
-The integration process follows these stages:
+| Parameter | Details |
+|---|---|
+| Dataset | GPM_3IMERGDL v07 |
+| Product | GPM IMERG Late Run – Daily |
+| Resolution | 0.1° (approximately 11 km) |
+| Data Period | 2001 – October 2026 |
+| Accessed Through | NASA Giovanni |
+| Application | Preliminary Kharif 2026 rainfall anomaly analysis |
 
-1. **Data Collection:** Retrieve relevant Earth observation datasets.
-2. **Data Processing:** Clean and prepare the collected information.
-3. **Geospatial Analysis:** Align environmental information with geographical regions.
-4. **Indicator Analysis:** Examine rainfall, soil moisture, and other environmental conditions.
-5. **Risk Assessment:** Identify unusual patterns associated with agricultural water stress.
-6. **Visualization:** Display the resulting information through maps, charts, and dashboards.
+### 3. GLDAS-2.1 Noah – 3-Hourly (GLDAS_NOAH025_3H v2.1)
 
-NASA datasets provide environmental evidence for the platform. They do not independently determine the suitability of every rice variety; agricultural and ecological information is also required.
+**Purpose: Root-Zone Soil Moisture Analysis**
+
+This dataset is used to understand soil moisture conditions and identify areas experiencing unusually low root-zone soil moisture.
+
+**Applications:**
+- Calculate soil moisture percentiles for Kharif 2025.
+- Examine soil moisture conditions during June–July 2026.
+- Identify unusually low root-zone soil moisture conditions.
+- Support agricultural water-risk assessment.
+
+| Parameter | Details |
+|---|---|
+| Dataset | GLDAS_NOAH025_3H v2.1 |
+| Product | GLDAS-2.1 Noah – 3-Hourly |
+| Variable | Root-zone soil moisture |
+| Resolution | 0.25° (approximately 25–28 km) |
+| Data Period | 2000 – July 2026 |
+| Accessed Through | NASA Giovanni |
+| Application | Soil moisture percentile analysis |
+
+---
+
+## 📊 Dataset Summary
+
+EARTHSCOPE uses three NASA data products from two NASA sources to investigate rainfall and soil moisture conditions.
+
+| Dataset | What It Is Used For | Resolution | Period |
+|---|---|---|---|
+| GPM IMERG Final Monthly | Kharif 2025 rainfall anomalies – districts and 12 talukas | 0.1° (~11 km) | 2001–Sep 2025 |
+| GPM IMERG Late Daily | Preliminary Kharif 2026 rainfall anomalies – districts | 0.1° (~11 km) | 2001–Oct 2026 |
+| GLDAS-2.1 Noah 3-Hourly | Kharif 2025 and June–July 2026 root-zone soil moisture percentiles | 0.25° (~25–28 km) | 2000–Jul 2026 |
+
+### Two NASA Sources, Three Data Products
+
+**GPM – Global Precipitation Measurement**
+
+Provides rainfall information through two IMERG products:
+- Final Run – Monthly.
+- Late Run – Daily.
+
+**GLDAS – Global Land Data Assimilation System**
+
+Provides land-surface model information through:
+- GLDAS-2.1 Noah – 3-Hourly.
+
+Together, these datasets provide complementary information about rainfall variability and root-zone soil moisture conditions.
+
+**Note:** The rainfall and soil moisture datasets have different spatial resolutions. Their geographical coverage and resolution are considered when interpreting regional results.
 
 ---
 
@@ -202,7 +257,7 @@ The user selects a geographical region or agricultural ecology in Goa.
 
 **Step 2 – Explore Environmental Conditions**
 
-The system presents relevant environmental information, including rainfall and soil moisture.
+The system presents relevant environmental information, including rainfall anomalies and soil moisture conditions.
 
 **Step 3 – Analyze Rice Variety Suitability**
 
@@ -210,7 +265,7 @@ Available agricultural and ecological information is used to compare rice variet
 
 **Step 4 – Assess Agricultural Water Risk**
 
-Environmental indicators are examined to identify unusual or potentially unfavourable water conditions.
+Rainfall and root-zone soil moisture indicators are examined to identify unusual or potentially unfavourable water conditions.
 
 **Step 5 – Visualize Results**
 
@@ -223,8 +278,6 @@ Users can use the resulting information to better understand agricultural condit
 ---
 
 ## 🛠️ Technology Stack
-
-EARTHSCOPE uses modern frontend, backend, data science, and geospatial technologies.
 
 ### Frontend
 - React.js
@@ -255,10 +308,11 @@ EARTHSCOPE uses modern frontend, backend, data science, and geospatial technolog
 - Rasterio
 - GeoJSON
 
-### Data Sources
-- NASA GPM IMERG
-- NASA SMAP L4
-- NASA MODIS (optional)
+### NASA Data Sources
+- GPM IMERG Final Run – Monthly.
+- GPM IMERG Late Run – Daily.
+- GLDAS-2.1 Noah – 3-Hourly.
+- NASA Giovanni – Data access and analysis platform.
 
 ### Deployment
 - Vercel
@@ -271,41 +325,51 @@ EARTHSCOPE uses modern frontend, backend, data science, and geospatial technolog
 EARTHSCOPE follows a modular architecture that separates the frontend, backend, scientific processing, and geospatial components.
 
 ```text
-                 NASA EARTH OBSERVATION DATA
-                  GPM IMERG | SMAP L4
-                       MODIS
-                         |
-                         v
-                 DATA PROCESSING
+              NASA DATA SOURCES
+                      |
+           +----------+----------+
+           |                     |
+           v                     v
+       NASA GPM               NASA GLDAS
+     Rainfall Data          Soil Moisture
+           |                     |
+           +----------+----------+
+                      |
+                      v
+               NASA GIOVANNI
+              DATA ACQUISITION
+                      |
+                      v
+                DATA PROCESSING
              Cleaning and Preparation
               Quality and Unit Checks
-                         |
-                         v
-                SCIENTIFIC ANALYSIS
-                 |               |
-                 v               v
-          RICE SUITABILITY   WATER-RISK
-              ENGINE          ENGINE
-                 |               |
-                 +-------+-------+
-                         |
-                         v
-                   BACKEND API
-                      FastAPI
-                         |
-                         v
-                  FRONTEND SYSTEM
-                   React + Vite
-                         |
-              +----------+----------+
-              |          |          |
-              v          v          v
-           Dashboard   GIS Maps   Charts
-              |          |          |
-              +----------+----------+
-                         |
-                         v
-                AGRICULTURAL INSIGHTS
+                      |
+                      v
+              SCIENTIFIC ANALYSIS
+                 |            |
+                 v            v
+           RICE SUITABILITY  WATER-RISK
+               ENGINE        ENGINE
+                 |            |
+                 +-----+------+
+                       |
+                       v
+                  BACKEND API
+                    FastAPI
+                       |
+                       v
+                 FRONTEND SYSTEM
+                  React + Vite
+                       |
+             +---------+---------+
+             |         |         |
+             v         v         v
+          Dashboard  GIS Maps  Charts
+             |         |         |
+             +---------+---------+
+                       |
+                       v
+              AGRICULTURAL INSIGHTS
 ```
 
 The modular design allows the rice suitability and agricultural water-risk systems to operate as separate analytical components while presenting their results through one unified interface.
@@ -341,26 +405,17 @@ EARTHSCOPE/
 
 ## 💻 Installation and Setup
 
-Follow these steps to run EARTHSCOPE locally.
-
 ### Prerequisites
-
-Make sure you have installed:
 
 - Git
 - Node.js and npm
 - Python 3.10 or later
-- A code editor such as Visual Studio Code
+- Visual Studio Code or another code editor
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/arsal1nnnn/EARTHSCOPE.git
-```
-
-Navigate into the project directory:
-
-```bash
 cd EARTHSCOPE
 ```
 
@@ -372,7 +427,7 @@ Navigate to the frontend directory:
 cd frontend
 ```
 
-Install the dependencies:
+Install dependencies:
 
 ```bash
 npm install
@@ -418,15 +473,13 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-Install the backend dependencies using the dependency file provided in the backend directory.
-
-For a requirements.txt-based setup:
+Install dependencies using the requirements file:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Start the FastAPI application using its configured application entry point. For example, if the entry point is `app.main`:
+Start the FastAPI application (assuming the entry point is `app.main`):
 
 ```bash
 uvicorn app.main:app --reload
@@ -444,31 +497,29 @@ FastAPI interactive documentation:
 http://localhost:8000/docs
 ```
 
-*Note: Confirm the backend dependency filename and application entry point against the actual backend files before running these commands.*
+*Note: Confirm the backend dependency filename and application entry point against the actual backend files.*
 
 ---
 
 ## 🎯 Applications and Benefits
 
-EARTHSCOPE is designed to support different agricultural stakeholders.
-
-**Agricultural Officers**
+### Agricultural Officers
 - Explore agricultural conditions across different regions.
 - Compare rice varieties.
-- Review water-risk information.
+- Review rainfall and soil moisture information.
 - Support agricultural planning.
 
-**Farmers**
+### Farmers
 - Better understand regional environmental conditions.
 - Access information that can support crop planning.
 - Explore potentially suitable rice varieties.
 
-**Researchers**
+### Researchers
 - Study environmental patterns.
 - Analyze satellite-derived agricultural indicators.
 - Compare geographical and ecological conditions.
 
-**Water Resource Planners**
+### Water Resource Planners
 - Identify areas that may require further investigation.
 - Understand changing rainfall and soil moisture patterns.
 - Support water-resource planning.
@@ -477,9 +528,7 @@ EARTHSCOPE is designed to support different agricultural stakeholders.
 
 ## 🔮 Future Enhancements
 
-EARTHSCOPE can be extended with additional capabilities:
-
-- Integration of more NASA Earth observation datasets.
+- Integration of additional NASA Earth observation datasets.
 - Improved rice variety recommendation models.
 - More detailed soil and salinity information.
 - Machine-learning-based agricultural water-risk forecasting.
@@ -494,34 +543,85 @@ EARTHSCOPE can be extended with additional capabilities:
 
 ## ⚠️ Limitations
 
-- Satellite-derived measurements may have spatial and temporal resolution limitations.
+- Satellite-derived rainfall measurements have spatial and temporal resolution limitations.
+- GLDAS soil moisture is based on land-surface modelling and is not a direct measurement at every agricultural location.
+- The GPM and GLDAS products have different spatial resolutions.
 - Environmental datasets may contain missing values or coverage gaps.
+- Taluka-level analysis is subject to the limitations of the underlying dataset resolution and geographical aggregation.
 - Rice variety suitability depends on reliable agricultural and ecological information.
 - Water-risk assessments should be validated against independent ground observations wherever possible.
-- Model-based forecasts, if implemented, should be treated as estimates rather than guaranteed outcomes.
 
 EARTHSCOPE is intended as an agricultural screening and decision-support platform. It does not replace field inspections, professional agronomic advice, or official agricultural and drought-warning systems.
 
 ---
 
-## 🤝 Contributing
+## 📚 References and Data Sources
 
-Contributions and suggestions are welcome.
+The following official scientific and institutional resources were used as references for EARTHSCOPE's environmental data integration and agricultural research.
 
-To contribute:
+### NASA Data Sources
 
-1. Fork the repository.
-2. Create a new feature branch.
-3. Make your changes.
-4. Commit your changes.
-5. Submit a pull request.
+**1. NASA Global Precipitation Measurement (GPM)**
 
-```bash
-git checkout -b feature/your-feature-name
-git add .
-git commit -m "Add your feature"
-git push origin feature/your-feature-name
-```
+Official source for the GPM mission and its precipitation datasets.
+
+https://gpm.nasa.gov/
+
+**2. GPM IMERG – Final Run Monthly (GPM_3IMERGM v07)**
+
+Used for Kharif 2025 rainfall anomaly analysis across Goa's districts and 12 talukas.
+
+https://gpm.nasa.gov/data/imerg
+
+**3. GPM IMERG – Late Run Daily (GPM_3IMERGDL v07)**
+
+Used for preliminary Kharif 2026 rainfall anomaly analysis across Goa's districts.
+
+https://gpm.nasa.gov/data/imerg
+
+**4. NASA Global Land Data Assimilation System (GLDAS)**
+
+Official source for GLDAS land-surface modelling datasets.
+
+https://ldas.gsfc.nasa.gov/gldas
+
+**5. GLDAS-2.1 Noah – 3-Hourly (GLDAS_NOAH025_3H v2.1)**
+
+Used for root-zone soil moisture percentile analysis during Kharif 2025 and June–July 2026.
+
+https://disc.gsfc.nasa.gov/datasets/GLDAS_NOAH025_3H_2.1/summary
+
+**6. NASA Giovanni**
+
+The online platform used to access, process, analyze, and visualize the NASA datasets used in EARTHSCOPE.
+
+https://giovanni.gsfc.nasa.gov/giovanni/
+
+### Agricultural and Rice Research Sources
+
+**7. ICAR – Central Coastal Agricultural Research Institute (CCARI), Goa**
+
+Reference for rice cultivation in Goa and its three major agricultural ecologies: Morod, Kher, and Khazan.
+
+https://ccari.res.in/dss/rice.html
+
+**8. ICAR – Central Rice Research Institute (CRRI)**
+
+Reference for released rice varieties, their characteristics, and suitable agricultural ecosystems.
+
+https://icar-crri.in/released-varieties/
+
+**9. Indian Rice Varietal Information Database**
+
+Reference for rice variety information, including cultivation ecosystems, duration, recommended states, and varietal characteristics.
+
+https://rice-garud.icar-web.com/varieties.php
+
+**10. Goa Forest Department – Land Classification Report**
+
+Reference for the characteristics of Khazan, Kher, and Morod land types in Goa.
+
+https://www.forest.goa.gov.in/sites/default/files/2022-06/FINAL-REPORT-and-SUBMITTED.pdf
 
 ---
 
@@ -529,10 +629,12 @@ git push origin feature/your-feature-name
 
 We would like to acknowledge:
 
-- **NASA** – For providing Earth observation datasets and open scientific resources.
+- **NASA** – For providing Earth observation datasets and scientific resources.
 - **NASA GPM** – For precipitation monitoring data.
-- **NASA SMAP** – For soil moisture observations.
-- **NASA MODIS** – For optional vegetation and land-surface observations.
+- **NASA GLDAS** – For land-surface modelling and soil moisture information.
+- **NASA Giovanni** – For providing access to Earth science data analysis and visualization tools.
+- **ICAR-CCARI, Goa** – For agricultural research and information about rice cultivation in Goa.
+- **ICAR-CRRI** – For rice variety research and agricultural information.
 - **Open-source community** – For the tools and technologies used in developing this platform.
 - **NASA Space Apps Challenge** – For providing the opportunity to develop innovative solutions using Earth science data.
 
@@ -546,7 +648,7 @@ Developed as part of the **NASA Space Apps Challenge**.
 
 **Project Focus:** Agricultural Intelligence | Earth Observation | GIS | Data Science | Sustainable Agriculture
 
-**Repository:** https://github.com/arsal1nnnn/EARTHSCOPE
+**GitHub Repository:** https://github.com/arsal1nnnn/EARTHSCOPE
 
 ---
 
