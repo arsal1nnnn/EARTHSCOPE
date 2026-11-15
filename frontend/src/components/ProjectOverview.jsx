@@ -1,4 +1,4 @@
-import { Satellite, Droplets, Sprout, Layers, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Satellite, Droplets, Sprout, Layers } from "lucide-react";
 import DitherIcon from "./DitherIcon";
 
 export default function ProjectOverview() {
@@ -105,25 +105,6 @@ export default function ProjectOverview() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Scientific Integrity Banner */}
-        <div className="p-5 rounded-xl bg-[#11141c] border border-white/[0.08] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-start md:items-center gap-3">
-            <DitherIcon icon={ShieldCheck} size="md" />
-            <div>
-              <h4 className="text-sm font-semibold font-montserrat text-[#eef0f5]">
-                Zero invented parameters or hallucinated indicators
-              </h4>
-              <p className="text-xs text-[#a3a9b8] mt-0.5">
-                Every rainfall anomaly and root-zone moisture value is directly indexed from NASA GPM IMERG and GLDAS-2.1 datasets. Water-deficit signals are separated from crop suitability scores to ensure full traceability.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1e28] border border-white/[0.08] text-emerald-400 text-xs font-mono shrink-0">
-            <CheckCircle2 size={14} />
-            <span>M4/M5 Spec Verified</span>
-          </div>
         </div>
       </div>
     </section>

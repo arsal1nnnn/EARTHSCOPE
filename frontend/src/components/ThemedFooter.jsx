@@ -49,22 +49,54 @@ export default function ThemedFooter({ onScrollToTop }) {
             <h4 className="text-xs font-semibold font-montserrat uppercase tracking-wider text-[#a3a9b8]">
               NASA telemetry products
             </h4>
-            <ul className="space-y-2 text-xs text-[#7a8296]">
-              <li className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors">
-                <ExternalLink size={12} className="text-[#a3a9b8]" />
-                <span>GPM IMERG Final monthly v07 (~11 km)</span>
+            <ul className="space-y-2.5 text-xs text-[#7a8296]">
+              <li>
+                <a
+                  href="https://gpm.nasa.gov/data/imerg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors group cursor-pointer"
+                  title="NASA GPM IMERG Data Portal"
+                >
+                  <ExternalLink size={12} className="text-[#a3a9b8] group-hover:text-[#eef0f5] transition-colors shrink-0" />
+                  <span>GPM IMERG Final monthly v07 (~11 km)</span>
+                </a>
               </li>
-              <li className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors">
-                <ExternalLink size={12} className="text-[#a3a9b8]" />
-                <span>GLDAS-2.1 Noah Land Surface (~25 km)</span>
+              <li>
+                <a
+                  href="https://ldas.gsfc.nasa.gov/gldas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors group cursor-pointer"
+                  title="NASA GLDAS Land Surface Model"
+                >
+                  <ExternalLink size={12} className="text-[#a3a9b8] group-hover:text-[#eef0f5] transition-colors shrink-0" />
+                  <span>GLDAS-2.1 Noah Land Surface (~25 km)</span>
+                </a>
               </li>
-              <li className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors">
-                <ExternalLink size={12} className="text-[#a3a9b8]" />
-                <span>20-Year Baseline Anomaly (2000–2020)</span>
+              <li>
+                <a
+                  href="https://giovanni.gsfc.nasa.gov/giovanni/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors group cursor-pointer"
+                  title="NASA GES DISC Giovanni Data Portal"
+                >
+                  <ExternalLink size={12} className="text-[#a3a9b8] group-hover:text-[#eef0f5] transition-colors shrink-0" />
+                  <span>20-Year Baseline Anomaly (2000–2020)</span>
+                </a>
               </li>
-              <li className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors">
-                <ExternalLink size={12} className="text-[#a3a9b8]" />
-                <span>Two-Indicator Dryness Rule Matrix</span>
+              <li>
+                <a
+                  href="https://droughtmonitor.unl.edu/About/AbouttheData/DroughtClassification.aspx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-[#eef0f5] transition-colors group cursor-pointer"
+                  title="USDM / ECONet Two-Indicator Dryness Classification Matrix"
+                >
+                  <ExternalLink size={12} className="text-[#a3a9b8] group-hover:text-[#eef0f5] transition-colors shrink-0" />
+                  <span>Two-Indicator Dryness Rule Matrix</span>
+                </a>
               </li>
             </ul>
           </div>
@@ -74,18 +106,50 @@ export default function ThemedFooter({ onScrollToTop }) {
             <h4 className="text-xs font-semibold font-montserrat uppercase tracking-wider text-[#a3a9b8]">
               Agronomic research
             </h4>
-            <ul className="space-y-2 text-xs text-[#7a8296]">
-              <li className="hover:text-[#eef0f5] transition-colors">
-                ICAR-CCARI, Ela, Old Goa
+            <ul className="space-y-2.5 text-xs text-[#7a8296]">
+              <li>
+                <a
+                  href="https://ccari.icar.gov.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#eef0f5] hover:underline underline-offset-2 transition-colors cursor-pointer block"
+                  title="ICAR Central Coastal Agricultural Research Institute"
+                >
+                  ICAR-CCARI, Ela, Old Goa
+                </a>
               </li>
-              <li className="hover:text-[#eef0f5] transition-colors">
-                Krishi Vigyan Kendra (KVK) North & South Goa
+              <li>
+                <a
+                  href="https://kvknorthgoa.icar.gov.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#eef0f5] hover:underline underline-offset-2 transition-colors cursor-pointer block"
+                  title="Krishi Vigyan Kendra Goa"
+                >
+                  Krishi Vigyan Kendra (KVK) North &amp; South Goa
+                </a>
               </li>
-              <li className="hover:text-[#eef0f5] transition-colors">
-                Goa Directorate of Agriculture
+              <li>
+                <a
+                  href="https://agri.goa.gov.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#eef0f5] hover:underline underline-offset-2 transition-colors cursor-pointer block"
+                  title="Directorate of Agriculture, Government of Goa"
+                >
+                  Goa Directorate of Agriculture
+                </a>
               </li>
-              <li className="hover:text-[#eef0f5] transition-colors">
-                India Meteorological Department (IMD) Panaji
+              <li>
+                <a
+                  href="https://mausam.imd.gov.in/panaji/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#eef0f5] hover:underline underline-offset-2 transition-colors cursor-pointer block"
+                  title="India Meteorological Department Panaji Observatory"
+                >
+                  India Meteorological Department (IMD) Panaji
+                </a>
               </li>
             </ul>
           </div>
@@ -102,7 +166,7 @@ export default function ThemedFooter({ onScrollToTop }) {
             </div>
             <button
               onClick={scrollToTop}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1a1e28] hover:bg-[#232836] border border-white/[0.08] text-[#a3a9b8] hover:text-[#eef0f5] font-mono text-xs cursor-pointer transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1a1e28] hover:bg-[#232836] border border-white/[0.08] text-[#a3a9b8] hover:text-[#eef0f5] font-mono text-xs cursor-pointer transition-colors shrink-0 active:scale-95"
               title="Return to top"
             >
               <span>TOP</span>
@@ -117,9 +181,23 @@ export default function ThemedFooter({ onScrollToTop }) {
             © {new Date().getFullYear()} EarthScope • Prototype stage • NASA Space Apps Challenge
           </div>
           <div className="flex items-center gap-4 text-[11px]">
-            <span>GPM IMERG v07 & GLDAS-2.1 Noah</span>
+            <a
+              href="https://gpm.nasa.gov/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#eef0f5] hover:underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              GPM IMERG v07 &amp; GLDAS-2.1 Noah
+            </a>
             <span>•</span>
-            <span>ICAR-CCARI Varietal Records</span>
+            <a
+              href="https://ccari.icar.gov.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#eef0f5] hover:underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              ICAR-CCARI Varietal Records
+            </a>
           </div>
         </div>
       </div>

@@ -5,9 +5,6 @@ import {
   Leaf,
   MapPinned,
   Sprout,
-  Waves,
-  Satellite,
-  Droplets,
   ShieldCheck,
   CheckCircle2,
   CircleHelp,
@@ -302,18 +299,6 @@ export default function App() {
               </button>
 
               <button
-                onClick={() => setActiveTab("water")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer flex items-center gap-2 ${
-                  activeTab === "water"
-                    ? "bg-[#1a1e28] text-[#eef0f5] border border-white/[0.16]"
-                    : "text-[#a3a9b8] hover:text-[#eef0f5] hover:bg-white/[0.04]"
-                }`}
-              >
-                <Waves size={13} className="text-[#a3a9b8]" />
-                <span>Water-deficit monitor</span>
-              </button>
-
-              <button
                 onClick={() => setActiveTab("provenance")}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer flex items-center gap-2 ${
                   activeTab === "provenance"
@@ -427,48 +412,7 @@ export default function App() {
             </div>
           )}
 
-          {/* Tab 3: Water-Deficit Monitor */}
-          {activeTab === "water" && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 rounded-xl bg-[#11141c] border border-white/[0.08]">
-                  <div className="flex items-center gap-2.5 mb-2.5">
-                    <DitherIcon icon={Satellite} size="sm" />
-                    <div>
-                      <h4 className="text-sm font-semibold font-montserrat text-[#eef0f5]">
-                        NASA GPM IMERG Final v07
-                      </h4>
-                      <span className="text-[11px] font-mono text-[#a3a9b8]">Satellite precipitation</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#a3a9b8] leading-relaxed">
-                    Evaluates monthly precipitation totals against the 20-year baseline (2000–2020) for Goa. Identifies when rainfall drops more than 20% below normal during critical transplantation and panicle initiation windows.
-                  </p>
-                </div>
-
-                <div className="p-5 rounded-xl bg-[#11141c] border border-white/[0.08]">
-                  <div className="flex items-center gap-2.5 mb-2.5">
-                    <DitherIcon icon={Droplets} size="sm" />
-                    <div>
-                      <h4 className="text-sm font-semibold font-montserrat text-[#eef0f5]">
-                        GLDAS-2.1 Noah Land Surface Model
-                      </h4>
-                      <span className="text-[11px] font-mono text-[#a3a9b8]">Root-zone moisture (0–100 cm)</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#a3a9b8] leading-relaxed">
-                    Tracks simulated moisture stored in the crop root zone (0–100 cm). Distinguishes surface water runoff from genuine plant-available water, providing a reliable ground truth for terraced Morod soils.
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#11141c] p-2">
-                <GoaMap height="560px" />
-              </div>
-            </div>
-          )}
-
-          {/* Tab 4: Scientific Provenance & Audit */}
+          {/* Tab 3: Scientific Provenance & Audit */}
           {activeTab === "provenance" && (
             <div className="p-6 rounded-xl bg-[#11141c] border border-white/[0.08] space-y-6 text-xs text-[#a3a9b8]">
               <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
@@ -512,7 +456,7 @@ export default function App() {
       </section>
 
       {/* 5. Themed footer */}
-      <ThemedFooter />
+      <ThemedFooter onScrollToTop={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
     </div>
   );
 }
