@@ -85,7 +85,7 @@ def agreement(signals: list[str]) -> str:           # identical to water_risk.ag
 
 
 def water_risk_from_agreement(agr: str) -> tuple[str, int]:
-    """Derives transparent water risk classification from multi-sensor indicator agreement:
+    """Derives transparent water-deficit signal classification from two indicators (IMERG rainfall and GLDAS soil moisture):
     - High (score 3): concurrent dry signals (both rain & root-zone moisture in deficit)
     - Moderate (score 2): single dry signal (deficit buffered by normal soil moisture)
     - Low (score 1): zero dry signals (all near normal, concurrent wet, or mixed wet/normal)
@@ -234,13 +234,13 @@ def update_map(path: Path, season: pd.DataFrame, month: pd.DataFrame) -> bool:
         if isinstance(wr, dict):
             wr["level"] = s_lvl
             wr["score"] = s_score
-            wr["label"] = f"{s_lvl} Water Risk"
+            wr["label"] = f"Water-deficit: {s_lvl}"
             wr["rainfall_signal"] = p["rainfall_signal"]
             wr["agreement"] = p["indicator_agreement"]
             wr["concurrent_dry_months"] = p["months_with_concurrent_dry_signals"]
             if isinstance(wr.get("summary"), str):
-                wr["summary"] = re.sub(r"(recorded )[-+]?\d+(?:\.\d+)?(% rainfall anomaly)(?: \(estimate for [^)]*\))*",
-                                       lambda k: f"{k.group(1)}{p['rainfall_anomaly_pct']:+.1f}{k.group(2)} "
+                wr["summary"] = re.sub(r"(?:Low Water Risk|Water-deficit signal (?:Low|Moderate|High))(: [^,]+ recorded )[-+]?\d+(?:\.\d+)?(% rainfall anomaly)(?: \(estimate for [^)]*\))*",
+                                       lambda k: f"Water-deficit signal {s_lvl}{k.group(1)}{p['rainfall_anomaly_pct']:+.1f}{k.group(2)} "
                                                  f"(estimate for {p['name']})", wr["summary"])
 
         # Strip legacy undocumented scalar percentage scores from rice_suitability
@@ -250,7 +250,7 @@ def update_map(path: Path, season: pd.DataFrame, month: pd.DataFrame) -> bool:
         p.pop("rice_suitability_score", None)
     path.write_text(json.dumps(layer, ensure_ascii=False, allow_nan=False), encoding="utf-8")
     if changed:
-        print(f"  monthly rainfall signals that changed in {path.name} (water-risk levels automatically re-derived):")
+        print(f"  monthly rainfall signals that changed in {path.name} (water-deficit signals automatically re-derived):")
         for line in changed:
             print("    " + line)
     return True

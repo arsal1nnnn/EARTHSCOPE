@@ -14,9 +14,9 @@ import { ChevronDown, ChevronUp, Info, Layers, Calendar } from "lucide-react";
 // Color-scale definitions for each real metric
 const METRIC_SCALE_ENTRIES = {
   water_risk: [
-    { color: "#10b981", label: "Low Water Risk",       range: "Zero Dry Signals (Healthy Buffer)" },
-    { color: "#f59e0b", label: "Moderate Risk",        range: "Single Dry Signal (Moisture Buffer)" },
-    { color: "#ef4444", label: "High Water Stress",    range: "Concurrent Dry Signals (Rain + SM)" },
+    { color: "#10b981", label: "Low Deficit",       range: "Zero Dry Signals (Healthy Buffer)" },
+    { color: "#f59e0b", label: "Moderate Deficit",  range: "Single Dry Signal (Moisture Buffer)" },
+    { color: "#ef4444", label: "High Deficit",      range: "Concurrent Dry Signals (Rain + SM)" },
   ],
   rice_suitability: [
     { color: "#059669", label: "Highly Suitable (Khazan + Kher)", range: "8 Varieties (Saline + Lowlands)" },
