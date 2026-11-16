@@ -2,7 +2,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.PROD
+  ? 'https://earthscope-api.onrender.com/api'
+  : '/api',
   headers: {
     'Content-Type': 'application/json',
   },
