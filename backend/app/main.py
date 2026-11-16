@@ -12,7 +12,7 @@ app = FastAPI(
 
 origins = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:5173"
+    "http://localhost:5173,https://earthscope.pages.dev"
 ).split(",")
 
 app.add_middleware(
