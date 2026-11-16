@@ -18,6 +18,7 @@ import DitherIcon from "./components/DitherIcon";
 import GoaMap from "./maps/GoaMap";
 import AssessmentResults from "./components/AssessmentResults";
 import riceSuitabilityMatrix from "./data/rice_suitability_matrix.json";
+import API_BASE_URL from './services/apiBase';
 
 const DISTRICTS = ["North Goa", "South Goa"];
 const ECOLOGIES = [
@@ -609,7 +610,7 @@ export default function App() {
 
       try {
         const regionId = encodeURIComponent(selectedRegionId);
-        const response = await fetch(`/api/water-risk/${regionId}`, {
+        const response = await fetch(`${API_BASE_URL}/water-risk/${regionId}`, {
           signal: controller.signal,
         });
         if (!response.ok) {
@@ -621,7 +622,7 @@ export default function App() {
 
         // Historical rainfall is supplementary; current indicators remain visible if it fails.
         try {
-          const historyResponse = await fetch(`/api/water-risk/${regionId}/history`, {
+          const historyResponse = await fetch(`${API_BASE_URL}/water-risk/${regionId}/history`, {
             signal: controller.signal,
           });
           if (historyResponse.ok) {

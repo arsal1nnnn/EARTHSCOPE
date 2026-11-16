@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { CloudRain, Info, X } from "lucide-react";
 import rawHistoryData from "../data/rainfall_history.json";
+import API_BASE_URL from '../services/apiBase';
 
 const fallbackHistory = rawHistoryData?.default || rawHistoryData || {};
 
@@ -104,7 +105,7 @@ export default function RainfallHistoryChart({
 
     async function fetchHistory() {
       try {
-        const res = await fetch(`/api/water-risk/${regionId}/history`);
+        const res = await fetch(`${API_BASE_URL}/water-risk/${regionId}/history`);
         if (res.ok) {
           const json = await res.json();
           if (isMounted && json?.history?.length) {

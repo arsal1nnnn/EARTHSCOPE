@@ -28,6 +28,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import RainfallHistoryChart from "../components/RainfallHistoryChart";
+import API_BASE_URL from '../services/apiBase';
 
 const fallbackGeoJson = rawFallbackGeoJson?.default || rawFallbackGeoJson;
 
@@ -253,7 +254,7 @@ export default function GoaMap({
     let isMounted = true;
     const fetchLiveData = async () => {
       try {
-        const res = await fetch("/api/map/stress");
+        const res = await fetch(`${API_BASE_URL}/map/stress`);
         if (!res.ok) return;
         const liveGeoJson = await res.json();
         if (isMounted && liveGeoJson?.features?.length) {
